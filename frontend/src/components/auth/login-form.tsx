@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
@@ -70,21 +71,18 @@ export function LoginForm() {
     <div className="w-full max-w-[440px]">
       {/* ─── Tab Treatment ─── */}
       <div className="flex border-b border-soft-border">
-        <button
-          type="button"
+        <span
           className="flex-1 pb-3 text-center text-lg font-semibold text-foreground border-b-2 border-berry"
           aria-current="page"
         >
           Login
-        </button>
-        <button
-          type="button"
+        </span>
+        <Link
+          href="/signup"
           className="flex-1 pb-3 text-center text-lg font-medium text-muted-foreground transition-colors hover:text-foreground border-b-2 border-transparent"
-          disabled
-          aria-label="Sign Up (coming soon)"
         >
           Sign Up
-        </button>
+        </Link>
       </div>
 
       {/* ─── Form Content ─── */}
@@ -291,14 +289,12 @@ export function LoginForm() {
         {/* ─── Sign Up Prompt ─── */}
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <button
-            type="button"
+          <Link
+            href="/signup"
             className="font-semibold text-foreground transition-colors hover:text-berry focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-berry/50 rounded"
-            disabled
-            aria-label="Sign Up (coming soon)"
           >
             Sign Up
-          </button>
+          </Link>
         </p>
       </div>
     </div>

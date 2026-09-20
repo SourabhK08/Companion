@@ -440,6 +440,37 @@ shadcn/ui components will be initialized with the "new-york" style variant for a
 **Next Recommended Step:**
 - Phase 1: Backend setup + real email/password authentication
 
+### 2026-09-20 — Signup Page Added ✅
+
+**Status:** Complete
+
+**Completed:**
+- Sign Up page at `/signup` matching reference design
+- SignupForm component: Full Name, Email, Mobile, City (Select dropdown), DOB, Password + Confirm Password (side-by-side), Terms checkbox
+- Zod signup schema with password match refinement
+- City dropdown using shadcn Select with 20 Indian cities
+- Login ↔ Sign Up tab navigation now functional (Link-based)
+- Signup hero: different copy, 2×2 trust indicator grid, bottom trust badge bar
+- shadcn checkbox and select components added
+
+**User-Made Changes Respected:**
+- Auth layout: No navbar/footer (brand logo placeholder header only)
+- Login page: Refined gradients, glass card effect, improved spacing
+- Auth layout: Full `h-screen` with `overflow-hidden`
+
+**Files Created:**
+- `src/components/auth/signup-form.tsx` — Signup form component
+- `src/app/(auth)/signup/page.tsx` — Signup page with hero + form
+- `src/components/ui/checkbox.tsx` — shadcn checkbox
+- `src/components/ui/select.tsx` — shadcn select
+
+**Files Modified:**
+- `src/schemas/auth.ts` — Added signupSchema
+- `src/config/site.ts` — Added signupTrustIndicators, trustBadges, indianCities
+- `src/components/auth/login-form.tsx` — Tabs navigate between /login ↔ /signup
+
+**Verification:** TypeScript ✅ ESLint ✅ Build ✅ (4 routes)
+
 ---
 
 ## 11. Important Decisions Log

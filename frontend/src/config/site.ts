@@ -40,6 +40,61 @@ export const trustIndicators = [
   },
 ] as const;
 
+/** Trust indicators displayed on the signup hero (2×2 grid). */
+export const signupTrustIndicators = [
+  {
+    icon: "shield-check" as const,
+    title: "100% Verified",
+    description: "Real people. Real profiles.",
+  },
+  {
+    icon: "lock" as const,
+    title: "Safe & Secure",
+    description: "Your safety is our priority.",
+  },
+  {
+    icon: "star" as const,
+    title: "Meaningful Experiences",
+    description: "Connect through plans, activities and shared moments.",
+  },
+  {
+    icon: "users" as const,
+    title: "Inclusive Community",
+    description: "A respectful space for everyone.",
+  },
+] as const;
+
+/** Trust badge bar shown at bottom of signup hero. */
+export const trustBadges = [
+  { icon: "check-circle" as const, label: "Verified Profiles" },
+  { icon: "heart" as const, label: "Safer Experiences" },
+  { icon: "users" as const, label: "Real Connections" },
+] as const;
+
+/** Indian cities for the signup city dropdown. */
+export const indianCities = [
+  "Mumbai",
+  "Delhi",
+  "Bangalore",
+  "Kolkata",
+  "Chennai",
+  "Hyderabad",
+  "Pune",
+  "Ahmedabad",
+  "Jaipur",
+  "Lucknow",
+  "Chandigarh",
+  "Goa",
+  "Kochi",
+  "Indore",
+  "Bhopal",
+  "Nagpur",
+  "Surat",
+  "Vadodara",
+  "Coimbatore",
+  "Visakhapatnam",
+] as const;
+
 /** Footer navigation groups. */
 export const footerLinks = {
   explore: {
