@@ -149,7 +149,7 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-4 px-4 py-4 text-xs text-white/50 sm:flex-row lg:px-8">
-          <p>© {new Date().getFullYear()} Companionly. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Modhuralap. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link
               href="/privacy"

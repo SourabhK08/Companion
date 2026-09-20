@@ -38,7 +38,7 @@ export const signupSchema = z
       .string()
       .min(1, "Mobile number is required")
       .min(10, "Enter a valid mobile number"),
-    // city: z.string().min(1, "Please select your city"),
+    city: z.string().min(1, "Please select your city"),
     dob: z.string().min(1, "Date of birth is required"),
     password: z
       .string()

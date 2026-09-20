@@ -24,23 +24,19 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { signupSchema, type SignupFormValues } from "@/schemas/auth";
-// import { indianCities } from "@/config/site";
 
 /**
- * Signup form matching the Companionly reference design.
+ * Signup form matching the Modhuralap reference design.
  *
  * Contains:
  *   - User icon at top
- *   - "Create Your Companionly Account" heading
- *   - Full Name, Email, Mobile, City (select), Date of Birth
- *   - Password + Confirm Password (side-by-side)
+ *   - "Create Your Modhuralap Account" heading
+ *   - Full Name, Email, Mobile, City (select), DOB
+ *   - Create app password + Confirm App Password (side-by-side)
  *   - Terms & Conditions checkbox
  *   - Create Account button
  *   - Social login placeholders
  *   - "Already have an account? Login" link
- *
- * Form handling: React Hook Form + Zod
- * No real backend — form submission is a placeholder.
  */
 export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -57,7 +53,7 @@ export function SignupForm() {
       fullName: "",
       email: "",
       mobile: "",
-      // city: "",
+      city: "",
       dob: "",
       password: "",
       confirmPassword: "",
@@ -72,7 +68,6 @@ export function SignupForm() {
     alert("Sign up submitted (no backend connected yet).");
   }
 
-  /** Reusable field styling */
   const inputBase =
     "h-11 rounded-lg border-soft-border bg-white text-sm placeholder:text-muted-foreground/60 focus-visible:border-berry focus-visible:ring-berry/20";
   const inputError =
@@ -91,10 +86,10 @@ export function SignupForm() {
       <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-[1.7rem]">
         Create Your
         <br />
-        <span className="italic text-berry">Companionly Account</span>
+        <span className="italic text-berry">Modhuralap Account</span>
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        Join Companionly and start discovering verified companionship, meaningful
+        Join Modhuralap and start discovering meaningful connections, real
         experiences and a community built around trust.
       </p>
 
@@ -149,15 +144,12 @@ export function SignupForm() {
               autoComplete="email"
               disabled={isSubmitting}
               aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? "signup-email-error" : undefined}
               className={cn(inputBase, "pl-10", errors.email && inputError)}
               {...register("email")}
             />
           </div>
           {errors.email && (
-            <p id="signup-email-error" className="text-xs text-destructive" role="alert">
-              {errors.email.message}
-            </p>
+            <p className="text-xs text-destructive" role="alert">{errors.email.message}</p>
           )}
         </div>
 
@@ -178,59 +170,19 @@ export function SignupForm() {
               autoComplete="tel"
               disabled={isSubmitting}
               aria-invalid={!!errors.mobile}
-              aria-describedby={errors.mobile ? "mobile-error" : undefined}
               className={cn(inputBase, "pl-10", errors.mobile && inputError)}
               {...register("mobile")}
             />
           </div>
           {errors.mobile && (
-            <p id="mobile-error" className="text-xs text-destructive" role="alert">
-              {errors.mobile.message}
-            </p>
+            <p className="text-xs text-destructive" role="alert">{errors.mobile.message}</p>
           )}
         </div>
 
-        {/* ─── City ─── */}
-        {/* <div className="space-y-1.5">
-          <Label htmlFor="city" className="text-sm font-medium">
-            City <span className="text-destructive" aria-hidden="true">*</span>
-          </Label>
-          <Controller
-            control={control}
-            name="city"
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger
-                  id="city"
-                  aria-invalid={!!errors.city}
-                  className={cn(
-                    inputBase,
-                    "w-full pl-10",
-                    errors.city && inputError
-                  )}
-                >
-                  <MapPin
-                    className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
-                    aria-hidden="true"
-                  />
-                  <SelectValue placeholder="Select your city" />
-                </SelectTrigger>
-                <SelectContent>
-                  {indianCities.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.city && (
-            <p className="text-xs text-destructive" role="alert">
-              {errors.city.message}
-            </p>
-          )}
-        </div> */}
+        {/*
+         * ─── City field temporarily disabled ───
+         * Re-enable later by restoring the city block and schema field.
+         */}
 
         {/* ─── Date of Birth ─── */}
         <div className="space-y-1.5">
@@ -249,24 +201,20 @@ export function SignupForm() {
               autoComplete="bday"
               disabled={isSubmitting}
               aria-invalid={!!errors.dob}
-              aria-describedby={errors.dob ? "dob-error" : undefined}
               className={cn(inputBase, "pl-10", errors.dob && inputError)}
               {...register("dob")}
             />
           </div>
           {errors.dob && (
-            <p id="dob-error" className="text-xs text-destructive" role="alert">
-              {errors.dob.message}
-            </p>
+            <p className="text-xs text-destructive" role="alert">{errors.dob.message}</p>
           )}
         </div>
 
-        {/* ─── Password + Confirm Password (side-by-side) ─── */}
+        {/* ─── App Password + Confirm (side-by-side) ─── */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {/* Password */}
           <div className="space-y-1.5">
             <Label htmlFor="signup-password" className="text-sm font-medium">
-              Password <span className="text-destructive" aria-hidden="true">*</span>
+              Create app password <span className="text-destructive" aria-hidden="true">*</span>
             </Label>
             <div className="relative">
               <Lock
@@ -276,38 +224,30 @@ export function SignupForm() {
               <Input
                 id="signup-password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Create a strong password"
+                placeholder="Create app password"
                 autoComplete="new-password"
                 disabled={isSubmitting}
                 aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? "signup-password-error" : undefined}
-                className={cn(
-                  inputBase,
-                  "pl-10 pr-10",
-                  errors.password && inputError
-                )}
+                className={cn(inputBase, "pl-10 pr-10", errors.password && inputError)}
                 {...register("password")}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((p) => !p)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-berry/50"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
             {errors.password && (
-              <p id="signup-password-error" className="text-xs text-destructive" role="alert">
-                {errors.password.message}
-              </p>
+              <p className="text-xs text-destructive" role="alert">{errors.password.message}</p>
             )}
           </div>
 
-          {/* Confirm Password */}
           <div className="space-y-1.5">
             <Label htmlFor="confirmPassword" className="text-sm font-medium">
-              Confirm Password <span className="text-destructive" aria-hidden="true">*</span>
+              Confirm App Password <span className="text-destructive" aria-hidden="true">*</span>
             </Label>
             <div className="relative">
               <Lock
@@ -317,43 +257,24 @@ export function SignupForm() {
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm your password"
+                placeholder="Confirm app password"
                 autoComplete="new-password"
                 disabled={isSubmitting}
                 aria-invalid={!!errors.confirmPassword}
-                aria-describedby={
-                  errors.confirmPassword ? "confirmPassword-error" : undefined
-                }
-                className={cn(
-                  inputBase,
-                  "pl-10 pr-10",
-                  errors.confirmPassword && inputError
-                )}
+                className={cn(inputBase, "pl-10 pr-10", errors.confirmPassword && inputError)}
                 {...register("confirmPassword")}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword((p) => !p)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-berry/50"
-                aria-label={
-                  showConfirmPassword ? "Hide password" : "Show password"
-                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground"
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="size-4" />
-                ) : (
-                  <Eye className="size-4" />
-                )}
+                {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p
-                id="confirmPassword-error"
-                className="text-xs text-destructive"
-                role="alert"
-              >
-                {errors.confirmPassword.message}
-              </p>
+              <p className="text-xs text-destructive" role="alert">{errors.confirmPassword.message}</p>
             )}
           </div>
         </div>
@@ -372,10 +293,7 @@ export function SignupForm() {
                   aria-invalid={!!errors.terms}
                   className="mt-0.5 border-berry data-checked:bg-berry data-checked:border-berry"
                 />
-                <Label
-                  htmlFor="terms"
-                  className="text-sm leading-snug text-muted-foreground font-normal"
-                >
+                <Label htmlFor="terms" className="text-sm leading-snug text-muted-foreground font-normal">
                   I agree to the{" "}
                   <Link href="/terms" className="font-medium text-foreground underline hover:text-berry">
                     Terms & Conditions
@@ -389,9 +307,7 @@ export function SignupForm() {
             )}
           />
           {errors.terms && (
-            <p className="text-xs text-destructive" role="alert">
-              {errors.terms.message}
-            </p>
+            <p className="text-xs text-destructive" role="alert">{errors.terms.message}</p>
           )}
         </div>
 
@@ -423,9 +339,7 @@ export function SignupForm() {
       {/* ─── Divider ─── */}
       <div className="relative my-5 flex items-center">
         <Separator className="flex-1 bg-soft-border" />
-        <span className="mx-4 text-xs text-muted-foreground uppercase tracking-wider select-none">
-          or
-        </span>
+        <span className="mx-4 text-xs text-muted-foreground uppercase tracking-wider select-none">or</span>
         <Separator className="flex-1 bg-soft-border" />
       </div>
 
@@ -436,7 +350,6 @@ export function SignupForm() {
           variant="outline"
           disabled
           className="h-11 w-full rounded-xl border-soft-border bg-white text-sm font-medium text-foreground hover:bg-muted transition-colors"
-          aria-label="Continue with Google (coming soon)"
         >
           <svg className="mr-3 size-5" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -452,7 +365,6 @@ export function SignupForm() {
           variant="outline"
           disabled
           className="h-11 w-full rounded-xl border-soft-border bg-white text-sm font-medium text-foreground hover:bg-muted transition-colors"
-          aria-label="Continue with Microsoft (coming soon)"
         >
           <svg className="mr-3 size-5" viewBox="0 0 24 24" aria-hidden="true">
             <rect x="1" y="1" width="10" height="10" fill="#F25022" />
@@ -467,10 +379,7 @@ export function SignupForm() {
       {/* ─── Login Prompt ─── */}
       <p className="mt-5 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link
-          href="/login"
-          className="font-semibold text-foreground transition-colors hover:text-berry focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-berry/50 rounded"
-        >
+        <Link href="/login" className="font-semibold text-foreground transition-colors hover:text-berry rounded">
           Login
         </Link>
       </p>

@@ -1,5 +1,5 @@
 /**
- * Shared TypeScript types for the Companionly application.
+ * Shared TypeScript types for the Modhuralap application.
  */
 
 /** A navigation link item. */

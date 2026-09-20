@@ -12,9 +12,9 @@ interface LogoProps {
 }
 
 /**
- * Companionly brand logo.
+ * Modhuralap brand logo.
  *
- * Displays an SVG icon + "Companionly" text + optional tagline.
+ * Displays an SVG icon + "Modhuralap" text + optional tagline.
  * The SVG is an intertwined hearts motif matching the reference design.
  *
  * Future: Replace the inline SVG with /public/assets/logo.svg when available.

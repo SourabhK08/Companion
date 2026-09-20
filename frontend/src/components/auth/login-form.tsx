@@ -89,7 +89,7 @@ export function LoginForm() {
       <div className="pt-8">
         <h1 className="text-2xl font-bold text-foreground">Welcome Back!</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Log in to your Companionly account to continue.
+          Log in to your Modhuralap account to continue.
         </p>
 
         {/* Server error */}

@@ -34,7 +34,7 @@ export function Navbar() {
         aria-label="Main navigation"
       >
         {/* Logo */}
-        <Link href="/" className="shrink-0" aria-label="Companionly home">
+        <Link href="/" className="shrink-0" aria-label="Modhuralap home">
           <Logo variant="light" size="sm" />
         </Link>
 

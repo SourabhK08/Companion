@@ -11,9 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Companionly — Real People. Real Connections.",
+  title: "Modhuralap — Real People. Real Conversations.",
   description:
-    "Companionly is a modern platform for real people seeking meaningful moments and trusted connections.",
+    "Modhuralap is a modern platform for real people seeking meaningful conversations and trusted connections.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
