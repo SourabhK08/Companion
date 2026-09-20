@@ -25,12 +25,12 @@ The product will eventually support full user lifecycle flows — registration, 
 ### Phase 0 — Project Foundation (current)
 
 - [x] Project structure established
-- [ ] Frontend scaffolded with Next.js + TypeScript + Tailwind CSS + shadcn/ui
-- [ ] Design system foundations (colors, typography, components)
-- [ ] Authentication abstraction layer
-- [ ] Login page (email/password — UI + form validation)
-- [ ] Logout abstraction
-- [ ] PROJECT_PLAN.md created and populated
+- [x] Frontend scaffolded with Next.js + TypeScript + Tailwind CSS + shadcn/ui
+- [x] Design system foundations (colors, typography, components)
+- [x] Authentication abstraction layer
+- [x] Login page (email/password — UI + form validation)
+- [x] Logout abstraction
+- [x] PROJECT_PLAN.md created and populated
 
 ### What is NOT in today's scope
 
@@ -388,34 +388,57 @@ shadcn/ui components will be initialized with the "new-york" style variant for a
 
 ## 10. Progress Log
 
-### 2026-09-19 — Phase 0 Started
+### 2026-09-19 — Phase 0 Completed ✅
 
-**Status:** In progress
+**Status:** Complete
 
 **Completed:**
-- PROJECT_PLAN.md created
-- Project structure documented
+- PROJECT_PLAN.md created and populated
+- Frontend scaffolded: Next.js 16.3.5 + React 19.2.8 + TypeScript 5 + Tailwind 4
+- shadcn/ui initialized (base-nova style, CSS variables, OKLCH color system)
+- Design tokens: Companionly warm plum/berry/rose palette in globals.css
+- Auth abstraction: AuthService interface, AuthProvider context, MockAuthService
+- Login page: full reference-matching design with hero + form card + footer
+- Responsive navbar with mobile Sheet menu
+- Full footer with social icons, nav groups, newsletter
+- Login form: React Hook Form + Zod validation, show/hide password, loading states
+- Placeholder dashboard with logout
+- Root redirect → /login
+- Background image placeholder with gradient (ready for real asset)
+- TanStack Query provider configured
+- All checks passing: TypeScript ✅ ESLint ✅ Build ✅
 
-**In Progress:**
-- Frontend scaffolding
-- Design system setup
-- Login page implementation
-- Auth abstraction
+**Dependencies Added:**
+- react-hook-form ^7.88.0
+- @hookform/resolvers ^5.9.1
+- zod ^3.25.76
+- @tanstack/react-query ^5.103.1
+- shadcn ^4.21.0 (+ @base-ui/react, class-variance-authority, cn, lucide-react, tw-animate-css)
 
 **Decisions Made:**
 - Using Next.js App Router (not Pages Router)
-- Using shadcn/ui "new-york" style
+- Using shadcn/ui "base-nova" style (latest default)
+- Using OKLCH color system (shadcn/ui v4 default)
 - Using Zod for form validation
 - Auth designed as provider pattern with service interface
 - No Redux — using React Context for auth, TanStack Query for server state
 - Mock auth service for development only
+- Brand name: "Companionly" (per reference design)
+- Inter font family (via next/font)
+- Inline SVG social icons (Lucide no longer ships brand icons)
 
 **Known Limitations:**
-- No real authentication — mock service only
+- No real authentication — mock service only (accepts any email + "password123")
 - No backend — all API calls are simulated
 - Logout clears client state only (no server session invalidation)
 - No registration flow
-- No OAuth providers
+- No OAuth providers (Google/Microsoft buttons present but disabled)
+- Background image is a gradient placeholder
+- Sign Up tab, Forgot Password, newsletter are non-functional placeholders
+- No dark mode implementation (tokens prepared but not active)
+
+**Next Recommended Step:**
+- Phase 1: Backend setup + real email/password authentication
 
 ---
 
