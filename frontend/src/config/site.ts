@@ -33,6 +33,11 @@ export const navLinks = [
  */
 export const sidebarExploreLinks = [
   {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: "layout-dashboard" as const,
+  },
+  {
     label: "Explore Upcoming Offline Events",
     href: "/events",
     icon: "calendar-search" as const,

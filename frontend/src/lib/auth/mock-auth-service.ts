@@ -15,7 +15,7 @@
 
 import type { AuthService, AuthResult, AuthUser, LoginCredentials } from "./types";
 
-const DEV_PASSWORD = "password123";
+const DEV_PASSWORD = "12345678";
 const SIMULATED_DELAY_MS = 800;
 
 /** Simulate network latency. */

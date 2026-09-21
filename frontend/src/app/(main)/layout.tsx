@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { Sidebar, SidebarProvider, useSidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { DashboardFooter } from "@/components/layout/dashboard-footer";
 
 /**
  * Inner layout that reacts to sidebar state.
@@ -27,7 +28,10 @@ function MainLayoutInner({ children }: { children: React.ReactNode }) {
         <Topbar />
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1">{children}</main>
+
+        {/* Footer on every page */}
+        <DashboardFooter />
       </div>
     </div>
   );

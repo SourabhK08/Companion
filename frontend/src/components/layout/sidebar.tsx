@@ -21,6 +21,7 @@ import {
   FileText,
   Handshake,
   Info,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -117,6 +118,7 @@ function UsersCogIcon({ className }: { className?: string }) {
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "calendar-search": CalendarSearchIcon,
+  "layout-dashboard": LayoutGrid,
   "users-round": Users,
   male: MaleIcon,
   female: FemaleIcon,
@@ -178,7 +180,7 @@ function SidebarNavItem({
   isCollapsed: boolean;
 }) {
   const pathname = usePathname();
-  const isActive = pathname === href || pathname.startsWith(href + "/");
+  const isActive = pathname === href;
   const Icon = iconMap[icon];
 
   return (
@@ -292,9 +294,9 @@ export function Sidebar() {
           <div className="relative overflow-hidden px-4 pt-4 pb-2">
             {/* Tagline */}
             <p className="relative z-10 font-serif text-sm italic leading-snug text-[#f0d3df]/60">
-              Kolkata Lives in
+              Good People
               <br />
-              Connections ♡
+              Better Conversations ♡
             </p>
 
             {/* ── Image Placeholder ──
@@ -390,7 +392,7 @@ export function MobileSidebarTrigger() {
           {/* Bottom tagline */}
           <div className="relative overflow-hidden px-4 pt-4 pb-2 border-t border-white/8">
             <p className="relative z-10 font-serif text-sm italic leading-snug text-[#f0d3df]/60">
-              Kolkata Lives in Connections ♡
+              Good People Better Conversations ♡
             </p>
             <div className="relative mt-2 h-16 w-full overflow-hidden rounded-lg bg-gradient-to-t from-deep-plum/80 to-berry/10" />
           </div>
