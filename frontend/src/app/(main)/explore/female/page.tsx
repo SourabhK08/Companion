@@ -23,12 +23,10 @@ import { Label } from "@/components/ui/label";
 import { CompanionCard } from "@/components/companions/companion-card";
 import { PriceRangeFilter } from "@/components/shared/price-range-filter";
 import {
-  maleCompanions,
-  companionCategories,
+  femaleCompanions,
+  femaleCompanionCategories,
   interestFilters,
 } from "@/config/companions-data";
-
-/* ─── Value Props Icons ─── */
 
 const valuePropIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "shield-check": ShieldCheck,
@@ -44,17 +42,8 @@ const valueProps = [
   { icon: "users", title: "Real People", description: "Meaningful experiences" },
 ];
 
-/**
- * Explore Male Dating Companions page.
- *
- * Backend-ready architecture:
- *   - Filter/search state managed in component (ready for URL params sync)
- *   - Companion data from mock file (swap with API call)
- *   - Pagination ready (swap `currentPage` with router query)
- *   - CompanionCard is reusable across all explore pages
- */
-export default function ExploreMalePage() {
-  const [activeCategory, setActiveCategory] = useState("All Men");
+export default function ExploreFemalePage() {
+  const [activeCategory, setActiveCategory] = useState("All Women");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["Dating"]);
@@ -63,8 +52,9 @@ export default function ExploreMalePage() {
   const priceMin = 300;
   const priceMax = 2500;
 
-  // Filter companions (client-side for now — replace with API params)
-  const filteredCompanions = maleCompanions.filter((c) => {
+  const companions = Array.isArray(femaleCompanions) ? femaleCompanions : [];
+
+  const filteredCompanions = companions.filter((c) => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       return (
@@ -76,7 +66,7 @@ export default function ExploreMalePage() {
     return true;
   });
 
-  const totalCompanions = 48; // Mock total from API
+  const totalCompanions = 48;
   const perPage = 8;
   const totalPages = Math.ceil(totalCompanions / perPage);
 
@@ -90,7 +80,6 @@ export default function ExploreMalePage() {
 
   return (
     <div className="flex flex-col">
-      {/* ═══ HERO SECTION ═══ */}
       <section className="relative overflow-hidden bg-deep-plum">
         <div
           className="absolute inset-0"
@@ -108,21 +97,20 @@ export default function ExploreMalePage() {
         <div className="relative z-10 mx-auto flex max-w-[1400px] items-center justify-between px-6 py-10 lg:px-8 lg:py-14">
           <div className="max-w-lg">
             <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-dusty-rose/80 sm:text-xs">
-              Male Dating Companions
+              Female Dating Companions
             </p>
             <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
-              Meet Genuine Men,
+              Meet Genuine Women,
               <br />
               <span className="italic text-dusty-rose">Real Connections</span>
             </h1>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-white/65 sm:text-base">
-              Discover verified, respectful and well-mannered male companions
+              Discover verified, respectful and well-mannered female companions
               for your dates, hangouts, events or meaningful conversations.
               Find a genuine companion who matches your vibe and makes your
               experience special.
             </p>
 
-            {/* Trust badges */}
             <div className="mt-6 flex flex-wrap gap-4">
               {[
                 { icon: ShieldCheck, label: "Verified Profiles", sub: "(100% Genuine)" },
@@ -151,7 +139,6 @@ export default function ExploreMalePage() {
             </div>
           </div>
 
-          {/* Right side decorative + CTA */}
           <div className="hidden lg:flex flex-col items-end gap-6">
             <p className="font-serif text-2xl italic text-white/15 leading-tight text-right xl:text-3xl">
               Good Conversations
@@ -162,14 +149,13 @@ export default function ExploreMalePage() {
               href="#companions"
               className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-deep-plum shadow-lg transition-colors hover:bg-dusty-rose hover:text-deep-plum"
             >
-              Find Your Male Companion
+              Find Your Female Companion
               <ArrowRight className="size-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ═══ VALUE PROPS ROW ═══ */}
       <section className="border-b border-soft-border bg-white">
         <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-4 px-6 py-5 sm:grid-cols-4 lg:px-8">
           {valueProps.map((prop) => {
@@ -189,19 +175,17 @@ export default function ExploreMalePage() {
         </div>
       </section>
 
-      {/* ═══ MAIN CONTENT ═══ */}
       <section id="companions" className="mx-auto w-full max-w-[1400px] px-6 py-8 lg:px-8">
-        {/* Header + Search */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
-              Male Companions
+              Female Companions
             </p>
             <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
-              Find Your Male Dating Companion
+              Find Your Female Dating Companion
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Browse through our verified male companions and choose the one
+              Browse through our verified female companions and choose the one
               that matches your vibe, occasion and preferences.
             </p>
           </div>
@@ -217,9 +201,8 @@ export default function ExploreMalePage() {
           </div>
         </div>
 
-        {/* Category tabs */}
         <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {companionCategories.map((cat) => (
+          {femaleCompanionCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -235,9 +218,7 @@ export default function ExploreMalePage() {
           ))}
         </div>
 
-        {/* Grid + Sidebar Filter */}
         <div className="mt-6 flex flex-col gap-6 xl:flex-row">
-          {/* Companion Cards Grid */}
           <div className="flex-1 min-w-0">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredCompanions.map((companion) => (
@@ -245,7 +226,6 @@ export default function ExploreMalePage() {
               ))}
             </div>
 
-            {/* Pagination */}
             <div className="mt-8 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
                 Showing 1-{filteredCompanions.length} of {totalCompanions} companions
@@ -287,7 +267,6 @@ export default function ExploreMalePage() {
             </div>
           </div>
 
-          {/* ═══ FILTER SIDEBAR ═══ */}
           <aside className="w-full shrink-0 xl:w-[260px]">
             <div className="rounded-2xl border border-soft-border bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
@@ -309,7 +288,6 @@ export default function ExploreMalePage() {
                 />
               </div>
 
-              {/* Age Range */}
               <div className="mt-5">
                 <label className="text-sm font-semibold text-foreground">Age Range</label>
                 <select
@@ -324,7 +302,6 @@ export default function ExploreMalePage() {
                 </select>
               </div>
 
-              {/* Interests */}
               <div className="mt-5">
                 <label className="text-sm font-semibold text-foreground">Interests</label>
                 <div className="mt-2 space-y-2">
@@ -347,7 +324,6 @@ export default function ExploreMalePage() {
                 </div>
               </div>
 
-              {/* Location */}
               <div className="mt-5">
                 <label className="text-sm font-semibold text-foreground">Location</label>
                 <select
@@ -359,7 +335,6 @@ export default function ExploreMalePage() {
                 </select>
               </div>
 
-              {/* Availability */}
               <div className="mt-5">
                 <label className="text-sm font-semibold text-foreground">Availability</label>
                 <select
@@ -374,7 +349,6 @@ export default function ExploreMalePage() {
                 </select>
               </div>
 
-              {/* Apply */}
               <Button className="mt-6 h-10 w-full rounded-xl bg-deep-plum hover:bg-berry-dark text-white text-sm font-semibold">
                 Apply Filters
               </Button>
@@ -383,7 +357,6 @@ export default function ExploreMalePage() {
         </div>
       </section>
 
-      {/* ═══ CTA BANNER ═══ */}
       <section className="mx-auto w-full max-w-[1400px] px-6 pb-8 lg:px-8">
         <div className="relative overflow-hidden rounded-2xl bg-deep-plum">
           <div
@@ -402,7 +375,7 @@ export default function ExploreMalePage() {
                 <span className="font-normal">Real Conversations.</span>
               </h3>
               <p className="mt-2 max-w-md text-sm text-white/60">
-                Book your favorite male companion in just a few clicks and make
+                Book your favorite female companion in just a few clicks and make
                 your next experience unforgettable.
               </p>
             </div>

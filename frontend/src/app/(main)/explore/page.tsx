@@ -9,6 +9,8 @@ import {
   Star,
 } from "lucide-react";
 
+import { PriceRangeFilter } from "@/components/shared/price-range-filter";
+
 const chips = [
   "All",
   "Coffee",
@@ -217,7 +219,6 @@ export default function ExploreBuddiesPage() {
 
   const priceMin = 300;
   const priceMax = 2500;
-  const selectedPriceLabel = `₹${priceMin} - ₹${maxPrice}`;
 
   const filteredBuddies = useMemo(() => {
     return buddies.filter((buddy) => {
@@ -386,34 +387,12 @@ export default function ExploreBuddiesPage() {
             </div>
 
             <div className="space-y-5">
-              <div className="space-y-2">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d4c56]">
-                  Price Range
-                </div>
-                <div className="rounded-xl border border-[#e5dbe0] bg-white p-2.5">
-                  <div className="mb-3 flex items-center justify-between text-[12px] font-semibold text-[#5a1d2d]">
-                    <span>₹{priceMin}</span>
-                    <span>{selectedPriceLabel}</span>
-                  </div>
-
-                  <div className="relative pt-2">
-                    <input
-                      type="range"
-                      min={priceMin}
-                      max={priceMax}
-                      step={50}
-                      value={maxPrice}
-                      onChange={(event) => setMaxPrice(Number(event.target.value))}
-                      className="h-2 w-full cursor-pointer accent-[#7a1f39]"
-                    />
-
-                    <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-[#7a1f39]">
-                      <span>₹{priceMin}</span>
-                      <span>₹{priceMax}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <PriceRangeFilter
+                min={priceMin}
+                max={priceMax}
+                value={maxPrice}
+                onChange={setMaxPrice}
+              />
 
               <div className="space-y-2">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d4c56]">
