@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Bell, MessageSquare, MapPin, Search, ChevronDown, BadgeCheck } from "lucide-react";
 import { cn } from "cn";
 
@@ -55,29 +56,31 @@ export function Topbar() {
         </div>
 
         {/* Notifications */}
-        <button
-          className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        <Link
+          href="/notifications"
           aria-label="Notifications (3 new)"
+          className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Bell className="size-5" />
           <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-berry text-[9px] font-bold text-white">
             3
           </span>
-        </button>
+        </Link>
 
         {/* Messages */}
-        <button
-          className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        <Link
+          href="/messages"
           aria-label="Messages (2 unread)"
+          className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <MessageSquare className="size-5" />
           <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
             2
           </span>
-        </button>
+        </Link>
 
         {/* User profile */}
-        <button className="flex items-center gap-2.5 rounded-xl pl-1 pr-2 py-1 transition-colors hover:bg-muted">
+        <Link href="/dashboard" className="flex items-center gap-2.5 rounded-xl pl-1 pr-2 py-1 transition-colors hover:bg-muted">
           {/* Avatar placeholder */}
           <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-berry to-dusty-rose text-xs font-bold text-white">
             {mockUser.name
@@ -97,7 +100,7 @@ export function Topbar() {
             </span>
           </div>
           <ChevronDown className="hidden sm:block size-3.5 text-muted-foreground" />
-        </button>
+        </Link>
       </div>
     </header>
   );
