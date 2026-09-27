@@ -85,7 +85,7 @@ const experienceTags = [
 ];
 
 export default function DashboardPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["id"]>("about");
   const [showAllTags, setShowAllTags] = useState(false);
@@ -138,7 +138,7 @@ export default function DashboardPage() {
                   className="h-28 w-28 bg-cover bg-center sm:h-30 sm:w-30 lg:h-32 lg:w-32"
                   style={{
                     backgroundImage:
-                      "url(https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80)",
+                      `url(${user?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80'})`,
                   }}
                 />
               </div>
@@ -146,30 +146,25 @@ export default function DashboardPage() {
               <div className="pt-1 sm:pt-3">
                 <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1.5 text-[11px] font-semibold text-[#7a1f39] backdrop-blur-sm ring-1 ring-white/70">
                   <ShieldCheck className="size-3.5" />
-                  Verified
+                  Verified User
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 text-[#411522]">
                   <h1 className="font-serif text-[30px] font-bold leading-none sm:text-[38px] lg:text-[42px]">
-                    Aanya Sharma
+                    {user?.name || "Your Name"}
                   </h1>
                   <span className="mt-1 text-xl text-[#7a1f39]">♡</span>
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-[#4f2b36] sm:gap-4">
                   <span className="inline-flex items-center gap-1.5">
-                    <Star className="size-4 fill-[#ffb84d] text-[#ffb84d]" />
-                    4.9
-                    <span className="text-[#714652]">(124 reviews)</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="size-4 text-[#7a1f39]" />
-                    Kolkata
+                    <UserRound className="size-4 text-[#7a1f39]" />
+                    {user?.email}
                   </span>
                 </div>
 
                 <p className="mt-3 max-w-[620px] text-[14px] font-medium text-[#4e2834] sm:text-[16px]">
-                  Good food, great conversations and beautiful experiences — that&apos;s what I love.
+                  Welcome to your dashboard! Here you can manage your bookings, earnings, and profile. Update your details from the settings page.
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-2">

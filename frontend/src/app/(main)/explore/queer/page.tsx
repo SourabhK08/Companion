@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -54,14 +54,17 @@ export default function ExploreQueerPage() {
   const priceMax = 2500;
   const perPage = 8;
 
-  const handleSearch = useCallback((value: string) => {
-    setSearchQuery(value);
+  useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(value);
+      setDebouncedSearch(searchQuery);
       setCurrentPage(1);
     }, 400);
     return () => clearTimeout(timer);
-  }, []);
+  }, [searchQuery]);
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+  };
 
   const { companions, pagination, isLoading, error } = useCompanions({
     gender: "non-binary",

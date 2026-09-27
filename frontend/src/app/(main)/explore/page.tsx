@@ -9,6 +9,7 @@ import {
   Star,
 } from "lucide-react";
 
+import Link from "next/link";
 import { PriceRangeFilter } from "@/components/shared/price-range-filter";
 
 const chips = [
@@ -38,127 +39,31 @@ const interestOptions = [
   "More",
 ] as const;
 
-const buddies = [
-  {
-    name: "Anya Sharma",
-    rating: 4.9,
-    reviews: 24,
-    age: 28,
-    city: "Kolkata",
-    languages: ["English", "Hindi", "Bengali"],
-    interests: ["Coffee", "Photography", "Food Walks"],
-    image:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80",
-    gender: "Female",
-    price: 1200,
-  },
-  {
-    name: "Rohan Das",
-    rating: 4.8,
-    reviews: 27,
-    age: 27,
-    city: "Kolkata",
-    languages: ["English", "Hindi"],
-    interests: ["Travel", "Photography", "Adventure"],
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
-    gender: "Male",
-    price: 1500,
-  },
-  {
-    name: "Isha Verma",
-    rating: 4.9,
-    reviews: 26,
-    age: 26,
-    city: "Kolkata",
-    languages: ["English", "Hindi"],
-    interests: ["Food Walk", "Shopping", "Art & Culture"],
-    image:
-      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80",
-    gender: "Female",
-    price: 1400,
-  },
-  {
-    name: "Arit Sen",
-    rating: 4.8,
-    reviews: 30,
-    age: 30,
-    city: "Kolkata",
-    languages: ["English", "Hindi", "Bengali"],
-    interests: ["Travel", "Music", "Sports"],
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80",
-    gender: "Male",
-    price: 1800,
-  },
-  {
-    name: "Tiya Ghosh",
-    rating: 4.9,
-    reviews: 39,
-    age: 25,
-    city: "Kolkata",
-    languages: ["English", "Bengali"],
-    interests: ["Beach Trips", "Photography", "Travel"],
-    image:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
-    gender: "Female",
-    price: 900,
-  },
-  {
-    name: "Souvik Roy",
-    rating: 4.8,
-    reviews: 29,
-    age: 29,
-    city: "Kolkata",
-    languages: ["English", "Hindi"],
-    interests: ["Food", "Gaming", "Movies"],
-    image:
-      "https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=800&q=80",
-    gender: "Male",
-    price: 1100,
-  },
-  {
-    name: "Mital Paul",
-    rating: 4.9,
-    reviews: 23,
-    age: 31,
-    city: "Kolkata",
-    languages: ["English", "Hindi", "Bengali"],
-    interests: ["Heritage Walk", "Cafe Hopping", "Culture"],
-    image:
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80",
-    gender: "Female",
-    price: 1250,
-  },
-  {
-    name: "Debanjan Mitra",
-    rating: 4.7,
-    reviews: 28,
-    age: 28,
-    city: "Kolkata",
-    languages: ["English", "Hindi", "Bengali"],
-    interests: ["Photography", "Travel", "Train Rides"],
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80",
-    gender: "Male",
-    price: 1700,
-  },
-] as const;
+import { useCompanions } from "@/hooks/use-companions";
+import type { Companion } from "@/config/companions-data";
 
-function BuddyCard({ buddy }: { buddy: (typeof buddies)[number] }) {
+
+function BuddyCard({ buddy }: { buddy: Companion }) {
   return (
     <div className="overflow-hidden rounded-[22px] border border-[#f0dfe3] bg-white shadow-[0_8px_22px_rgba(122,31,57,0.08)]">
       <div className="relative h-52 w-full overflow-hidden">
         <div
-          className="h-full w-full bg-cover bg-center"
-          style={{ backgroundImage: `url(${buddy.image})` }}
+          className="h-full w-full bg-gradient-to-br from-[#7a1f39]/80 via-[#7a1f39]/60 to-[#d9a3ad]/40"
         />
+        {buddy.avatar && (
+          <div
+            className="absolute inset-0 h-full w-full bg-cover bg-center mix-blend-overlay"
+            style={{ backgroundImage: `url(${buddy.avatar})` }}
+          />
+        )}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between px-3 py-3">
-          <div className="flex items-center gap-1 rounded-full bg-white/85 px-2 py-1 text-[10px] font-semibold text-[#7a1f39] backdrop-blur-sm">
-            <ShieldCheck className="size-3.5" />
-            Verified
-          </div>
-          <button className="flex size-8 items-center justify-center rounded-full bg-white/80 text-[#7a1f39] backdrop-blur-sm" type="button" aria-label={`Save ${buddy.name}`}>
+          {buddy.isVerified && (
+            <div className="flex items-center gap-1 rounded-full bg-white/85 px-2 py-1 text-[10px] font-semibold text-[#7a1f39] backdrop-blur-sm">
+              <ShieldCheck className="size-3.5" />
+              Verified
+            </div>
+          )}
+          <button className="flex size-8 items-center justify-center rounded-full bg-white/80 text-[#7a1f39] backdrop-blur-sm ml-auto" type="button" aria-label={`Save ${buddy.name}`}>
             <Heart className="size-4" fill="none" />
           </button>
         </div>
@@ -196,13 +101,13 @@ function BuddyCard({ buddy }: { buddy: (typeof buddies)[number] }) {
           ))}
         </div>
 
-        <button
-          type="button"
+        <Link
+          href={`/companion/${buddy.id}`}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f39] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#661b2f]"
         >
           View Profile
           <span aria-hidden="true">→</span>
-        </button>
+        </Link>
       </div>
     </div>
   );
@@ -220,20 +125,24 @@ export default function ExploreBuddiesPage() {
   const priceMin = 300;
   const priceMax = 2500;
 
+  const apiGender = selectedGender === "Male" ? "male" :
+                    selectedGender === "Female" ? "female" :
+                    selectedGender === "Non-binary" ? "non-binary" : undefined;
+
+  const { companions, isLoading, error } = useCompanions({
+    gender: apiGender,
+    city: selectedLocation === "Kolkata" ? "Kolkata" : undefined,
+    limit: 24, // Show all
+  });
+
   const filteredBuddies = useMemo(() => {
-    return buddies.filter((buddy) => {
+    return companions.filter((buddy) => {
       const matchesChip =
         selectedChip === "All" ||
         buddy.interests.some((interest) =>
           interest.toLowerCase().includes(selectedChip.toLowerCase()) ||
           selectedChip === "More"
         );
-
-      const matchesGender =
-        selectedGender === "Any" || buddy.gender === selectedGender;
-
-      const matchesLocation =
-        selectedLocation === "Kolkata" || (buddy.city as string) === selectedLocation;
 
       const matchesLanguages =
         selectedLanguages.length === 0 ||
@@ -245,18 +154,16 @@ export default function ExploreBuddiesPage() {
           buddy.interests.some((item) => item.toLowerCase().includes(interest.toLowerCase()))
         );
 
-      const matchesPrice = buddy.price <= maxPrice;
+      const matchesPrice = buddy.pricePerHour <= maxPrice;
 
       return (
         matchesChip &&
-        matchesGender &&
-        matchesLocation &&
         matchesLanguages &&
         matchesInterests &&
         matchesPrice
       );
     });
-  }, [maxPrice, selectedChip, selectedGender, selectedInterests, selectedLanguages, selectedLocation]);
+  }, [companions, maxPrice, selectedChip, selectedInterests, selectedLanguages]);
 
   const toggleLanguage = (language: string) => {
     setSelectedLanguages((current) =>
@@ -342,7 +249,7 @@ export default function ExploreBuddiesPage() {
 
         <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <p className="text-[15px] font-semibold text-[#3f1b27]">
-            Showing 1-{filteredBuddies.length} of {buddies.length} buddies
+            Showing 1-{filteredBuddies.length} of {companions.length} buddies
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -372,10 +279,30 @@ export default function ExploreBuddiesPage() {
         </div>
 
         <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
-          <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
-            {filteredBuddies.map((buddy) => (
-              <BuddyCard key={buddy.name} buddy={buddy} />
-            ))}
+          <div className="flex-1 min-w-0">
+            {isLoading ? (
+              <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-[380px] animate-pulse rounded-[22px] border border-[#f0dfe3] bg-white/50" />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="text-sm text-red-600">{error}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Please try again later.</p>
+              </div>
+            ) : filteredBuddies.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="text-sm font-medium text-[#2d111b]">No buddies found</p>
+                <p className="mt-1 text-xs text-[#6d4c56]">Try adjusting your filters.</p>
+              </div>
+            ) : (
+              <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
+                {filteredBuddies.map((buddy) => (
+                  <BuddyCard key={buddy.id} buddy={buddy} />
+                ))}
+              </div>
+            )}
           </div>
 
           <aside className="rounded-[22px] border border-[#f0dfe3] bg-[#fff9f8] p-4 shadow-[0_10px_20px_rgba(122,31,57,0.04)]">
