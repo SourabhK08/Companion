@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth/auth-context";
-import { MockAuthService } from "@/lib/auth/mock-auth-service";
+import { ApiAuthService } from "@/lib/auth/api-auth-service";
 
 /**
  * Composed application providers.
@@ -16,8 +16,8 @@ import { MockAuthService } from "@/lib/auth/mock-auth-service";
  * sharing state across requests in SSR.
  */
 
-/** Singleton mock auth service instance. */
-const authService = new MockAuthService();
+/** Singleton real auth service instance. */
+const authService = new ApiAuthService();
 
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(

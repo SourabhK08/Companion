@@ -59,6 +59,15 @@ export interface AuthService {
   /** Authenticate with email and password. */
   login(credentials: LoginCredentials): Promise<AuthResult>;
 
+  /** Register a new account with email and password. */
+  register(data: {
+    fullName: string;
+    email: string;
+    password: string;
+    phone?: string;
+    city?: string;
+  }): Promise<AuthResult>;
+
   /** End the current session. */
   logout(): Promise<void>;
 

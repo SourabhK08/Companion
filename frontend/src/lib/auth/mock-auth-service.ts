@@ -60,6 +60,35 @@ export class MockAuthService implements AuthService {
     return { success: true, user };
   }
 
+  async register(data: {
+    fullName: string;
+    email: string;
+    password: string;
+    phone?: string;
+    city?: string;
+  }): Promise<AuthResult> {
+    console.warn("⚠️  DEV ONLY: MockAuthService.register() called");
+
+    await delay(SIMULATED_DELAY_MS);
+
+    if (!data.email || !data.password || !data.fullName) {
+      return {
+        success: false,
+        error: "Full name, email, and password are required.",
+      };
+    }
+
+    const user: AuthUser = {
+      id: `dev-user-${Date.now()}`,
+      email: data.email,
+      name: data.fullName,
+    };
+
+    this.currentUser = user;
+
+    return { success: true, user };
+  }
+
   async logout(): Promise<void> {
     console.warn("⚠️  DEV ONLY: MockAuthService.logout() called");
     await delay(300);

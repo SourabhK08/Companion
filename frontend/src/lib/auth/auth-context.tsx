@@ -20,6 +20,13 @@ import type {
 /** Shape of the auth context value. */
 interface AuthContextValue extends AuthState {
   login: (credentials: LoginCredentials) => Promise<AuthResult>;
+  register: (data: {
+    fullName: string;
+    email: string;
+    password: string;
+    phone?: string;
+    city?: string;
+  }) => Promise<AuthResult>;
   logout: () => Promise<void>;
 }
 
@@ -85,6 +92,28 @@ export function AuthProvider({ children, authService }: AuthProviderProps) {
     [authService]
   );
 
+  const register = useCallback(
+    async (data: {
+      fullName: string;
+      email: string;
+      password: string;
+      phone?: string;
+      city?: string;
+    }): Promise<AuthResult> => {
+      setIsLoading(true);
+      try {
+        const result = await authService.register(data);
+        if (result.success && result.user) {
+          setUser(result.user);
+        }
+        return result;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [authService]
+  );
+
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -102,9 +131,10 @@ export function AuthProvider({ children, authService }: AuthProviderProps) {
       isAuthenticated,
       isLoading,
       login,
+      register,
       logout,
     }),
-    [user, isAuthenticated, isLoading, login, logout]
+    [user, isAuthenticated, isLoading, login, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

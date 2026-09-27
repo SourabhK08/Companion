@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -24,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { signupSchema, type SignupFormValues } from "@/schemas/auth";
+import { useAuth } from "@/hooks/use-auth";
 
 /**
  * Signup form matching the Modhuralap reference design.
@@ -39,8 +41,11 @@ import { signupSchema, type SignupFormValues } from "@/schemas/auth";
  *   - "Already have an account? Login" link
  */
 export function SignupForm() {
+  const router = useRouter();
+  const { register: registerUser, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
@@ -62,10 +67,22 @@ export function SignupForm() {
   });
 
   async function onSubmit(data: SignupFormValues) {
-    // TODO: Replace with real registration API call.
-    console.warn("⚠️  DEV ONLY: Signup form submitted", data);
-    await new Promise((r) => setTimeout(r, 1000));
-    alert("Sign up submitted (no backend connected yet).");
+    setServerError(null);
+
+    const result = await registerUser({
+      fullName: data.fullName,
+      email: data.email,
+      password: data.password,
+      phone: data.mobile,
+      city: data.city ?? "",
+    });
+
+    if (!result.success) {
+      setServerError(result.error ?? "Registration failed. Please try again.");
+      return;
+    }
+
+    router.push("/dashboard");
   }
 
   const inputBase =
@@ -92,6 +109,15 @@ export function SignupForm() {
         Join Modhuralap and start discovering meaningful connections, real
         experiences and a community built around trust.
       </p>
+
+      {serverError && (
+        <div
+          className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
+          {serverError}
+        </div>
+      )}
 
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -314,7 +340,7 @@ export function SignupForm() {
         {/* ─── Create Account Button ─── */}
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || authLoading}
           className={cn(
             "h-12 w-full rounded-xl text-base font-semibold",
             "bg-deep-plum hover:bg-berry-dark text-white",
@@ -322,7 +348,7 @@ export function SignupForm() {
             "focus-visible:ring-berry/50 focus-visible:ring-offset-2"
           )}
         >
-          {isSubmitting ? (
+          {isSubmitting || authLoading ? (
             <>
               <Loader2 className="mr-2 size-5 animate-spin" />
               Creating account…

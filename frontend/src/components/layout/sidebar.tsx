@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -27,6 +27,8 @@ import { cn } from "cn";
 
 import { Logo } from "@/components/shared/logo";
 import { sidebarExploreLinks, sidebarUserLinks } from "@/config/site";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import {
   Sheet,
   SheetTrigger,
@@ -261,6 +263,20 @@ function SidebarNavContent({ isCollapsed }: { isCollapsed: boolean }) {
 export function Sidebar() {
   const { isCollapsed, toggle } = useSidebar();
 
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Logout failed:", err);
+    } finally {
+      router.push("/login");
+    }
+  }, [logout, router]);
+
   return (
     <aside
       className={cn(
@@ -356,6 +372,7 @@ export function Sidebar() {
 
         {/* Log Out */}
         <button
+          onClick={handleLogout}
           className="flex items-center gap-3 border-t border-white/8 px-6 py-4 text-sm text-white/60 transition-colors hover:text-white"
           aria-label="Log out"
         >
@@ -370,6 +387,20 @@ export function Sidebar() {
 /* ─── Mobile Sidebar Trigger (used in Topbar) ─── */
 
 export function MobileSidebarTrigger() {
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Logout failed:", err);
+    } finally {
+      router.push("/login");
+    }
+  }, [logout, router]);
+
   return (
     <Sheet>
       <SheetTrigger
@@ -399,10 +430,13 @@ export function MobileSidebarTrigger() {
 
           {/* Log Out */}
           <div className="border-t border-white/8">
-            <button className="flex w-full items-center gap-3 px-6 py-4 text-sm text-white/60 transition-colors hover:text-white">
-              <LogOut className="size-5" />
-              <span>Log Out</span>
-            </button>
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 px-6 py-4 text-sm text-white/60 transition-colors hover:text-white"
+          >
+            <LogOut className="size-5" />
+            <span>Log Out</span>
+          </button>
           </div>
         </div>
       </SheetContent>
