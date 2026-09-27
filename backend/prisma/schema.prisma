@@ -1,0 +1,47 @@
+// Prisma Schema for Modhuralap
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Registered user — supports local auth and future OAuth providers.
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String?   /// Nullable: OAuth-only users won't have a password
+  fullName      String
+  phone         String?
+  gender        String?
+  dateOfBirth   DateTime?
+  city          String?
+  avatar        String?
+  isVerified    Boolean   @default(false)
+  authProvider  String    @default("local") /// "local" | "google" | "microsoft"
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+/// Refresh tokens for secure JWT rotation.
+/// Stored in DB so they can be individually revoked (e.g., on logout).
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
