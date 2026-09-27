@@ -37,8 +37,11 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+import { userRoutes } from "./routes/user.routes.js";
+
 // ─── Routes ───────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/companions", companionRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────

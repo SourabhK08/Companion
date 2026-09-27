@@ -14,15 +14,16 @@ interface ApiCompanionUser {
   gender: string | null;
   city: string | null;
   avatar: string | null;
+  bio: string | null;
+  interests: string[];
+  languages: string[];
+  dateOfBirth: string | null;
   isVerified: boolean;
 }
 
 interface ApiCompanion {
   id: string;
   userId: string;
-  bio: string;
-  interests: string[];
-  languages: string[];
   hourlyRate: number;
   rating: number;
   reviewCount: number;
@@ -48,6 +49,18 @@ interface ApiCompanionsResponse {
   };
 }
 
+function calculateAge(dob: string | null): number {
+  if (!dob) return 25; // Default fallback age
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 /**
  * Map API companion to the frontend Companion type
  * used by CompanionCard component.
@@ -56,18 +69,18 @@ function mapApiToCompanion(api: ApiCompanion): Companion {
   return {
     id: api.id,
     name: api.user.fullName,
-    age: 0, // Age not stored yet — will show bio instead
-    profession: api.bio.split(".")[0].slice(0, 40), // First sentence as profession
+    age: calculateAge(api.user.dateOfBirth),
+    profession: api.user.bio ? api.user.bio.split(".")[0].slice(0, 40) : "Professional",
     city: api.user.city ?? "Kolkata",
-    interests: api.interests,
+    interests: api.user.interests,
     pricePerHour: api.hourlyRate,
     rating: api.rating,
     reviews: api.reviewCount,
     responseRate: api.responseRate,
     isVerified: api.user.isVerified,
     avatar: api.user.avatar,
-    bio: api.bio,
-    languages: api.languages,
+    bio: api.user.bio || "",
+    languages: api.user.languages,
     gender: (api.user.gender as Companion["gender"]) ?? "other",
   };
 }

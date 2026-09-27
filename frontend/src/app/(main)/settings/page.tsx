@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
+import { apiFetch } from "@/lib/api/client";
 import {
   Settings as SettingsIcon,
   User,
   Lock,
+  Star,
   Bell,
   CreditCard,
   Globe,
@@ -20,6 +23,7 @@ import {
   Phone,
   Calendar,
   MapPin,
+  Heart,
   KeyRound,
   Zap,
   Eye,
@@ -38,6 +42,7 @@ import {
   type QuickSettings,
   type UserProfile,
 } from "@/config/settings-data";
+import { CompanionSettings } from "./companion-settings";
 
 /**
  * Toggle Switch Component
@@ -74,15 +79,41 @@ function Switch({
   );
 }
 
-export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<string>("account");
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+
+function SettingsContent() {
+  const { user, refreshUser } = useAuth();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") || "account";
+  
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [userProfile, setUserProfile] = useState<UserProfile>(initialUserProfile);
   const [quickSettings, setQuickSettings] = useState<QuickSettings>(initialQuickSettings);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setUserProfile({
+        id: user.id,
+        name: user.name || "",
+        email: user.email,
+        phone: user.phone || "",
+        gender: user.gender || "",
+        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split("T")[0] : "",
+        city: user.city || "",
+        avatar: user.avatarUrl || null,
+        bio: user.bio || "",
+        interests: user.interests || [],
+        languages: user.languages || [],
+        isVerified: false,
+      });
+    }
+  }, [user]);
 
   const toggleQuickSetting = (key: keyof QuickSettings) => {
-    // Ready for PATCH /api/users/me/settings
     setQuickSettings((prev) => ({
       ...prev,
       [key]: !prev[key],
@@ -94,19 +125,51 @@ export default function SettingsPage() {
     setEditValue(currentValue);
   };
 
-  const saveFieldEdit = (field: keyof UserProfile) => {
-    // Ready for PATCH /api/users/me
-    setUserProfile((prev) => ({
-      ...prev,
-      [field]: editValue,
-    }));
-    setEditingField(null);
+  const saveFieldEdit = async (field: keyof UserProfile, overrideValue?: any) => {
+    if (!user || isSaving) return;
+    
+    setIsSaving(true);
+    const finalValue = overrideValue !== undefined ? overrideValue : editValue;
+    
+    try {
+      // Build patch payload based on field
+      const payload: Record<string, any> = {};
+      
+      if (field === "name") payload.fullName = finalValue;
+      else if (field === "dateOfBirth") payload.dateOfBirth = finalValue ? new Date(finalValue).toISOString() : null;
+      else payload[field] = finalValue;
+      
+      const response = await apiFetch<{ success: boolean; data: any }>("/api/users/me", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.success) {
+        setUserProfile((prev) => ({
+          ...prev,
+          [field]: finalValue,
+        }));
+        setEditingField(null);
+        await refreshUser?.();
+      } else {
+        console.error("Failed to update profile");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getNavIcon = (iconName: string) => {
     switch (iconName) {
       case "user":
         return User;
+      case "star":
+        return Star;
       case "lock":
         return Lock;
       case "bell":
@@ -215,9 +278,10 @@ export default function SettingsPage() {
         </nav>
 
         {/* ─── COLUMN 2: Account Settings Content (6 cols) ─── */}
-        <main className="lg:col-span-6 space-y-6">
-          {/* Header Subtitle Card */}
-          <div className="flex items-center gap-3 rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
+        {activeTab === "account" && (
+          <main className="lg:col-span-6 space-y-6">
+            {/* Header Subtitle Card */}
+            <div className="flex items-center gap-3 rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-berry/10 text-berry">
               <User className="size-5" />
             </div>
@@ -533,9 +597,9 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <span className="text-[11px] text-muted-foreground font-medium block">
-                      Location
+                      City
                     </span>
-                    {editingField === "location" ? (
+                    {editingField === "city" ? (
                       <div className="mt-1 flex items-center gap-2">
                         <input
                           type="text"
@@ -544,7 +608,7 @@ export default function SettingsPage() {
                           className="h-8 rounded-lg border border-berry px-2 text-xs text-foreground focus:outline-none"
                         />
                         <button
-                          onClick={() => saveFieldEdit("location")}
+                          onClick={() => saveFieldEdit("city")}
                           className="rounded-lg bg-berry px-2 py-1 text-[10px] font-semibold text-white"
                         >
                           Save
@@ -552,14 +616,156 @@ export default function SettingsPage() {
                       </div>
                     ) : (
                       <span className="text-xs font-semibold text-foreground">
-                        {userProfile.location}
+                        {userProfile.city || "Not set"}
                       </span>
                     )}
                   </div>
                 </div>
-                {editingField !== "location" && (
+                {editingField !== "city" && (
                   <button
-                    onClick={() => startEditing("location", userProfile.location)}
+                    onClick={() => startEditing("city", userProfile.city || "")}
+                    className="flex items-center gap-1 rounded-lg border border-soft-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-berry hover:text-berry transition-colors"
+                  >
+                    <Pencil className="size-3 text-berry" />
+                    Edit
+                  </button>
+                )}
+              </div>
+              
+              {/* Bio */}
+              <div className="flex items-start justify-between gap-4 border-t border-soft-border/50 pt-4 mt-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 text-muted-foreground mt-1">
+                    <User className="size-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-muted-foreground font-medium block">
+                      Bio
+                    </span>
+                    {editingField === "bio" ? (
+                      <div className="mt-1 flex flex-col gap-2">
+                        <textarea
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          className="h-20 w-full min-w-[250px] sm:min-w-[300px] rounded-lg border border-berry p-2 text-xs text-foreground focus:outline-none"
+                        />
+                        <button
+                          onClick={() => saveFieldEdit("bio")}
+                          className="self-start rounded-lg bg-berry px-4 py-1.5 text-xs font-semibold text-white"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-xs font-semibold text-foreground max-w-sm mt-1">
+                        {userProfile.bio || "Write something about yourself..."}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {editingField !== "bio" && (
+                  <button
+                    onClick={() => startEditing("bio", userProfile.bio || "")}
+                    className="flex items-center gap-1 rounded-lg border border-soft-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-berry hover:text-berry transition-colors"
+                  >
+                    <Pencil className="size-3 text-berry" />
+                    Edit
+                  </button>
+                )}
+              </div>
+              
+              {/* Languages */}
+              <div className="flex items-start justify-between gap-4 border-t border-soft-border/50 pt-4 mt-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 text-muted-foreground">
+                    <Globe className="size-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-muted-foreground font-medium block">
+                      Languages (comma-separated)
+                    </span>
+                    {editingField === "languages" ? (
+                      <div className="mt-1 flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          placeholder="English, Bengali, Hindi"
+                          className="h-8 w-full min-w-[200px] rounded-lg border border-berry px-2 text-xs text-foreground focus:outline-none"
+                        />
+                        <button
+                          onClick={() => {
+                            // Convert comma-separated string to array
+                            const langs = editValue.split(",").map((l) => l.trim()).filter(Boolean);
+                            // We need to pass the array to the API. 
+                            // Since saveFieldEdit uses editValue directly for all fields right now,
+                            // we'll update saveFieldEdit to handle arrays or we can just join/split here.
+                            // To keep it simple, we will temporarily set editValue to JSON before saving,
+                            // or better, modify saveFieldEdit to handle special fields.
+                            saveFieldEdit("languages", langs);
+                          }}
+                          className="rounded-lg bg-berry px-2 py-1 text-[10px] font-semibold text-white"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs font-semibold text-foreground">
+                        {userProfile.languages?.length > 0 ? userProfile.languages.join(", ") : "Not set"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {editingField !== "languages" && (
+                  <button
+                    onClick={() => startEditing("languages", userProfile.languages?.join(", ") || "")}
+                    className="flex items-center gap-1 rounded-lg border border-soft-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-berry hover:text-berry transition-colors"
+                  >
+                    <Pencil className="size-3 text-berry" />
+                    Edit
+                  </button>
+                )}
+              </div>
+              
+              {/* Interests */}
+              <div className="flex items-start justify-between gap-4 border-t border-soft-border/50 pt-4 mt-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 text-muted-foreground">
+                    <Heart className="size-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-muted-foreground font-medium block">
+                      Interests (comma-separated)
+                    </span>
+                    {editingField === "interests" ? (
+                      <div className="mt-1 flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          placeholder="Music, Travel, Food"
+                          className="h-8 w-full min-w-[200px] rounded-lg border border-berry px-2 text-xs text-foreground focus:outline-none"
+                        />
+                        <button
+                          onClick={() => {
+                            const ints = editValue.split(",").map((i) => i.trim()).filter(Boolean);
+                            saveFieldEdit("interests", ints);
+                          }}
+                          className="rounded-lg bg-berry px-2 py-1 text-[10px] font-semibold text-white"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs font-semibold text-foreground">
+                        {userProfile.interests?.length > 0 ? userProfile.interests.join(", ") : "Not set"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {editingField !== "interests" && (
+                  <button
+                    onClick={() => startEditing("interests", userProfile.interests?.join(", ") || "")}
                     className="flex items-center gap-1 rounded-lg border border-soft-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-berry hover:text-berry transition-colors"
                   >
                     <Pencil className="size-3 text-berry" />
@@ -594,8 +800,10 @@ export default function SettingsPage() {
               Change Password
             </Button>
           </section>
-        </main>
+          </main>
+        )}
 
+        {activeTab === "companion" && <CompanionSettings />}
         {/* ─── COLUMN 3: Quick Settings & Safety (3 cols) ─── */}
         <aside className="lg:col-span-3 space-y-6">
           {/* Quick Settings Card */}
@@ -750,5 +958,13 @@ export default function SettingsPage() {
         </aside>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 flex justify-center"><div className="animate-spin size-8 border-4 border-berry border-t-transparent rounded-full" /></div>}>
+      <SettingsContent />
+    </Suspense>
   );
 }

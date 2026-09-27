@@ -27,8 +27,10 @@ interface AuthContextValue extends AuthState {
     gender?: string;
     phone?: string;
     city?: string;
+    dateOfBirth?: string;
   }) => Promise<AuthResult>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -101,6 +103,7 @@ export function AuthProvider({ children, authService }: AuthProviderProps) {
       gender?: string;
       phone?: string;
       city?: string;
+      dateOfBirth?: string;
     }): Promise<AuthResult> => {
       setIsLoading(true);
       try {
@@ -127,6 +130,17 @@ export function AuthProvider({ children, authService }: AuthProviderProps) {
     }
   }, [authService]);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const existingUser = await authService.getCurrentUser();
+      if (existingUser) {
+        setUser(existingUser);
+      }
+    } catch (error) {
+      console.error("Failed to refresh user", error);
+    }
+  }, [authService]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -135,8 +149,9 @@ export function AuthProvider({ children, authService }: AuthProviderProps) {
       login,
       register,
       logout,
+      refreshUser,
     }),
-    [user, isAuthenticated, isLoading, login, register, logout]
+    [user, isAuthenticated, isLoading, login, register, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

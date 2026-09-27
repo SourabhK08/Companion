@@ -19,6 +19,14 @@ export interface AuthUser {
   email: string;
   name?: string;
   avatarUrl?: string;
+  phone?: string;
+  gender?: string;
+  dateOfBirth?: string | Date;
+  city?: string;
+  bio?: string;
+  interests?: string[];
+  languages?: string[];
+  isCompanion?: boolean;
 }
 
 /** Login credentials for email/password authentication. */
@@ -67,6 +75,7 @@ export interface AuthService {
     gender?: string;
     phone?: string;
     city?: string;
+    dateOfBirth?: string;
   }): Promise<AuthResult>;
 
   /** End the current session. */

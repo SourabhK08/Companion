@@ -31,6 +31,20 @@ export const registerSchema = z.object({
   }),
   phone: z.string().optional(),
   city: z.string().optional(),
+  dateOfBirth: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const date = new Date(val);
+      const today = new Date();
+      let age = today.getFullYear() - date.getFullYear();
+      const m = today.getMonth() - date.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+        age--;
+      }
+      return age >= 18;
+    }, { message: "You must be at least 18 years old to join" }),
 });
 
 export const loginSchema = z.object({

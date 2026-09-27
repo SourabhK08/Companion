@@ -70,6 +70,14 @@ export function SignupForm() {
   async function onSubmit(data: SignupFormValues) {
     setServerError(null);
 
+    // Transform DD/MM/YYYY into YYYY-MM-DD for backend
+    let formattedDob = data.dob;
+    const dateParts = data.dob.split(/[\/\-.]/).map(p => p.trim());
+    if (dateParts.length === 3 && dateParts[2].length === 4) {
+      // It's likely DD/MM/YYYY
+      formattedDob = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}`;
+    }
+    
     const result = await registerUser({
       fullName: data.fullName,
       email: data.email,
@@ -77,6 +85,7 @@ export function SignupForm() {
       gender: data.gender,
       phone: data.mobile,
       city: data.city ?? "",
+      dateOfBirth: formattedDob,
     });
 
     if (!result.success) {

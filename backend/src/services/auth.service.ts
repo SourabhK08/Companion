@@ -37,9 +37,13 @@ function sanitizeUser(user: {
   dateOfBirth: Date | null;
   city: string | null;
   avatar: string | null;
+  bio: string | null;
+  interests: string[];
+  languages: string[];
   isVerified: boolean;
   authProvider: string;
   createdAt: Date;
+  companionProfile?: { id: string } | null;
 }) {
   return {
     id: user.id,
@@ -50,9 +54,13 @@ function sanitizeUser(user: {
     dateOfBirth: user.dateOfBirth,
     city: user.city,
     avatar: user.avatar,
+    bio: user.bio,
+    interests: user.interests,
+    languages: user.languages,
     isVerified: user.isVerified,
     authProvider: user.authProvider,
     createdAt: user.createdAt,
+    isCompanion: !!user.companionProfile,
   };
 }
 
@@ -80,6 +88,7 @@ export async function registerUser(input: RegisterInput) {
       gender: input.gender,
       phone: input.phone ?? null,
       city: input.city ?? null,
+      dateOfBirth: input.dateOfBirth ? new Date(input.dateOfBirth) : null,
     },
   });
 
@@ -110,6 +119,9 @@ export async function registerUser(input: RegisterInput) {
 export async function loginUser(input: LoginInput) {
   const user = await prisma.user.findUnique({
     where: { email: input.email },
+    include: {
+      companionProfile: { select: { id: true } }
+    },
   });
 
   if (!user || !user.passwordHash) {
@@ -150,7 +162,11 @@ export async function refreshAccessToken(refreshTokenValue: string) {
   // Find the refresh token in DB
   const storedToken = await prisma.refreshToken.findUnique({
     where: { token: refreshTokenValue },
-    include: { user: true },
+    include: { 
+      user: {
+        include: { companionProfile: { select: { id: true } } }
+      }
+    },
   });
 
   if (!storedToken) {
@@ -204,6 +220,9 @@ export async function logoutUser(refreshTokenValue: string | undefined) {
 export async function getCurrentUser(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    include: {
+      companionProfile: { select: { id: true } }
+    },
   });
 
   if (!user) {

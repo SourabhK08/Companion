@@ -12,9 +12,14 @@ interface ApiUser {
   email: string;
   fullName?: string | null;
   phone?: string | null;
+  gender?: string | null;
   city?: string | null;
   dateOfBirth?: Date | string | null;
   avatar?: string | null;
+  bio?: string | null;
+  interests?: string[];
+  languages?: string[];
+  isCompanion?: boolean;
   authProvider?: string;
   createdAt?: string | Date;
 }
@@ -27,6 +32,14 @@ function mapUser(user: ApiUser | null | undefined): AuthUser | null {
     email: user.email,
     name: user.fullName ?? user.email.split("@")[0],
     avatarUrl: user.avatar ?? undefined,
+    phone: user.phone ?? undefined,
+    gender: user.gender ?? undefined,
+    city: user.city ?? undefined,
+    dateOfBirth: user.dateOfBirth ?? undefined,
+    bio: user.bio ?? undefined,
+    interests: user.interests ?? [],
+    languages: user.languages ?? [],
+    isCompanion: user.isCompanion ?? false,
   };
 }
 
@@ -98,6 +111,7 @@ export class ApiAuthService implements AuthService {
     gender?: string;
     phone?: string;
     city?: string;
+    dateOfBirth?: string;
   }): Promise<AuthResult> {
     try {
       const response = await apiFetch<AuthApiResponse<{ user: ApiUser; accessToken: string }>>(

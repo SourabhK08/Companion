@@ -17,7 +17,9 @@ import {
   UserRound,
   Users,
   Loader2,
+  ArrowRight,
 } from "lucide-react";
+import Link from "next/link";
 
 import { useAuth } from "@/hooks/use-auth";
 
@@ -53,19 +55,6 @@ const tabs = [
 const tagStyles =
   "inline-flex items-center rounded-full border border-[#e8d7db] bg-[#f8f1f2] px-3 py-1.5 text-[12px] font-medium text-[#6b2d3e]";
 
-const profileTags = [
-  "Food Walk",
-  "Photography",
-  "Travel",
-  "Cafe Hopping",
-  "Art & Culture",
-  "Music",
-  "City Walks",
-  "Cultural Events",
-];
-
-const remainingTags = profileTags.slice(4);
-
 const highlightItems = [
   { title: "ID Verified", subtitle: "Government ID & Profile Verified", icon: ShieldCheck },
   { title: "Non-Smoker", subtitle: "Clean & Safe Lifestyle", icon: CigaretteOffIcon },
@@ -83,6 +72,20 @@ const experienceTags = [
   "City Exploration",
   "More",
 ];
+
+import { ProfileCompleteness } from "@/components/dashboard/profile-completeness";
+
+function calculateAge(dob: string | Date | undefined): number | null {
+  if (!dob) return null;
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -102,8 +105,10 @@ export default function DashboardPage() {
     refs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const profileTags = user?.interests && user.interests.length > 0 ? user.interests : [];
   const visibleTags = profileTags.slice(0, 4);
   const tagsToRender = showAllTags ? profileTags : visibleTags;
+  const remainingTags = profileTags.slice(4);
 
   if (isLoading) {
     return (
@@ -119,6 +124,28 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-[1360px] px-3 py-4 sm:px-4 lg:px-6 lg:py-5">
+      {user && !user.isCompanion && (
+        <div className="mb-6 overflow-hidden rounded-2xl border border-berry/20 bg-gradient-to-r from-berry/10 to-berry/5 shadow-sm">
+          <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-berry">Become a Companion! 🌟</h3>
+              <p className="mt-1 text-sm text-berry/80">
+                Want to earn by chatting and meeting new people? List your profile as a companion today and start your journey.
+              </p>
+            </div>
+            <Link 
+              href="/settings?tab=companion" // Or wherever we handle onboarding
+              className="shrink-0 flex items-center justify-center gap-2 rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-berry/90 w-full sm:w-auto"
+            >
+              Start Earning
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+      
+      <ProfileCompleteness />
+      
       <div className="overflow-hidden rounded-[28px] border border-[#eadfe2] bg-[#f3edeb] shadow-[0_18px_42px_rgba(92,23,50,0.08)]">
         <section className="relative overflow-hidden rounded-[28px] border border-[#efdfe3] bg-[#f6eae8] p-4 sm:p-5 lg:p-6">
           <div
@@ -240,11 +267,8 @@ export default function DashboardPage() {
                 <h2 className="text-[20px] font-bold">About Me</h2>
               </div>
 
-              <p className="text-[15px] leading-7 text-[#4d2a35]">
-                Hi! I&apos;m Aanya, a creative soul who loves exploring new places, trying local food,
-                photography and meeting interesting people. I enjoy cultural events, art, and casual
-                conversations. I&apos;m here to create meaningful and enjoyable experiences with like-minded
-                people.
+              <p className="text-[15px] leading-7 text-[#4d2a35] whitespace-pre-wrap">
+                {user?.bio || "No bio added yet. Go to settings to complete your profile!"}
               </p>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -259,7 +283,9 @@ export default function DashboardPage() {
                     <MessageSquareText className="size-4" />
                   </div>
                   <div className="text-[13px] font-semibold text-[#673448]">Languages</div>
-                  <div className="mt-1 text-[14px] font-medium text-[#37232a]">English, Hindi, Bengali</div>
+                  <div className="mt-1 text-[14px] font-medium text-[#37232a]">
+                    {user?.languages && user.languages.length > 0 ? user.languages.join(", ") : "Not set"}
+                  </div>
                 </div>
 
                 <div className="rounded-xl border border-[#efdadf] bg-[#f4eaee] p-3">
@@ -267,7 +293,9 @@ export default function DashboardPage() {
                     <CalendarDays className="size-4" />
                   </div>
                   <div className="text-[13px] font-semibold text-[#673448]">Age</div>
-                  <div className="mt-1 text-[14px] font-medium text-[#37232a]">24 years</div>
+                  <div className="mt-1 text-[14px] font-medium text-[#37232a]">
+                    {calculateAge(user?.dateOfBirth) ? `${calculateAge(user?.dateOfBirth)} years` : "Not set"}
+                  </div>
                 </div>
 
                 <div className="rounded-xl border border-[#efdadf] bg-[#f4eaee] p-3">
@@ -275,7 +303,9 @@ export default function DashboardPage() {
                     <MapPin className="size-4" />
                   </div>
                   <div className="text-[13px] font-semibold text-[#673448]">Location</div>
-                  <div className="mt-1 text-[14px] font-medium text-[#37232a]">Kolkata</div>
+                  <div className="mt-1 text-[14px] font-medium text-[#37232a]">
+                    {user?.city || "Not set"}
+                  </div>
                 </div>
               </div>
             </section>
@@ -322,7 +352,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                {experienceTags.map((item) => (
+                {profileTags.map((item) => (
                   <div
                     key={item}
                     className="inline-flex items-center gap-2 rounded-xl border border-[#f0dfe3] bg-white px-3 py-2 text-sm font-medium text-[#6b2d3e]"

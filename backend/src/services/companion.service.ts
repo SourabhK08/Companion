@@ -21,9 +21,6 @@ import type {
 const companionSelect = {
   id: true,
   userId: true,
-  bio: true,
-  interests: true,
-  languages: true,
   hourlyRate: true,
   rating: true,
   reviewCount: true,
@@ -39,6 +36,10 @@ const companionSelect = {
       gender: true,
       city: true,
       avatar: true,
+      bio: true,
+      interests: true,
+      languages: true,
+      dateOfBirth: true,
       isVerified: true,
     },
   },
@@ -56,21 +57,29 @@ export async function createOrUpdateCompanion(
     throw new AppError(404, "User not found");
   }
 
-  // Upsert: create if doesn't exist, update if it does
+  // Prepare user update data (only update if provided)
+  const userUpdateData: any = {};
+  if (input.bio !== undefined) userUpdateData.bio = input.bio;
+  if (input.interests !== undefined) userUpdateData.interests = input.interests;
+  if (input.languages !== undefined) userUpdateData.languages = input.languages;
+
+  // Update user's base fields if any are provided
+  if (Object.keys(userUpdateData).length > 0) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: userUpdateData
+    });
+  }
+
+  // Upsert companion fields
   const companion = await prisma.companionProfile.upsert({
     where: { userId },
     create: {
       userId,
-      bio: input.bio,
-      interests: input.interests,
-      languages: input.languages,
       hourlyRate: input.hourlyRate ?? 0,
       isAvailable: input.isAvailable ?? true,
     },
     update: {
-      bio: input.bio,
-      interests: input.interests,
-      languages: input.languages,
       hourlyRate: input.hourlyRate ?? 0,
       isAvailable: input.isAvailable ?? true,
     },
@@ -94,9 +103,24 @@ export async function updateCompanion(
     throw new AppError(404, "Companion profile not found. Create one first.");
   }
 
+  const { bio, interests, languages, ...companionData } = input;
+
+  // Update user fields if any were provided
+  if (bio !== undefined || interests !== undefined || languages !== undefined) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(bio !== undefined && { bio }),
+        ...(interests !== undefined && { interests }),
+        ...(languages !== undefined && { languages }),
+      }
+    });
+  }
+
+  // Update companion profile
   const companion = await prisma.companionProfile.update({
     where: { userId },
-    data: input,
+    data: companionData,
     select: companionSelect,
   });
 

@@ -9,15 +9,16 @@ export const createCompanionSchema = z.object({
     .string()
     .min(10, "Bio must be at least 10 characters")
     .max(500, "Bio must be at most 500 characters")
-    .trim(),
+    .trim()
+    .optional(),
   interests: z
     .array(z.string().trim())
-    .min(1, "At least one interest is required")
-    .max(20, "At most 20 interests allowed"),
+    .max(20, "At most 20 interests allowed")
+    .optional(),
   languages: z
     .array(z.string().trim())
-    .min(1, "At least one language is required")
-    .max(10, "At most 10 languages allowed"),
+    .max(10, "At most 10 languages allowed")
+    .optional(),
   hourlyRate: z.coerce
     .number()
     .int()

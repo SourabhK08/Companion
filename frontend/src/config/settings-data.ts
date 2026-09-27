@@ -12,8 +12,11 @@ export interface UserProfile {
   phone: string;
   gender: string;
   dateOfBirth: string;
-  location: string;
+  city: string;
   avatar: string | null;
+  bio: string;
+  interests: string[];
+  languages: string[];
   isVerified: boolean;
 }
 
@@ -26,14 +29,17 @@ export interface QuickSettings {
 
 export const initialUserProfile: UserProfile = {
   id: "usr-001",
-  name: "Rahul Sharma",
-  email: "rahulsharma@gmail.com",
-  phone: "+91 98765 43210",
-  gender: "Male",
-  dateOfBirth: "28 Jun 1997",
-  location: "Kolkata, West Bengal",
+  name: "",
+  email: "",
+  phone: "",
+  gender: "",
+  dateOfBirth: "",
+  city: "",
   avatar: null,
-  isVerified: true,
+  bio: "",
+  interests: [],
+  languages: [],
+  isVerified: false,
 };
 
 export const initialQuickSettings: QuickSettings = {
@@ -45,6 +51,7 @@ export const initialQuickSettings: QuickSettings = {
 
 export const settingsNavLinks = [
   { id: "account", label: "Account Settings", icon: "user" as const },
+  { id: "companion", label: "Companion Profile", icon: "star" as const },
   { id: "privacy", label: "Privacy & Security", icon: "lock" as const },
   { id: "notifications", label: "Notifications", icon: "bell" as const },
   { id: "payment", label: "Payment Methods", icon: "credit-card" as const },

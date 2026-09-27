@@ -43,7 +43,34 @@ export const signupSchema = z
       invalid_type_error: "Please select your gender",
     }),
     city: z.string().optional().or(z.literal("")),
-    dob: z.string().min(1, "Date of birth is required"),
+    dob: z
+      .string()
+      .min(1, "Date of birth is required")
+      .refine((dateString) => {
+        // Basic parse attempt (MM/DD/YYYY or YYYY-MM-DD)
+        let date = new Date(dateString);
+        
+        // If invalid, try DD/MM/YYYY manually
+        if (isNaN(date.getTime()) && dateString.includes("/")) {
+          const parts = dateString.split(/[\/\-.]/).map(p => p.trim());
+          if (parts.length === 3) {
+            // Assume DD, MM, YYYY
+            date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T12:00:00Z`);
+          }
+        }
+        
+        if (isNaN(date.getTime())) return false;
+        
+        // Calculate age
+        const today = new Date();
+        let age = today.getFullYear() - date.getFullYear();
+        const m = today.getMonth() - date.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+          age--;
+        }
+        
+        return age >= 18;
+      }, { message: "You must be at least 18 years old to join" }),
     password: z
       .string()
       .min(1, "Password is required")
