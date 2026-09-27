@@ -43,7 +43,12 @@ import { useCompanions } from "@/hooks/use-companions";
 import type { Companion } from "@/config/companions-data";
 
 
+import { useSavedCompanions } from "@/hooks/use-saved-companions";
+
 function BuddyCard({ buddy }: { buddy: Companion }) {
+  const { isSaved, toggleSaved } = useSavedCompanions();
+  const saved = isSaved(buddy.id);
+
   return (
     <div className="overflow-hidden rounded-[22px] border border-[#f0dfe3] bg-white shadow-[0_8px_22px_rgba(122,31,57,0.08)]">
       <div className="relative h-52 w-full overflow-hidden">
@@ -63,8 +68,16 @@ function BuddyCard({ buddy }: { buddy: Companion }) {
               Verified
             </div>
           )}
-          <button className="flex size-8 items-center justify-center rounded-full bg-white/80 text-[#7a1f39] backdrop-blur-sm ml-auto" type="button" aria-label={`Save ${buddy.name}`}>
-            <Heart className="size-4" fill="none" />
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSaved(buddy.id);
+            }}
+            className="flex size-8 z-10 items-center justify-center rounded-full bg-white/80 text-[#7a1f39] backdrop-blur-sm ml-auto" 
+            type="button" 
+            aria-label={`Save ${buddy.name}`}
+          >
+            <Heart className="size-4" fill={saved ? "currentColor" : "none"} color={saved ? "#7a1f39" : "currentColor"} />
           </button>
         </div>
       </div>

@@ -150,7 +150,7 @@ export async function listCompanions(query: ListCompanionsQuery) {
 
   if (search) {
     where.OR = [
-      { bio: { contains: search, mode: "insensitive" } },
+      { user: { bio: { contains: search, mode: "insensitive" } } },
       { user: { fullName: { contains: search, mode: "insensitive" } } },
     ];
   }

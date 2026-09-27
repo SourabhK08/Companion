@@ -6,6 +6,8 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import type { Companion } from "@/config/companions-data";
 
+import { useSavedCompanions } from "@/hooks/use-saved-companions";
+
 /**
  * Companion profile card — reusable across all explore pages.
  *
@@ -14,6 +16,9 @@ import type { Companion } from "@/config/companions-data";
  * with `<Image src={companion.avatar} />`.
  */
 export function CompanionCard({ companion }: { companion: Companion }) {
+  const { isSaved, toggleSaved } = useSavedCompanions();
+  const saved = isSaved(companion.id);
+
   return (
     <div className="group overflow-hidden rounded-2xl border border-soft-border bg-white shadow-sm transition-shadow hover:shadow-md">
       {/* Image placeholder */}
@@ -36,10 +41,14 @@ export function CompanionCard({ companion }: { companion: Companion }) {
 
         {/* Favorite */}
         <button
-          className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/80 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-berry"
+          onClick={(e) => {
+            e.preventDefault();
+            toggleSaved(companion.id);
+          }}
+          className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-white/80 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-berry"
           aria-label={`Save ${companion.name}`}
         >
-          <Heart className="size-4" />
+          <Heart className="size-4" fill={saved ? "currentColor" : "none"} color={saved ? "#7a1f39" : "currentColor"} />
         </button>
       </div>
 

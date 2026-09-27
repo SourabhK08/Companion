@@ -20,10 +20,11 @@ import { cn } from "cn";
 
 import { Button } from "@/components/ui/button";
 import {
-  savedCompanions,
   recentlyViewed,
   type SavedCompanion,
 } from "@/config/saved-data";
+import { apiFetch } from "@/lib/api/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 /* ─── Filter type ─── */
 type FilterTab = "all" | "online" | "offline";
@@ -143,20 +144,54 @@ function SavedCompanionCard({
  */
 export default function SavedCompanionsPage() {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
-  const [companions, setCompanions] = useState(savedCompanions);
+  const queryClient = useQueryClient();
+  const { data: savedCompanions = [], isLoading } = useQuery({
+    queryKey: ["savedCompanionsFull"],
+    queryFn: async () => {
+      const res = await apiFetch<{ success: boolean; data: { companions: any[] } }>("/api/users/me/saved");
+      if (res.success && res.data?.companions) {
+        return res.data.companions.map(c => ({
+          id: c.id,
+          name: c.user.fullName,
+          age: c.user.dateOfBirth ? (new Date().getFullYear() - new Date(c.user.dateOfBirth).getFullYear()) : 25,
+          profession: c.user.bio?.split(".")[0].slice(0, 40) || "Professional",
+          city: c.user.city || "Unknown",
+          interests: c.user.interests || [],
+          pricePerHour: c.hourlyRate,
+          rating: c.rating,
+          reviews: c.reviewCount,
+          isVerified: c.user.isVerified,
+          isOnline: true, // Mock for now
+          bio: c.user.bio || "",
+          avatar: c.user.avatar || null
+        }));
+      }
+      return [];
+    }
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiFetch(`/api/users/me/saved/${id}`, { method: "DELETE" });
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["savedCompanionsFull"] });
+      queryClient.invalidateQueries({ queryKey: ["savedCompanions"] });
+    }
+  });
 
   const filtered = useMemo(() => {
-    if (activeFilter === "online") return companions.filter((c) => c.isOnline);
-    if (activeFilter === "offline") return companions.filter((c) => !c.isOnline);
-    return companions;
-  }, [activeFilter, companions]);
+    if (activeFilter === "online") return savedCompanions.filter((c) => c.isOnline);
+    if (activeFilter === "offline") return savedCompanions.filter((c) => !c.isOnline);
+    return savedCompanions;
+  }, [activeFilter, savedCompanions]);
 
-  const onlineCount = companions.filter((c) => c.isOnline).length;
-  const offlineCount = companions.filter((c) => !c.isOnline).length;
+  const onlineCount = savedCompanions.filter((c) => c.isOnline).length;
+  const offlineCount = savedCompanions.filter((c) => !c.isOnline).length;
 
   function handleRemove(id: string) {
-    // TODO: Call DELETE /api/users/me/saved-companions/:id
-    setCompanions((prev) => prev.filter((c) => c.id !== id));
+    removeMutation.mutate(id);
   }
 
   return (
@@ -195,7 +230,7 @@ export default function SavedCompanionsPage() {
               : "border border-soft-border bg-white text-muted-foreground hover:text-foreground"
           )}
         >
-          All ({companions.length})
+          All ({savedCompanions.length})
         </button>
         <button
           onClick={() => setActiveFilter("online")}
