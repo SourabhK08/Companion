@@ -64,6 +64,7 @@ export interface AuthService {
     fullName: string;
     email: string;
     password: string;
+    gender?: string;
     phone?: string;
     city?: string;
   }): Promise<AuthResult>;

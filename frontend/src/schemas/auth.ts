@@ -38,6 +38,10 @@ export const signupSchema = z
       .string()
       .min(1, "Mobile number is required")
       .min(10, "Enter a valid mobile number"),
+    gender: z.enum(["male", "female", "non-binary", "other"], {
+      required_error: "Please select your gender",
+      invalid_type_error: "Please select your gender",
+    }),
     city: z.string().optional().or(z.literal("")),
     dob: z.string().min(1, "Date of birth is required"),
     password: z

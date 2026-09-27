@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -22,8 +22,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { CompanionCard } from "@/components/companions/companion-card";
 import { PriceRangeFilter } from "@/components/shared/price-range-filter";
+import { useCompanions } from "@/hooks/use-companions";
 import {
-  queerCompanions,
   queerCompanionCategories,
   interestFilters,
 } from "@/config/companions-data";
@@ -45,30 +45,33 @@ const valueProps = [
 export default function ExploreQueerPage() {
   const [activeCategory, setActiveCategory] = useState("All Queer");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["Dating"]);
   const [maxPrice, setMaxPrice] = useState<number>(2500);
 
   const priceMin = 300;
   const priceMax = 2500;
+  const perPage = 8;
 
-  const companions = Array.isArray(queerCompanions) ? queerCompanions : [];
+  const handleSearch = useCallback((value: string) => {
+    setSearchQuery(value);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(value);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const filteredCompanions = companions.filter((c) => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return (
-        c.name.toLowerCase().includes(q) ||
-        c.profession.toLowerCase().includes(q) ||
-        c.interests.some((i) => i.toLowerCase().includes(q))
-      );
-    }
-    return true;
+  const { companions, pagination, isLoading, error } = useCompanions({
+    gender: "non-binary",
+    search: debouncedSearch || undefined,
+    page: currentPage,
+    limit: perPage,
   });
 
-  const totalCompanions = 48;
-  const perPage = 8;
-  const totalPages = Math.ceil(totalCompanions / perPage);
+  const totalCompanions = pagination?.total ?? 0;
+  const totalPages = pagination?.totalPages ?? 1;
 
   function toggleInterest(interest: string) {
     setSelectedInterests((prev) =>
@@ -196,7 +199,7 @@ export default function ExploreQueerPage() {
               type="search"
               placeholder="Search by name, interests, or skills..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               className="h-10 rounded-xl border-soft-border bg-white pl-10 text-sm placeholder:text-muted-foreground/50 focus-visible:border-berry focus-visible:ring-berry/20"
             />
           </div>
@@ -221,15 +224,33 @@ export default function ExploreQueerPage() {
 
         <div className="mt-6 flex flex-col gap-6 xl:flex-row">
           <div className="flex-1 min-w-0">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredCompanions.map((companion) => (
-                <CompanionCard key={companion.id} companion={companion} />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: perPage }).map((_, i) => (
+                  <div key={i} className="h-[340px] animate-pulse rounded-2xl border border-soft-border bg-muted/30" />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="text-sm text-destructive">{error}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Please try again later.</p>
+              </div>
+            ) : companions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="text-sm font-medium text-foreground">No companions found</p>
+                <p className="mt-1 text-xs text-muted-foreground">Try adjusting your search or filters.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {companions.map((companion) => (
+                  <CompanionCard key={companion.id} companion={companion} />
+                ))}
+              </div>
+            )}
 
             <div className="mt-8 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                Showing 1-{filteredCompanions.length} of {totalCompanions} companions
+                Showing {companions.length > 0 ? ((currentPage - 1) * perPage) + 1 : 0}-{Math.min(currentPage * perPage, totalCompanions)} of {totalCompanions} companions
               </p>
               <div className="flex items-center gap-1">
                 <button

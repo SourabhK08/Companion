@@ -27,9 +27,33 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  refreshTokens RefreshToken[]
+  refreshTokens    RefreshToken[]
+  companionProfile CompanionProfile?
 
   @@map("users")
+}
+
+/// A user's companion profile — visible in Explore pages.
+/// Each user can have at most one companion profile (1:1 relation).
+/// Gender-based filtering uses the parent User's gender field.
+model CompanionProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio          String
+  interests    String[]   /// e.g. ["movies", "travel", "cooking"]
+  languages    String[]   /// e.g. ["Hindi", "English", "Bengali"]
+  hourlyRate   Int        @default(0)
+  rating       Float      @default(5.0)
+  reviewCount  Int        @default(0)
+  responseRate Int        @default(100)
+  isAvailable  Boolean    @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("companion_profiles")
 }
 
 /// Refresh tokens for secure JWT rotation.

@@ -26,6 +26,9 @@ export const registerSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
       "Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character"
     ),
+  gender: z.enum(["male", "female", "non-binary", "other"], {
+    message: "Gender is required",
+  }),
   phone: z.string().optional(),
   city: z.string().optional(),
 });

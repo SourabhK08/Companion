@@ -77,6 +77,7 @@ export async function registerUser(input: RegisterInput) {
       email: input.email,
       passwordHash,
       fullName: input.fullName,
+      gender: input.gender,
       phone: input.phone ?? null,
       city: input.city ?? null,
     },

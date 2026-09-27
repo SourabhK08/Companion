@@ -4,6 +4,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import authRoutes from "./routes/auth.routes.js";
+import companionRoutes from "./routes/companion.routes.js";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.get("/api/health", (_req, res) => {
 
 // ─── Routes ───────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
+app.use("/api/companions", companionRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────
 app.use((_req, res) => {

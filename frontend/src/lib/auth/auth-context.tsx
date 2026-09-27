@@ -24,6 +24,7 @@ interface AuthContextValue extends AuthState {
     fullName: string;
     email: string;
     password: string;
+    gender?: string;
     phone?: string;
     city?: string;
   }) => Promise<AuthResult>;
@@ -97,6 +98,7 @@ export function AuthProvider({ children, authService }: AuthProviderProps) {
       fullName: string;
       email: string;
       password: string;
+      gender?: string;
       phone?: string;
       city?: string;
     }): Promise<AuthResult> => {

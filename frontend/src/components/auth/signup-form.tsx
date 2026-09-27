@@ -58,6 +58,7 @@ export function SignupForm() {
       fullName: "",
       email: "",
       mobile: "",
+      gender: undefined,
       city: "",
       dob: "",
       password: "",
@@ -73,6 +74,7 @@ export function SignupForm() {
       fullName: data.fullName,
       email: data.email,
       password: data.password,
+      gender: data.gender,
       phone: data.mobile,
       city: data.city ?? "",
     });
@@ -209,6 +211,46 @@ export function SignupForm() {
          * ─── City field temporarily disabled ───
          * Re-enable later by restoring the city block and schema field.
          */}
+
+        {/* ─── Gender ─── */}
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">
+            Gender <span className="text-destructive" aria-hidden="true">*</span>
+          </Label>
+          <Controller
+            control={control}
+            name="gender"
+            render={({ field }) => (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {(
+                  [
+                    { value: "male", label: "Male" },
+                    { value: "female", label: "Female" },
+                    { value: "non-binary", label: "Non-Binary" },
+                    { value: "other", label: "Other" },
+                  ] as const
+                ).map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => field.onChange(option.value)}
+                    className={cn(
+                      "h-11 rounded-lg border text-sm font-medium transition-all",
+                      field.value === option.value
+                        ? "border-berry bg-berry/10 text-berry ring-1 ring-berry/20"
+                        : "border-soft-border bg-white text-muted-foreground hover:border-berry/40 hover:text-foreground"
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          />
+          {errors.gender && (
+            <p className="text-xs text-destructive" role="alert">{errors.gender.message}</p>
+          )}
+        </div>
 
         {/* ─── Date of Birth ─── */}
         <div className="space-y-1.5">
