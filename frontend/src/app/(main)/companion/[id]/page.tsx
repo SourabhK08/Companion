@@ -28,10 +28,14 @@ import {
   Book,
   Laptop,
   SlidersHorizontal,
-  ArrowRight
+  ArrowRight,
+  MessageCircle
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
 import { useCompanion } from "@/hooks/use-companion";
+import { useAuth } from "@/hooks/use-auth";
+import { apiFetch } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 
 // Utility for mapping interest names to icons
@@ -54,7 +58,30 @@ export default function CompanionProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
+  const router = useRouter();
+  const { user } = useAuth();
   const { companion, isLoading, error } = useCompanion(resolvedParams.id);
+
+  const handleSendMessage = async () => {
+    if (!companion) return;
+    try {
+      // companion.id is the CompanionProfile ID — we need the userId
+      // The useCompanion hook returns companion data that has a userId or we derive from context
+      const res = await apiFetch<{ success: boolean; data: { conversation: { id: string } } }>(
+        "/api/chat/conversations",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recipientId: companion.userId }),
+        }
+      );
+      if (res.success) {
+        router.push(`/messages?chat=${res.data.conversation.id}`);
+      }
+    } catch (err) {
+      console.error("Failed to start conversation", err);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -144,10 +171,21 @@ export default function CompanionProfilePage({
           </div>
 
           <div className="flex shrink-0 items-center gap-3 self-end sm:self-start sm:mt-4">
-            <Button variant="outline" className="rounded-full border-[#7a1f39] text-[#7a1f39] hover:bg-[#7a1f39]/5">
-              <Edit2 className="mr-2 size-4" />
-              Edit Profile
-            </Button>
+            {/* Show Send Message for other users, Edit Profile for self */}
+            {companion.userId && companion.userId !== user?.id ? (
+              <Button
+                onClick={handleSendMessage}
+                className="rounded-full bg-[#7a1f39] text-white hover:bg-[#5a1129]"
+              >
+                <MessageCircle className="mr-2 size-4" />
+                Send Message
+              </Button>
+            ) : (
+              <Button variant="outline" className="rounded-full border-[#7a1f39] text-[#7a1f39] hover:bg-[#7a1f39]/5">
+                <Edit2 className="mr-2 size-4" />
+                Edit Profile
+              </Button>
+            )}
             <button className="flex size-10 items-center justify-center rounded-full border border-[#f0dfe3] text-[#6a4953] hover:bg-gray-50">
               <MoreVertical className="size-5" />
             </button>

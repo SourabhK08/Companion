@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { ApiAuthService } from "@/lib/auth/api-auth-service";
+import { SocketProvider } from "@/providers/socket-provider";
 
 /**
  * Composed application providers.
@@ -11,6 +12,7 @@ import { ApiAuthService } from "@/lib/auth/api-auth-service";
  * Wraps children with:
  *   1. TanStack Query (QueryClientProvider)
  *   2. Auth (AuthProvider)
+ *   3. Socket.IO (SocketProvider)
  *
  * The QueryClient is created once per component instance to avoid
  * sharing state across requests in SSR.
@@ -38,7 +40,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider authService={authService}>{children}</AuthProvider>
+      <AuthProvider authService={authService}>
+        <SocketProvider>{children}</SocketProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

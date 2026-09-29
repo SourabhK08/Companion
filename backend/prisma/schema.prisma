@@ -30,11 +30,53 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  refreshTokens    RefreshToken[]
-  companionProfile CompanionProfile?
-  savedCompanions  SavedCompanion[]
+  refreshTokens       RefreshToken[]
+  companionProfile    CompanionProfile?
+  savedCompanions     SavedCompanion[]
+  conversationsAsUser1 Conversation[] @relation("ConversationsAsUser1")
+  conversationsAsUser2 Conversation[] @relation("ConversationsAsUser2")
+  sentMessages         Message[]      @relation("SentMessages")
 
   @@map("users")
+}
+
+/// 1-to-1 conversation thread between two users.
+/// participant1 is always the user with the lexicographically smaller ID
+/// to guarantee uniqueness of the pair.
+model Conversation {
+  id            String    @id @default(cuid())
+  participant1  String
+  participant2  String
+
+  user1         User      @relation("ConversationsAsUser1", fields: [participant1], references: [id], onDelete: Cascade)
+  user2         User      @relation("ConversationsAsUser2", fields: [participant2], references: [id], onDelete: Cascade)
+
+  messages      Message[]
+  lastMessageAt DateTime?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([participant1, participant2])
+  @@map("conversations")
+}
+
+/// Individual chat message within a conversation.
+model Message {
+  id              String   @id @default(cuid())
+  conversationId  String
+  senderId        String
+  content         String
+  type            String   @default("text") /// "text" | "image"
+  isRead          Boolean  @default(false)
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender          User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
 }
 
 /// A user's companion profile — visible in Explore pages.

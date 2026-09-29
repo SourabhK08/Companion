@@ -1,6 +1,8 @@
+import { createServer } from "http";
 import app from "./app.js";
 import { env } from "./config/env.js";
 import { prisma } from "./lib/prisma.js";
+import { initSocket } from "./lib/socket.js";
 
 async function main() {
   // Test database connection
@@ -12,8 +14,15 @@ async function main() {
     process.exit(1);
   }
 
+  // Create HTTP server from Express app
+  const httpServer = createServer(app);
+
+  // Attach Socket.IO to the HTTP server
+  initSocket(httpServer);
+  console.log("✅ Socket.IO initialized");
+
   // Start server
-  app.listen(env.PORT, () => {
+  httpServer.listen(env.PORT, () => {
     console.log(`
 ╔══════════════════════════════════════════════╗
 ║          Modhuralap Backend API              ║
@@ -21,6 +30,7 @@ async function main() {
 ║  Status:  Running                           ║
 ║  Port:    ${String(env.PORT).padEnd(36)}║
 ║  Mode:    ${env.NODE_ENV.padEnd(36)}║
+║  WS:      Socket.IO enabled                ║
 ║  Health:  http://localhost:${env.PORT}/api/health    ║
 ╚══════════════════════════════════════════════╝
     `);

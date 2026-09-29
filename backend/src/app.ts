@@ -38,11 +38,13 @@ app.get("/api/health", (_req, res) => {
 });
 
 import { userRoutes } from "./routes/user.routes.js";
+import { chatRoutes } from "./routes/chat.routes.js";
 
 // ─── Routes ───────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/companions", companionRoutes);
+app.use("/api/chat", chatRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────
 app.use((_req, res) => {

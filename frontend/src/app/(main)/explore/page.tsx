@@ -134,6 +134,7 @@ export default function ExploreBuddiesPage() {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(2500);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const priceMin = 300;
   const priceMax = 2500;
@@ -142,43 +143,29 @@ export default function ExploreBuddiesPage() {
                     selectedGender === "Female" ? "female" :
                     selectedGender === "Non-binary" ? "non-binary" : undefined;
 
-  const { companions, isLoading, error } = useCompanions({
+  let apiSortBy = "recommended";
+  if (selectedSort === "Newest") apiSortBy = "newest";
+  if (selectedSort === "Top Rated") apiSortBy = "top_rated";
+
+  // Combine chip and selected interests
+  const allInterests = [...selectedInterests];
+  if (selectedChip !== "All" && selectedChip !== "More" && !allInterests.includes(selectedChip)) {
+    allInterests.push(selectedChip);
+  }
+
+  const { companions: filteredBuddies, pagination, isLoading, error } = useCompanions({
     gender: apiGender,
     city: selectedLocation === "Kolkata" ? "Kolkata" : undefined,
-    limit: 24, // Show all
+    page: currentPage,
+    limit: 12,
+    maxPrice,
+    sortBy: apiSortBy,
+    interests: allInterests.length > 0 ? allInterests.join(",") : undefined,
+    languages: selectedLanguages.length > 0 ? selectedLanguages.join(",") : undefined,
   });
 
-  const filteredBuddies = useMemo(() => {
-    return companions.filter((buddy) => {
-      const matchesChip =
-        selectedChip === "All" ||
-        buddy.interests.some((interest) =>
-          interest.toLowerCase().includes(selectedChip.toLowerCase()) ||
-          selectedChip === "More"
-        );
-
-      const matchesLanguages =
-        selectedLanguages.length === 0 ||
-        selectedLanguages.every((language) => (buddy.languages as readonly string[]).includes(language));
-
-      const matchesInterests =
-        selectedInterests.length === 0 ||
-        selectedInterests.every((interest) =>
-          buddy.interests.some((item) => item.toLowerCase().includes(interest.toLowerCase()))
-        );
-
-      const matchesPrice = buddy.pricePerHour <= maxPrice;
-
-      return (
-        matchesChip &&
-        matchesLanguages &&
-        matchesInterests &&
-        matchesPrice
-      );
-    });
-  }, [companions, maxPrice, selectedChip, selectedInterests, selectedLanguages]);
-
   const toggleLanguage = (language: string) => {
+    setCurrentPage(1);
     setSelectedLanguages((current) =>
       current.includes(language)
         ? current.filter((value) => value !== language)
@@ -187,6 +174,7 @@ export default function ExploreBuddiesPage() {
   };
 
   const toggleInterest = (interest: string) => {
+    setCurrentPage(1);
     setSelectedInterests((current) =>
       current.includes(interest)
         ? current.filter((value) => value !== interest)
@@ -246,7 +234,7 @@ export default function ExploreBuddiesPage() {
                 <button
                   key={chip}
                   type="button"
-                  onClick={() => setSelectedChip(chip)}
+                  onClick={() => { setSelectedChip(chip); setCurrentPage(1); }}
                   className={`rounded-full border px-3 py-2 text-sm font-medium transition-all ${
                     selectedChip === chip
                       ? "border-[#7a1f39] bg-[#7a1f39] text-white shadow-sm"
@@ -262,7 +250,7 @@ export default function ExploreBuddiesPage() {
 
         <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <p className="text-[15px] font-semibold text-[#3f1b27]">
-            Showing 1-{filteredBuddies.length} of {companions.length} buddies
+            Showing 1-{filteredBuddies.length} of {pagination?.total ?? filteredBuddies.length} buddies
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -270,7 +258,7 @@ export default function ExploreBuddiesPage() {
               Sort by:
               <select
                 value={selectedSort}
-                onChange={(event) => setSelectedSort(event.target.value as (typeof sortOptions)[number])}
+                onChange={(event) => { setSelectedSort(event.target.value as (typeof sortOptions)[number]); setCurrentPage(1); }}
                 className="bg-transparent font-medium text-[#5a1d2d] outline-none"
               >
                 {sortOptions.map((option) => (
@@ -310,11 +298,34 @@ export default function ExploreBuddiesPage() {
                 <p className="mt-1 text-xs text-[#6d4c56]">Try adjusting your filters.</p>
               </div>
             ) : (
-              <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
-                {filteredBuddies.map((buddy) => (
-                  <BuddyCard key={buddy.id} buddy={buddy} />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
+                  {filteredBuddies.map((buddy) => (
+                    <BuddyCard key={buddy.id} buddy={buddy} />
+                  ))}
+                </div>
+                {pagination && pagination.totalPages > 1 && (
+                  <div className="mt-8 flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="rounded-xl border border-soft-border bg-white px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Page {currentPage} of {pagination.totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(pagination.totalPages, p + 1))}
+                      disabled={currentPage === pagination.totalPages}
+                      className="rounded-xl border border-soft-border bg-white px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -331,7 +342,7 @@ export default function ExploreBuddiesPage() {
                 min={priceMin}
                 max={priceMax}
                 value={maxPrice}
-                onChange={setMaxPrice}
+                onChange={(val) => { setMaxPrice(val); setCurrentPage(1); }}
               />
 
               <div className="space-y-2">
@@ -361,7 +372,7 @@ export default function ExploreBuddiesPage() {
                           type="radio"
                           name="gender"
                           checked={selectedGender === gender}
-                          onChange={() => setSelectedGender(gender)}
+                          onChange={() => { setSelectedGender(gender); setCurrentPage(1); }}
                           className="h-4 w-4 accent-[#7a1f39]"
                         />
                         <span>{gender}</span>
@@ -378,7 +389,7 @@ export default function ExploreBuddiesPage() {
                 <div className="rounded-xl border border-[#e5dbe0] bg-white p-2.5">
                   <select
                     value={selectedLocation}
-                    onChange={(event) => setSelectedLocation(event.target.value as (typeof locationOptions)[number])}
+                    onChange={(event) => { setSelectedLocation(event.target.value as (typeof locationOptions)[number]); setCurrentPage(1); }}
                     className="w-full bg-transparent text-sm text-[#5a1d2d] outline-none"
                   >
                     {locationOptions.map((location) => (

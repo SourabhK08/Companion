@@ -56,6 +56,7 @@ function calculateAge(dob: string | null): number {
 function mapApiToCompanion(api: ApiCompanion): Companion {
   return {
     id: api.id,
+    userId: api.userId,
     name: api.user.fullName,
     age: calculateAge(api.user.dateOfBirth),
     profession: api.user.bio ? api.user.bio.split(".")[0].slice(0, 40) : "Professional",

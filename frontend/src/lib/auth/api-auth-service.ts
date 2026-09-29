@@ -31,6 +31,7 @@ function mapUser(user: ApiUser | null | undefined): AuthUser | null {
     id: user.id,
     email: user.email,
     name: user.fullName ?? user.email.split("@")[0],
+    fullName: user.fullName ?? user.email.split("@")[0],
     avatarUrl: user.avatar ?? undefined,
     phone: user.phone ?? undefined,
     gender: user.gender ?? undefined,
@@ -40,6 +41,7 @@ function mapUser(user: ApiUser | null | undefined): AuthUser | null {
     interests: user.interests ?? [],
     languages: user.languages ?? [],
     isCompanion: user.isCompanion ?? false,
+    isVerified: user.isCompanion ?? false,
   };
 }
 

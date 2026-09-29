@@ -53,6 +53,8 @@ export class MockAuthService implements AuthService {
       id: "dev-user-001",
       email: credentials.email,
       name: credentials.email.split("@")[0],
+      fullName: credentials.email.split("@")[0],
+      isVerified: true,
     };
 
     this.currentUser = user;
@@ -82,6 +84,8 @@ export class MockAuthService implements AuthService {
       id: `dev-user-${Date.now()}`,
       email: data.email,
       name: data.fullName,
+      fullName: data.fullName,
+      isVerified: true,
     };
 
     this.currentUser = user;

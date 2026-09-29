@@ -18,6 +18,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name?: string;
+  fullName?: string;
   avatarUrl?: string;
   phone?: string;
   gender?: string;
@@ -27,6 +28,7 @@ export interface AuthUser {
   interests?: string[];
   languages?: string[];
   isCompanion?: boolean;
+  isVerified?: boolean;
 }
 
 /** Login credentials for email/password authentication. */

@@ -91,6 +91,11 @@ interface UseCompanionsOptions {
   search?: string;
   page?: number;
   limit?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: string;
+  interests?: string;
+  languages?: string;
 }
 
 interface UseCompanionsResult {
@@ -108,7 +113,7 @@ interface UseCompanionsResult {
  *   const { companions, pagination, isLoading } = useCompanions({ gender: "male" });
  */
 export function useCompanions(options: UseCompanionsOptions = {}): UseCompanionsResult {
-  const { gender, city, search, page = 1, limit = 12 } = options;
+  const { gender, city, search, page = 1, limit = 12, minPrice, maxPrice, sortBy, interests, languages } = options;
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [pagination, setPagination] = useState<ApiPagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -120,9 +125,14 @@ export function useCompanions(options: UseCompanionsOptions = {}): UseCompanions
 
     try {
       const params = new URLSearchParams();
-      if (gender) params.set("gender", gender);
+      if (gender && gender !== "Any") params.set("gender", gender);
       if (city) params.set("city", city);
       if (search) params.set("search", search);
+      if (minPrice !== undefined) params.set("minPrice", String(minPrice));
+      if (maxPrice !== undefined) params.set("maxPrice", String(maxPrice));
+      if (sortBy) params.set("sortBy", sortBy);
+      if (interests) params.set("interests", interests);
+      if (languages) params.set("languages", languages);
       params.set("page", String(page));
       params.set("limit", String(limit));
 
@@ -142,7 +152,7 @@ export function useCompanions(options: UseCompanionsOptions = {}): UseCompanions
     } finally {
       setIsLoading(false);
     }
-  }, [gender, city, search, page, limit]);
+  }, [gender, city, search, page, limit, minPrice, maxPrice, sortBy, interests, languages]);
 
   useEffect(() => {
     fetchCompanions();

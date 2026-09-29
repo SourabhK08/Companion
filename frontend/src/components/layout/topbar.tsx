@@ -7,7 +7,8 @@ import { cn } from "cn";
 import { Input } from "@/components/ui/input";
 import { MobileSidebarTrigger } from "@/components/layout/sidebar";
 import { useSidebar } from "@/components/layout/sidebar";
-import { mockUser } from "@/config/dashboard-data";
+import { useAuth } from "@/hooks/use-auth";
+import { useUnreadCount } from "@/hooks/use-unread-count";
 
 /**
  * Top navigation bar for the dashboard.
@@ -22,6 +23,19 @@ import { mockUser } from "@/config/dashboard-data";
  */
 export function Topbar() {
   const { isCollapsed } = useSidebar();
+  const { user } = useAuth();
+  const unreadCount = useUnreadCount();
+
+  const displayName = user?.fullName ?? user?.name ?? "Guest";
+
+  const userInitials = displayName
+    ? displayName
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase()
+    : "U";
 
   return (
     <header
@@ -58,10 +72,11 @@ export function Topbar() {
         {/* Notifications */}
         <Link
           href="/notifications"
-          aria-label="Notifications (3 new)"
+          aria-label="Notifications"
           className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Bell className="size-5" />
+          {/* Example static badge for notifications */}
           <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-berry text-[9px] font-bold text-white">
             3
           </span>
@@ -70,33 +85,32 @@ export function Topbar() {
         {/* Messages */}
         <Link
           href="/messages"
-          aria-label="Messages (2 unread)"
+          aria-label={`Messages (${unreadCount} unread)`}
           className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <MessageSquare className="size-5" />
-          <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-            2
-          </span>
+          {unreadCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </Link>
 
         {/* User profile */}
-        <Link href="/dashboard" className="flex items-center gap-2.5 rounded-xl pl-1 pr-2 py-1 transition-colors hover:bg-muted">
+        <Link href="/settings" className="flex items-center gap-2.5 rounded-xl pl-1 pr-2 py-1 transition-colors hover:bg-muted">
           {/* Avatar placeholder */}
           <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-berry to-dusty-rose text-xs font-bold text-white">
-            {mockUser.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")}
+            {userInitials}
           </div>
           <div className="hidden sm:flex flex-col text-left">
             <span className="flex items-center gap-1 text-sm font-semibold leading-tight text-foreground">
-              {mockUser.name}
-              {mockUser.isVerified && (
+              {displayName}
+              {user?.isVerified && (
                 <BadgeCheck className="size-3.5 text-berry" />
               )}
             </span>
             <span className="text-[10px] text-muted-foreground leading-tight">
-              Verified User
+              {user?.isVerified ? "Verified User" : "User"}
             </span>
           </div>
           <ChevronDown className="hidden sm:block size-3.5 text-muted-foreground" />
