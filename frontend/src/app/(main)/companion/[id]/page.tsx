@@ -29,7 +29,8 @@ import {
   Laptop,
   SlidersHorizontal,
   ArrowRight,
-  MessageCircle
+  MessageCircle,
+  CalendarPlus
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -171,15 +172,25 @@ export default function CompanionProfilePage({
           </div>
 
           <div className="flex shrink-0 items-center gap-3 self-end sm:self-start sm:mt-4">
-            {/* Show Send Message for other users, Edit Profile for self */}
+            {/* Show Send Message + Book Now for other users, Edit Profile for self */}
             {companion.userId && companion.userId !== user?.id ? (
-              <Button
-                onClick={handleSendMessage}
-                className="rounded-full bg-[#7a1f39] text-white hover:bg-[#5a1129]"
-              >
-                <MessageCircle className="mr-2 size-4" />
-                Send Message
-              </Button>
+              <>
+                <Button
+                  onClick={() => router.push(`/bookings/checkout?companion=${companion.id}`)}
+                  className="rounded-full bg-[#7a1f39] text-white hover:bg-[#5a1129]"
+                >
+                  <CalendarPlus className="mr-2 size-4" />
+                  Book Now
+                </Button>
+                <Button
+                  onClick={handleSendMessage}
+                  variant="outline"
+                  className="rounded-full border-[#7a1f39] text-[#7a1f39] hover:bg-[#7a1f39]/5"
+                >
+                  <MessageCircle className="mr-2 size-4" />
+                  Message
+                </Button>
+              </>
             ) : (
               <Button variant="outline" className="rounded-full border-[#7a1f39] text-[#7a1f39] hover:bg-[#7a1f39]/5">
                 <Edit2 className="mr-2 size-4" />

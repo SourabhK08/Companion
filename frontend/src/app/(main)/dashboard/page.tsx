@@ -13,7 +13,6 @@ import {
   MessageSquareText,
   ShieldCheck,
   Sparkles,
-  Star,
   UserRound,
   Users,
   Loader2,
@@ -62,16 +61,6 @@ const highlightItems = [
   { title: "Public Meeting", subtitle: "Always in Public Locations", icon: Users },
 ];
 
-const experienceTags = [
-  "Food Walks",
-  "Photography",
-  "Cafe Hopping",
-  "Travel",
-  "Cultural Events",
-  "Museum Tour",
-  "City Exploration",
-  "More",
-];
 
 import { ProfileCompleteness } from "@/components/dashboard/profile-completeness";
 
@@ -130,14 +119,14 @@ export default function DashboardPage() {
             <div>
               <h3 className="text-lg font-bold text-berry">Become a Companion! 🌟</h3>
               <p className="mt-1 text-sm text-berry/80">
-                Want to earn by chatting and meeting new people? List your profile as a companion today and start your journey.
+                Want to earn by meeting new people? List your profile as a companion today!
               </p>
             </div>
             <Link 
               href="/settings?tab=companion" // Or wherever we handle onboarding
               className="shrink-0 flex items-center justify-center gap-2 rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-berry/90 w-full sm:w-auto"
             >
-              Start Earning
+              Start Your Journey With Us
               <ArrowRight className="size-4" />
             </Link>
           </div>

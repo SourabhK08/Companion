@@ -164,7 +164,7 @@ export function initSocket(httpServer: HttpServer): Server {
 /**
  * Emit an event to all sockets belonging to a specific user.
  */
-function emitToUser(userId: string, event: string, data: unknown) {
+export function emitToUser(userId: string, event: string, data: unknown) {
   const sockets = onlineUsers.get(userId);
   if (sockets) {
     for (const socketId of sockets) {

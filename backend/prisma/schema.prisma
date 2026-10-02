@@ -36,6 +36,9 @@ model User {
   conversationsAsUser1 Conversation[] @relation("ConversationsAsUser1")
   conversationsAsUser2 Conversation[] @relation("ConversationsAsUser2")
   sentMessages         Message[]      @relation("SentMessages")
+  wallet               Wallet?
+  clientBookings       Booking[]      @relation("ClientBookings")
+  notifications        Notification[]
 
   @@map("users")
 }
@@ -97,6 +100,7 @@ model CompanionProfile {
   updatedAt    DateTime @updatedAt
 
   savedByUsers SavedCompanion[]
+  bookings     Booking[]        @relation("CompanionBookings")
 
   @@map("companion_profiles")
 }
@@ -127,4 +131,103 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+/// User wallet for mock payments.
+/// Balance stored in paisa (₹1 = 100) to avoid floating-point issues.
+model Wallet {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance    Int      @default(0)  /// Available balance in paisa
+  heldAmount Int      @default(0)  /// Amount frozen for pending bookings
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+/// Ledger of all wallet transactions.
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type        String   /// "ADD_MONEY" | "BOOKING_HOLD" | "BOOKING_DEDUCT" | "HOLD_RELEASE" | "EARNING" | "REFUND"
+  amount      Int      /// Always positive; direction determined by type
+  description String
+  bookingId   String?  /// Link to related booking (if applicable)
+  createdAt   DateTime @default(now())
+
+  @@index([walletId, createdAt])
+  @@map("wallet_transactions")
+}
+
+/// Booking between a client (User) and a CompanionProfile.
+/// Follows hold-then-deduct payment pattern.
+model Booking {
+  id                  String   @id @default(cuid())
+  clientId            String
+  companionProfileId  String
+
+  client              User              @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
+  companionProfile    CompanionProfile  @relation("CompanionBookings", fields: [companionProfileId], references: [id], onDelete: Cascade)
+
+  /// Booking details
+  scheduledDate       DateTime
+  durationHours       Int
+  venue               String?
+  note                String?
+
+  /// Pricing in paisa
+  hourlyRate          Int
+  subtotal            Int
+  platformFee         Int
+  totalAmount         Int
+
+  /// Status machine
+  status              String   @default("PENDING_ACCEPTANCE")
+  /// PENDING_ACCEPTANCE | CONFIRMED | REJECTED | CANCELLED_BY_CLIENT
+  /// IN_PROGRESS | COMPLETED | EXPIRED | DISPUTED
+
+  /// OTP system (Ola/Uber style)
+  otpCode             String?
+  otpExpiresAt        DateTime?
+  otpVerifiedAt       DateTime?
+  otpAttempts         Int      @default(0)
+
+  /// Meeting timestamps
+  meetingStartedAt    DateTime?
+  meetingEndedAt      DateTime?
+
+  /// Companion response
+  companionRespondedAt DateTime?
+  rejectionReason     String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([clientId, status])
+  @@index([companionProfileId, status])
+  @@map("bookings")
+}
+
+/// Per-user notification — supports all activity types + promotional messages.
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String   /// "WALLET" | "BOOKING" | "MEETING" | "SYSTEM" | "PROMO"
+  title     String
+  body      String
+  icon      String?  /// Optional icon name (e.g., "wallet", "calendar", "check")
+  linkUrl   String?  /// Optional deep-link (e.g., "/bookings/xyz", "/wallet")
+  isRead    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead, createdAt])
+  @@map("notifications")
 }
