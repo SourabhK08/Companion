@@ -9,6 +9,8 @@ import { MobileSidebarTrigger } from "@/components/layout/sidebar";
 import { useSidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import { useUnreadCount } from "@/hooks/use-unread-count";
+import { useNotificationCount } from "@/hooks/use-notifications";
+import { useEffect } from "react";
 
 /**
  * Top navigation bar for the dashboard.
@@ -17,7 +19,7 @@ import { useUnreadCount } from "@/hooks/use-unread-count";
  *   - Mobile hamburger (lg:hidden)
  *   - Search input
  *   - City indicator (Kolkata - static)
- *   - Notification bell (badge)
+ *   - Notification bell (badge) — DYNAMIC
  *   - Messages icon (badge)
  *   - User avatar + name + verified badge
  */
@@ -25,6 +27,7 @@ export function Topbar() {
   const { isCollapsed } = useSidebar();
   const { user } = useAuth();
   const unreadCount = useUnreadCount();
+  const { unreadCount: notifCount } = useNotificationCount();
 
   const displayName = user?.fullName ?? user?.name ?? "Guest";
 
@@ -69,17 +72,18 @@ export function Topbar() {
           <span className="font-medium">Kolkata</span>
         </div>
 
-        {/* Notifications */}
+        {/* Notifications — Dynamic */}
         <Link
           href="/notifications"
-          aria-label="Notifications"
+          aria-label={`Notifications (${notifCount} unread)`}
           className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Bell className="size-5" />
-          {/* Example static badge for notifications */}
-          <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-berry text-[9px] font-bold text-white">
-            3
-          </span>
+          {notifCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-berry text-[9px] font-bold text-white">
+              {notifCount > 9 ? "9+" : notifCount}
+            </span>
+          )}
         </Link>
 
         {/* Messages */}

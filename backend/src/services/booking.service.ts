@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma.js";
 import * as walletService from "./wallet.service.js";
 import crypto from "crypto";
+import { clearMeetingTimers } from "../lib/meeting-timer.js";
 
 // ─── Constants ────────────────────────────────────────────
 const PLATFORM_FEE_PERCENT = 10;
@@ -346,6 +347,9 @@ export async function endMeeting(bookingId: string, companionUserId: string) {
   if (booking.status !== "IN_PROGRESS") {
     throw new Error(`Cannot end meeting with status: ${booking.status}`);
   }
+
+  // Clear any scheduled timer warnings for this booking
+  clearMeetingTimers(bookingId);
 
   // Settle payment: deduct from client, credit to companion
   await walletService.settleBooking(

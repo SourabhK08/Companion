@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import type { AuthRequest } from "../middleware/auth.js";
 import * as walletService from "../services/wallet.service.js";
+import { notify } from "../services/notification.service.js";
 
 // ─── GET /api/wallet ──────────────────────────────────────
 
@@ -39,6 +40,18 @@ export async function addMoney(req: AuthRequest, res: Response): Promise<void> {
     const amountInPaisa = Math.round(amount * 100);
 
     const result = await walletService.addMoney(req.userId, amountInPaisa);
+
+    // Send notification
+    const newBalance = result.wallet.balance / 100;
+    await notify({
+      userId: req.userId,
+      type: "WALLET",
+      title: "Money Added Successfully 💰",
+      body: `₹${amount.toLocaleString("en-IN")} has been added to your wallet. Your new balance is ₹${newBalance.toLocaleString("en-IN")}.`,
+      icon: "wallet",
+      linkUrl: "/wallet",
+    });
+
     res.json({
       success: true,
       data: {

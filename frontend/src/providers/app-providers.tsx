@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { ApiAuthService } from "@/lib/auth/api-auth-service";
 import { SocketProvider } from "@/providers/socket-provider";
+import { NotificationProvider } from "@/hooks/use-notifications";
 
 /**
  * Composed application providers.
@@ -41,7 +42,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider authService={authService}>
-        <SocketProvider>{children}</SocketProvider>
+        <SocketProvider>
+          <NotificationProvider>{children}</NotificationProvider>
+        </SocketProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
