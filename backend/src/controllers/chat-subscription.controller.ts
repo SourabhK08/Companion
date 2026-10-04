@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import type { AuthRequest } from "../middleware/auth.js";
 import { AppError } from "../services/auth.service.js";
+import { prisma } from "../lib/prisma.js";
 import {
   subscribe,
   getActiveSubscription,
@@ -41,11 +42,15 @@ export async function getStatus(req: AuthRequest, res: Response): Promise<void> 
       return;
     }
 
-    const subscription = await getActiveSubscription(req.userId);
+    const [subscription, profile] = await Promise.all([
+      getActiveSubscription(req.userId),
+      prisma.coFounderProfile.findUnique({ where: { userId: req.userId }, select: { id: true } }),
+    ]);
 
     res.status(200).json({
       success: true,
       data: {
+        hasCoFounderProfile: !!profile,
         hasActiveSubscription: !!subscription,
         subscription,
       },

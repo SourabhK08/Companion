@@ -46,3 +46,21 @@ export function authenticate(
     });
   }
 }
+
+/**
+ * Optional authentication — attaches `userId` if a valid Bearer token is present,
+ * but never rejects the request. Use for public routes that personalise results
+ * (e.g. hiding the logged-in user from public listings).
+ */
+export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): void {
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const payload = jwt.verify(authHeader.split(" ")[1], env.JWT_SECRET) as { userId: string };
+      req.userId = payload.userId;
+    } catch {
+      // ignore invalid/expired token for public routes
+    }
+  }
+  next();
+}

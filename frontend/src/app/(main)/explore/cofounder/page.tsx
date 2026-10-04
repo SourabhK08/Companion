@@ -136,6 +136,45 @@ export default function ExploreCoFounderPage() {
           </div>
         </div>
 
+        {/* Your status — your own card is hidden from the list */}
+        <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-soft-border bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
+            <span className="flex items-center gap-1.5">
+              <span className={cn("size-2 rounded-full", chat.hasProfile ? "bg-emerald-500" : "bg-amber-400")} />
+              {chat.hasProfile ? "Your Co-Founder profile is live" : "Your Co-Founder profile isn't created yet"}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className={cn("size-2 rounded-full", chat.hasActivePass ? "bg-emerald-500" : "bg-muted-foreground/40")} />
+              {chat.hasActivePass && chat.subscription
+                ? `Chat Pass active till ${new Date(chat.subscription.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+                : "No active Chat Pass"}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Link
+              href="/settings?tab=cofounder&next=/explore/cofounder"
+              className="rounded-full border border-soft-border px-4 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
+            >
+              {chat.hasProfile ? "Edit My Profile" : "Create Profile"}
+            </Link>
+            {chat.hasProfile && !chat.hasActivePass && (
+              <button
+                onClick={chat.openPassModal}
+                className="rounded-full bg-deep-plum px-4 py-1.5 text-xs font-semibold text-white hover:bg-berry-dark"
+              >
+                Get Chat Pass · ₹9/week
+              </button>
+            )}
+          </div>
+        </div>
+
+        {chat.error && (
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-700">
+            {chat.error}
+            <button onClick={chat.clearError} className="font-semibold">Dismiss</button>
+          </div>
+        )}
+
         <div className="mt-8 flex flex-col gap-6 xl:flex-row">
           {/* Main Grid */}
           <div className="flex-1 min-w-0">

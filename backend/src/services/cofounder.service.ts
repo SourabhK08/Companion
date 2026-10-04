@@ -102,13 +102,14 @@ export async function updateProfile(userId: string, input: UpdateCoFounderInput)
   return profile;
 }
 
-export async function listCoFounders(query: ListCoFoundersQuery) {
+export async function listCoFounders(query: ListCoFoundersQuery, excludeUserId?: string) {
   const { page, limit, search, workInterests } = query;
   const skip = (page - 1) * limit;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {
     isActive: true,
+    ...(excludeUserId && { userId: { not: excludeUserId } }),
   };
 
   if (workInterests) {

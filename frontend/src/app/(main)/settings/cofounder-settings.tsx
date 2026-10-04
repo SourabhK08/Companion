@@ -8,6 +8,8 @@ import { Briefcase, Link as LinkIcon, Loader2, Plus, X } from "lucide-react";
 import { useMyCoFounderProfile } from "@/hooks/use-cofounders";
 import { workInterestOptions } from "@/config/cofounder-data";
 import { useAuth } from "@/hooks/use-auth";
+import { useChatAccess } from "@/hooks/use-chat-access";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,8 +27,12 @@ type FormData = z.infer<typeof schema>;
 export function CoFounderSettings() {
   const { user } = useAuth();
   const { profile, isLoading, save } = useMyCoFounderProfile();
+  const { markProfileCreated } = useChatAccess();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -44,13 +50,21 @@ export function CoFounderSettings() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     setSuccess(false);
+    setSubmitError(null);
     try {
+      const isFirstTime = !profile;
       await save({ ...data, isActive: true });
+      // Update global state instantly — no page refresh needed anywhere in the app
+      markProfileCreated();
       setSuccess(true);
-      // Let success message show for a bit before clearing it
-      setTimeout(() => setSuccess(false), 3000);
+      const next = searchParams.get("next");
+      if (isFirstTime && next && next.startsWith("/")) {
+        setTimeout(() => router.push(next), 900);
+      } else {
+        setTimeout(() => setSuccess(false), 3000);
+      }
     } catch (err) {
-      console.error(err);
+      setSubmitError(err instanceof Error ? err.message : "Failed to save profile");
     } finally {
       setIsSubmitting(false);
     }
@@ -180,8 +194,11 @@ export function CoFounderSettings() {
           <div className="flex flex-col gap-3 border-t border-soft-border pt-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {success && (
-                <span className="font-medium text-green-600">Profile saved successfully!</span>
+                <span className="font-medium text-green-600">
+                  Profile saved successfully!{searchParams.get("next") ? " Taking you back…" : ""}
+                </span>
               )}
+              {submitError && <span className="font-medium text-destructive">{submitError}</span>}
             </div>
 
             <Button

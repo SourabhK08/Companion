@@ -34,10 +34,11 @@ export async function create(req: AuthRequest, res: Response): Promise<void> {
   }
 }
 
-export async function list(req: Request, res: Response): Promise<void> {
+export async function list(req: AuthRequest, res: Response): Promise<void> {
   try {
     const query = listCoFoundersQuerySchema.parse(req.query);
-    const result = await listCoFounders(query);
+    // Never show the logged-in user their own card in the explore list
+    const result = await listCoFounders(query, req.userId);
 
     res.status(200).json({
       success: true,

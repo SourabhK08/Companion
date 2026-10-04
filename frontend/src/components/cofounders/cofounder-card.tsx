@@ -25,8 +25,8 @@ export function CoFounderCard({ profile, isSelf, onMessage }: CoFounderCardProps
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-soft-border bg-white shadow-[0_8px_22px_rgba(122,31,57,0.06)] transition-shadow hover:shadow-[0_12px_28px_rgba(122,31,57,0.12)]">
       {/* Header strip */}
-      <div className="relative h-20 bg-gradient-to-r from-deep-plum via-berry-dark to-berry">
-        <a
+      <div className="relative h-10  bg-gradient-to-r/10 from-deep-plum via-berry-dark to-berry">
+        {/* <a
           href={profile.linkedinUrl}
           target="_blank"
           rel="noopener noreferrer"
@@ -34,7 +34,7 @@ export function CoFounderCard({ profile, isSelf, onMessage }: CoFounderCardProps
           aria-label={`${user.fullName}'s LinkedIn profile`}
         >
           <LinkedinIcon className="size-3" /> LinkedIn
-        </a>
+        </a> */}
       </div>
 
       <div className="-mt-9 flex flex-1 flex-col px-4 pb-4">

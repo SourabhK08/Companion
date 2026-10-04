@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { useAuth } from "@/hooks/use-auth";
 import type { ChatPlanId } from "@/config/cofounder-data";
 
 // ─── Types ────────────────────────────────────────────────
@@ -64,11 +65,13 @@ export function calculateAge(dob: string | null): number | null {
 
 export function useCoFounders(options: { search?: string; workInterests?: string[]; page?: number; limit?: number }) {
   const { search, workInterests, page = 1, limit = 12 } = options;
+  const { user, isLoading: authLoading } = useAuth();
   const [profiles, setProfiles] = useState<CoFounderProfile[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const interestsKey = (workInterests ?? []).join(",");
+  const userId = user?.id;
 
   const fetchProfiles = useCallback(async () => {
     setIsLoading(true);
@@ -81,7 +84,8 @@ export function useCoFounders(options: { search?: string; workInterests?: string
         `/api/cofounders?${params.toString()}`
       );
       if (res.success) {
-        setProfiles(res.data.profiles);
+        // Server already excludes the logged-in user; filter again defensively
+        setProfiles(res.data.profiles.filter((p) => p.userId !== userId));
         setPagination(res.data.pagination);
       }
     } catch (err) {
@@ -90,11 +94,13 @@ export function useCoFounders(options: { search?: string; workInterests?: string
     } finally {
       setIsLoading(false);
     }
-  }, [search, interestsKey, page, limit]);
+  }, [search, interestsKey, page, limit, userId]);
 
   useEffect(() => {
+    // Wait until auth is restored so the request carries the token (needed to exclude self)
+    if (authLoading) return;
     fetchProfiles();
-  }, [fetchProfiles]);
+  }, [fetchProfiles, authLoading]);
 
   return { profiles, pagination, isLoading, error, refetch: fetchProfiles };
 }

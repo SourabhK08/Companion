@@ -90,6 +90,12 @@ function SettingsContent() {
   const initialTab = searchParams.get("tab") || "account";
   
   const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  // Keep tab in sync when navigating client-side to /settings?tab=xxx
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab) setActiveTab(tab);
+  }, [searchParams]);
   const [userProfile, setUserProfile] = useState<UserProfile>(initialUserProfile);
   const [quickSettings, setQuickSettings] = useState<QuickSettings>(initialQuickSettings);
   const [editingField, setEditingField] = useState<string | null>(null);

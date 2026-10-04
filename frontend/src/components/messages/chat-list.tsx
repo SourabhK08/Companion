@@ -65,7 +65,7 @@ export default function ChatList({ conversations, activeId, onSelect, isLoading 
         <div className="text-center">
           <p className="text-sm font-medium text-[#4d0d1d]">No conversations yet</p>
           <p className="mt-1 text-xs text-[#8a6e74]">
-            Start chatting from a companion&apos;s profile!
+            Explore co-founders &amp; partners and tap “Chat” on any profile to start a conversation.
           </p>
         </div>
       </aside>

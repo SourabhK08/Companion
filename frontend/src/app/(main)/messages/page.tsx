@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { MessageCircle, ArrowLeft } from "lucide-react";
+import { MessageCircle, ArrowLeft, ArrowRight, Briefcase, Check, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSocket } from "@/providers/socket-provider";
 import { useChatList, useChat } from "@/hooks/use-chat";
+import { useChatAccess } from "@/hooks/use-chat-access";
+import { ChatPassModal } from "@/components/cofounders/chat-pass-modal";
 import ChatList from "@/components/messages/chat-list";
 import Conversation from "@/components/messages/conversation";
 import MessageInput from "@/components/messages/message-input";
@@ -14,8 +17,11 @@ function MessagesContent() {
   const searchParams = useSearchParams();
   const chatParam = searchParams.get("chat");
   const { user } = useAuth();
-  const { onlineUsers } = useSocket();
-  const { conversations, isLoading: listLoading, markConversationRead } = useChatList();
+  const { onlineUsers, socket } = useSocket();
+  const { conversations, isLoading: listLoading, markConversationRead, refetch } = useChatList();
+  const access = useChatAccess();
+  const [passModalOpen, setPassModalOpen] = useState(false);
+  const [accessDenied, setAccessDenied] = useState<string | null>(null);
 
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     chatParam || null
@@ -30,6 +36,37 @@ function MessagesContent() {
       setShowConversation(true);
     }
   }, [chatParam]);
+
+  // A just-created conversation may not be in the list yet → refetch once (no hard refresh needed)
+  const refetchedForRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      !listLoading &&
+      activeConversationId &&
+      !conversations.some((c) => c.id === activeConversationId) &&
+      refetchedForRef.current !== activeConversationId
+    ) {
+      refetchedForRef.current = activeConversationId;
+      void refetch();
+    }
+  }, [listLoading, activeConversationId, conversations, refetch]);
+
+  // Server rejected a message (no profile / pass expired)
+  useEffect(() => {
+    if (!socket) return;
+    const onDenied = ({ message }: { message: string }) => {
+      setAccessDenied(message.replace(/^[A-Z_]+:\s*/, ""));
+    };
+    socket.on("chat_access_denied", onDenied);
+    return () => {
+      socket.off("chat_access_denied", onDenied);
+    };
+  }, [socket]);
+
+  // Clear the banner as soon as access is restored
+  useEffect(() => {
+    if (access.hasActivePass && access.hasProfile) setAccessDenied(null);
+  }, [access.hasActivePass, access.hasProfile]);
 
   const {
     messages,
@@ -59,6 +96,10 @@ function MessagesContent() {
       : activeConversation.user1
     : null;
   const isOtherOnline = otherUser ? onlineUsers.has(otherUser.id) : false;
+  const canSend = access.hasProfile && access.hasActivePass;
+  const passEnd = access.subscription
+    ? new Date(access.subscription.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+    : null;
 
   const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
@@ -89,7 +130,29 @@ function MessagesContent() {
               </div>
             </div>
 
-            <div className="h-[640px]">
+            {/* Chat Pass status */}
+            <div className="mb-4 rounded-xl border border-[#ebd5d9] bg-white px-3 py-2.5">
+              {!access.hasProfile ? (
+                <Link href="/settings?tab=cofounder&next=/messages" className="flex items-center justify-between text-xs">
+                  <span className="text-[#8a6e74]">Co-Founder profile not created</span>
+                  <span className="font-semibold text-[#7a1f39]">Create →</span>
+                </Link>
+              ) : access.hasActivePass ? (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1.5 text-emerald-700">
+                    <span className="size-1.5 rounded-full bg-emerald-500" /> Chat Pass active
+                  </span>
+                  <span className="text-[#8a6e74]">till {passEnd}</span>
+                </div>
+              ) : (
+                <button onClick={() => setPassModalOpen(true)} className="flex w-full items-center justify-between text-xs">
+                  <span className="text-[#8a6e74]">No active Chat Pass</span>
+                  <span className="font-semibold text-[#7a1f39]">Get from ₹9 →</span>
+                </button>
+              )}
+            </div>
+
+            <div className="h-[580px]">
               <ChatList
                 conversations={conversations}
                 activeId={activeConversationId}
@@ -161,31 +224,121 @@ function MessagesContent() {
 
                 {/* Input */}
                 <div className="border-t border-[#f0e4e7] p-4">
-                  <MessageInput
-                    onSend={sendMessage}
-                    onTyping={sendTyping}
-                    onStopTyping={sendStopTyping}
-                  />
+                  {canSend && !accessDenied ? (
+                    <MessageInput
+                      onSend={sendMessage}
+                      onTyping={sendTyping}
+                      onStopTyping={sendStopTyping}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-[#ebd5d9] bg-[#fff6f6] px-4 py-3 sm:flex-row">
+                      <div className="flex items-center gap-2.5 text-left">
+                        <Lock className="size-4 shrink-0 text-[#7a1f39]" />
+                        <p className="text-xs text-[#5d2a38]">
+                          {!access.hasProfile
+                            ? "Create your Co-Founder profile (LinkedIn) to send messages."
+                            : accessDenied || "Your Chat Pass has expired. Renew to keep chatting — unlimited messages."}
+                        </p>
+                      </div>
+                      {!access.hasProfile ? (
+                        <Link
+                          href={`/settings?tab=cofounder&next=/messages?chat=${activeConversationId}`}
+                          className="shrink-0 rounded-full bg-[#4d0d1d] px-4 py-2 text-xs font-semibold text-white hover:bg-[#7a1f39]"
+                        >
+                          Create Profile
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => setPassModalOpen(true)}
+                          className="shrink-0 rounded-full bg-[#4d0d1d] px-4 py-2 text-xs font-semibold text-white hover:bg-[#7a1f39]"
+                        >
+                          Get Chat Pass · ₹9/week
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </>
+            ) : activeConversationId && listLoading ? (
+              <div className="flex h-full min-h-[600px] items-center justify-center">
+                <div className="size-8 animate-spin rounded-full border-4 border-[#7a1f39] border-t-transparent" />
+              </div>
             ) : (
-              /* Empty state */
-              <div className="flex h-full min-h-[600px] flex-col items-center justify-center text-center px-8">
-                <div className="flex size-20 items-center justify-center rounded-full bg-[#f6e9ec] mb-5">
-                  <MessageCircle className="size-9 text-[#7a1f39]" />
+              /* Empty state — Co-Founder chat flow */
+              <div className="flex h-full min-h-[600px] flex-col items-center justify-center px-8 text-center">
+                <div className="mb-5 flex size-20 items-center justify-center rounded-full bg-[#f6e9ec]">
+                  <Briefcase className="size-9 text-[#7a1f39]" />
                 </div>
-                <h3 className="text-lg font-bold text-[#4d0d1d]">
-                  Your Messages
-                </h3>
-                <p className="mt-2 text-sm text-[#8a6e74] max-w-xs">
-                  Select a conversation from the sidebar or send a message to a
-                  companion from their profile page.
+                <h3 className="text-lg font-bold text-[#4d0d1d]">Co-Founder Conversations</h3>
+                <p className="mt-2 max-w-sm text-sm text-[#8a6e74]">
+                  Chat is reserved for the <span className="font-semibold text-[#7a1f39]">Find Your Co-Founder</span> community —
+                  connect with serious builders to execute your idea.
                 </p>
+
+                {/* Step-by-step based on the user's current access */}
+                <ol className="mt-6 w-full max-w-sm space-y-2.5 text-left">
+                  {[
+                    { done: access.hasProfile, label: "Create your Co-Founder profile & attach LinkedIn" },
+                    { done: access.hasActivePass, label: "Get a Chat Pass — ₹9/week · ₹35/month · ₹100/3 months" },
+                    { done: conversations.length > 0, label: "Explore profiles and tap “Chat” to start" },
+                  ].map((step, i) => (
+                    <li
+                      key={step.label}
+                      className="flex items-center gap-3 rounded-xl border border-[#f0e4e7] bg-[#fffafa] px-3 py-2.5"
+                    >
+                      <span
+                        className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                          step.done ? "bg-emerald-500 text-white" : "bg-[#f6e9ec] text-[#7a1f39]"
+                        }`}
+                      >
+                        {step.done ? <Check className="size-3.5" strokeWidth={3} /> : i + 1}
+                      </span>
+                      <span className={`text-xs ${step.done ? "text-[#8a6e74] line-through" : "text-[#4d0d1d]"}`}>
+                        {step.label}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+
+                <div className="mt-6">
+                  {!access.hasProfile ? (
+                    <Link
+                      href="/settings?tab=cofounder&next=/messages"
+                      className="inline-flex items-center gap-2 rounded-full bg-[#4d0d1d] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#7a1f39]"
+                    >
+                      Create Co-Founder Profile <ArrowRight className="size-4" />
+                    </Link>
+                  ) : !access.hasActivePass ? (
+                    <button
+                      onClick={() => setPassModalOpen(true)}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#4d0d1d] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#7a1f39]"
+                    >
+                      Get Chat Pass from ₹9 <ArrowRight className="size-4" />
+                    </button>
+                  ) : (
+                    <Link
+                      href="/explore/cofounder"
+                      className="inline-flex items-center gap-2 rounded-full bg-[#4d0d1d] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#7a1f39]"
+                    >
+                      {conversations.length > 0 ? "Find more Co-Founders" : "Explore Co-Founders"} <ArrowRight className="size-4" />
+                    </Link>
+                  )}
+                </div>
+                {conversations.length > 0 && (
+                  <p className="mt-4 text-xs text-[#8a6e74]">Or select a conversation from the left.</p>
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
+
+      <ChatPassModal
+        open={passModalOpen}
+        onClose={() => setPassModalOpen(false)}
+        onSubscribe={access.subscribe}
+        onSuccess={() => setAccessDenied(null)}
+      />
     </main>
   );
 }
