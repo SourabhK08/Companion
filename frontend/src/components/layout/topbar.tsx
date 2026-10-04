@@ -87,7 +87,7 @@ export function Topbar() {
         </Link>
 
         {/* Messages */}
-        <Link
+        {/* <Link
           href="/messages"
           aria-label={`Messages (${unreadCount} unread)`}
           className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -98,7 +98,7 @@ export function Topbar() {
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
-        </Link>
+        </Link> */}
 
         {/* User profile */}
         <Link href="/settings" className="flex items-center gap-2.5 rounded-xl pl-1 pr-2 py-1 transition-colors hover:bg-muted">

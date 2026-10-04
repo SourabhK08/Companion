@@ -20,6 +20,8 @@ interface ApiUser {
   interests?: string[];
   languages?: string[];
   isCompanion?: boolean;
+  isCoFounder?: boolean;
+  linkedinUrl?: string | null;
   authProvider?: string;
   createdAt?: string | Date;
 }
@@ -41,6 +43,8 @@ function mapUser(user: ApiUser | null | undefined): AuthUser | null {
     interests: user.interests ?? [],
     languages: user.languages ?? [],
     isCompanion: user.isCompanion ?? false,
+    isCoFounder: user.isCoFounder ?? false,
+    linkedinUrl: user.linkedinUrl ?? null,
     isVerified: user.isCompanion ?? false,
   };
 }

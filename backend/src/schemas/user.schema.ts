@@ -10,6 +10,7 @@ export const updateMeSchema = z.object({
   bio: z.string().max(500, "Bio is too long").optional().nullable(),
   interests: z.array(z.string()).optional(),
   languages: z.array(z.string()).optional(),
+  linkedinUrl: z.string().url("Must be a valid URL").optional().nullable(),
 });
 
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;

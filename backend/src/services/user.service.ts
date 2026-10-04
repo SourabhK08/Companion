@@ -14,10 +14,12 @@ const userSelect = {
   bio: true,
   interests: true,
   languages: true,
+  linkedinUrl: true,
   isVerified: true,
   authProvider: true,
   createdAt: true,
   companionProfile: { select: { id: true } },
+  coFounderProfile: { select: { id: true } },
 } as const;
 
 export async function updateMe(userId: string, input: UpdateMeInput) {

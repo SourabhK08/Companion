@@ -1,6 +1,8 @@
 import type { Response } from "express";
 import type { AuthRequest } from "../middleware/auth.js";
 import * as chatService from "../services/chat.service.js";
+import { assertChatAccess } from "../services/chat-subscription.service.js";
+import { AppError } from "../services/auth.service.js";
 
 // ─── POST /api/chat/conversations ─────────────────────────
 
@@ -19,6 +21,7 @@ export async function createConversation(req: AuthRequest, res: Response): Promi
       return;
     }
 
+    await assertChatAccess(userId, recipientId);
     const conversation = await chatService.getOrCreateConversation(userId, recipientId);
 
     res.status(200).json({
@@ -26,6 +29,10 @@ export async function createConversation(req: AuthRequest, res: Response): Promi
       data: { conversation },
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ success: false, message: error.message });
+      return;
+    }
     const message = error instanceof Error ? error.message : "Failed to create conversation";
     console.error("Create conversation error:", error);
     res.status(500).json({ success: false, message });

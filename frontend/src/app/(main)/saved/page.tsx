@@ -342,13 +342,13 @@ export default function SavedCompanionsPage() {
                   label: "My Bookings",
                   sub: "View your upcoming & past bookings",
                   href: "/bookings",
-                },
-                {
-                  icon: MessageCircle,
-                  label: "Send Message",
-                  sub: "Chat with your saved companions",
-                  href: "/messages",
-                },
+                }
+                // {
+                //   icon: MessageCircle,
+                //   label: "Send Message",
+                //   sub: "Chat with your saved companions",
+                //   href: "/messages",
+                // },
               ].map((action) => (
                 <Link
                   key={action.href}

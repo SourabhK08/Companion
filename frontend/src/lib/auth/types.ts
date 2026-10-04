@@ -28,6 +28,8 @@ export interface AuthUser {
   interests?: string[];
   languages?: string[];
   isCompanion?: boolean;
+  isCoFounder?: boolean;
+  linkedinUrl?: string | null;
   isVerified?: boolean;
 }
 

@@ -24,6 +24,7 @@ model User {
   bio           String?
   interests     String[]  @default([])
   languages     String[]  @default([])
+  linkedinUrl   String?
   isVerified    Boolean   @default(false)
   authProvider  String    @default("local") /// "local" | "google" | "microsoft"
 
@@ -39,6 +40,8 @@ model User {
   wallet               Wallet?
   clientBookings       Booking[]      @relation("ClientBookings")
   notifications        Notification[]
+  coFounderProfile    CoFounderProfile?
+  chatSubscriptions   ChatSubscription[]
 
   @@map("users")
 }
@@ -230,4 +233,42 @@ model Notification {
 
   @@index([userId, isRead, createdAt])
   @@map("notifications")
+}
+
+
+/// Co-Founder profile — users who want to find business partners.
+/// Linked 1:1 with User, similar to CompanionProfile.
+model CoFounderProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  linkedinUrl    String   /// Required LinkedIn profile URL
+  workInterests  String[] @default([])  /// e.g. ["AI/ML", "SaaS", "FinTech"]
+  pitch          String?  /// Short pitch / idea description
+  lookingFor     String?  /// What kind of partner they seek
+  isActive       Boolean  @default(true)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("cofounder_profiles")
+}
+
+/// Chat subscription — paid access to message co-founders.
+model ChatSubscription {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan        String   /// "WEEKLY" | "MONTHLY" | "QUARTERLY"
+  amountPaid  Int      /// Amount in paisa
+  startDate   DateTime @default(now())
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId, endDate])
+  @@map("chat_subscriptions")
 }

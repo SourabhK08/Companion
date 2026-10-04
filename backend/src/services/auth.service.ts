@@ -44,6 +44,8 @@ function sanitizeUser(user: {
   authProvider: string;
   createdAt: Date;
   companionProfile?: { id: string } | null;
+  coFounderProfile?: { id: string } | null;
+  linkedinUrl?: string | null;
 }) {
   return {
     id: user.id,
@@ -60,7 +62,9 @@ function sanitizeUser(user: {
     isVerified: user.isVerified,
     authProvider: user.authProvider,
     createdAt: user.createdAt,
+    linkedinUrl: user.linkedinUrl ?? null,
     isCompanion: !!user.companionProfile,
+    isCoFounder: !!user.coFounderProfile,
   };
 }
 
@@ -120,7 +124,8 @@ export async function loginUser(input: LoginInput) {
   const user = await prisma.user.findUnique({
     where: { email: input.email },
     include: {
-      companionProfile: { select: { id: true } }
+      companionProfile: { select: { id: true } },
+      coFounderProfile: { select: { id: true } }
     },
   });
 
@@ -164,7 +169,7 @@ export async function refreshAccessToken(refreshTokenValue: string) {
     where: { token: refreshTokenValue },
     include: { 
       user: {
-        include: { companionProfile: { select: { id: true } } }
+        include: { companionProfile: { select: { id: true } }, coFounderProfile: { select: { id: true } } }
       }
     },
   });
@@ -221,7 +226,8 @@ export async function getCurrentUser(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      companionProfile: { select: { id: true } }
+      companionProfile: { select: { id: true } },
+      coFounderProfile: { select: { id: true } }
     },
   });
 

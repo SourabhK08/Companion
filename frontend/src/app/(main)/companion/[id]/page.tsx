@@ -182,6 +182,7 @@ export default function CompanionProfilePage({
                   <CalendarPlus className="mr-2 size-4" />
                   Book Now
                 </Button>
+                {/* Chat is now exclusive to the Co-Founder section
                 <Button
                   onClick={handleSendMessage}
                   variant="outline"
@@ -190,6 +191,7 @@ export default function CompanionProfilePage({
                   <MessageCircle className="mr-2 size-4" />
                   Message
                 </Button>
+                */}
               </>
             ) : (
               <Button variant="outline" className="rounded-full border-[#7a1f39] text-[#7a1f39] hover:bg-[#7a1f39]/5">

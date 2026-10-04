@@ -133,6 +133,26 @@ export default function DashboardPage() {
         </div>
       )}
       
+      {user && !user.isCoFounder && (
+        <div className="mb-6 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100/50 shadow-sm">
+          <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-blue-900">Find Your Co-Founder! 🚀</h3>
+              <p className="mt-1 text-sm text-blue-800/80">
+                Attach your LinkedIn profile and share your ideas to connect with potential business partners.
+              </p>
+            </div>
+            <Link 
+              href="/settings?tab=cofounder"
+              className="shrink-0 flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 w-full sm:w-auto"
+            >
+              Complete Profile
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+      
       <ProfileCompleteness />
       
       <div className="overflow-hidden rounded-[28px] border border-[#eadfe2] bg-[#f3edeb] shadow-[0_18px_42px_rgba(92,23,50,0.08)]">

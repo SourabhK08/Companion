@@ -52,6 +52,7 @@ export const initialQuickSettings: QuickSettings = {
 export const settingsNavLinks = [
   { id: "account", label: "Account Settings", icon: "user" as const },
   { id: "companion", label: "Companion Profile", icon: "star" as const },
+  { id: "cofounder", label: "Co-Founder Profile", icon: "briefcase" as const },
   { id: "privacy", label: "Privacy & Security", icon: "lock" as const },
   { id: "notifications", label: "Notifications", icon: "bell" as const },
   { id: "payment", label: "Payment Methods", icon: "credit-card" as const },

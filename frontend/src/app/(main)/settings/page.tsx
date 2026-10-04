@@ -31,6 +31,7 @@ import {
   ShieldCheck,
   ChevronRight,
   ArrowRight,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -43,6 +44,7 @@ import {
   type UserProfile,
 } from "@/config/settings-data";
 import { CompanionSettings } from "./companion-settings";
+import { CoFounderSettings } from "./cofounder-settings";
 
 /**
  * Toggle Switch Component
@@ -184,6 +186,8 @@ function SettingsContent() {
         return HelpCircle;
       case "info":
         return Info;
+      case "briefcase":
+        return Briefcase;
       default:
         return SettingsIcon;
     }
@@ -633,10 +637,10 @@ function SettingsContent() {
               </div>
               
               {/* Bio */}
-              <div className="flex items-start justify-between gap-4 border-t border-soft-border/50 pt-4 mt-4">
+              <div className="flex items-start justify-between gap-4 py-3.5">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 text-muted-foreground mt-1">
-                    <User className="size-5" />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-berry/5 text-berry">
+                    <User className="size-4" />
                   </div>
                   <div>
                     <span className="text-[11px] text-muted-foreground font-medium block">
@@ -657,8 +661,8 @@ function SettingsContent() {
                         </button>
                       </div>
                     ) : (
-                      <p className="text-xs font-semibold text-foreground max-w-sm mt-1">
-                        {userProfile.bio || "Write something about yourself..."}
+                      <p className="mt-1 max-w-sm text-xs font-semibold text-foreground">
+                        {userProfile.bio || "Not set"}
                       </p>
                     )}
                   </div>
@@ -673,12 +677,12 @@ function SettingsContent() {
                   </button>
                 )}
               </div>
-              
+
               {/* Languages */}
-              <div className="flex items-start justify-between gap-4 border-t border-soft-border/50 pt-4 mt-4">
+              <div className="flex items-start justify-between gap-4 py-3.5">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 text-muted-foreground">
-                    <Globe className="size-5" />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-berry/5 text-berry">
+                    <Globe className="size-4" />
                   </div>
                   <div>
                     <span className="text-[11px] text-muted-foreground font-medium block">
@@ -695,13 +699,10 @@ function SettingsContent() {
                         />
                         <button
                           onClick={() => {
-                            // Convert comma-separated string to array
-                            const langs = editValue.split(",").map((l) => l.trim()).filter(Boolean);
-                            // We need to pass the array to the API. 
-                            // Since saveFieldEdit uses editValue directly for all fields right now,
-                            // we'll update saveFieldEdit to handle arrays or we can just join/split here.
-                            // To keep it simple, we will temporarily set editValue to JSON before saving,
-                            // or better, modify saveFieldEdit to handle special fields.
+                            const langs = editValue
+                              .split(",")
+                              .map((l) => l.trim())
+                              .filter(Boolean);
                             saveFieldEdit("languages", langs);
                           }}
                           className="rounded-lg bg-berry px-2 py-1 text-[10px] font-semibold text-white"
@@ -726,12 +727,12 @@ function SettingsContent() {
                   </button>
                 )}
               </div>
-              
+
               {/* Interests */}
-              <div className="flex items-start justify-between gap-4 border-t border-soft-border/50 pt-4 mt-4">
+              <div className="flex items-start justify-between gap-4 py-3.5">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 text-muted-foreground">
-                    <Heart className="size-5" />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-berry/5 text-berry">
+                    <Heart className="size-4" />
                   </div>
                   <div>
                     <span className="text-[11px] text-muted-foreground font-medium block">
@@ -748,7 +749,10 @@ function SettingsContent() {
                         />
                         <button
                           onClick={() => {
-                            const ints = editValue.split(",").map((i) => i.trim()).filter(Boolean);
+                            const ints = editValue
+                              .split(",")
+                              .map((i) => i.trim())
+                              .filter(Boolean);
                             saveFieldEdit("interests", ints);
                           }}
                           className="rounded-lg bg-berry px-2 py-1 text-[10px] font-semibold text-white"
@@ -804,6 +808,7 @@ function SettingsContent() {
         )}
 
         {activeTab === "companion" && <CompanionSettings />}
+        {activeTab === "cofounder" && <CoFounderSettings />}
         {/* ─── COLUMN 3: Quick Settings & Safety (3 cols) ─── */}
         <aside className="lg:col-span-3 space-y-6">
           {/* Quick Settings Card */}

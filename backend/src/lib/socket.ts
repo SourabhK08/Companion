@@ -3,6 +3,7 @@ import { Server, Socket } from "socket.io";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import * as chatService from "../services/chat.service.js";
+import { assertChatAccess } from "../services/chat-subscription.service.js";
 
 /**
  * Map of userId → Set<socketId>
@@ -80,6 +81,21 @@ export function initSocket(httpServer: HttpServer): Server {
         type?: string;
       }) => {
         try {
+          // Enforce Co-Founder chat access (profile + active Chat Pass)
+          const participants = await getConversationParticipants(conversationId);
+          if (!participants) throw new Error("Conversation not found");
+          const otherId =
+            participants.participant1 === userId ? participants.participant2 : participants.participant1;
+          try {
+            await assertChatAccess(userId, otherId);
+          } catch (accessErr) {
+            socket.emit("chat_access_denied", {
+              conversationId,
+              message: accessErr instanceof Error ? accessErr.message : "Chat access denied",
+            });
+            return;
+          }
+
           const message = await chatService.sendMessage(
             conversationId,
             userId,
@@ -95,15 +111,10 @@ export function initSocket(httpServer: HttpServer): Server {
 
           // Also send to both participants' personal channels
           // (for updating the chat list sidebar even if they haven't joined the conv room)
-          const conv = await getConversationParticipants(conversationId);
-          if (conv) {
-            const recipientId =
-              conv.participant1 === userId ? conv.participant2 : conv.participant1;
-            emitToUser(recipientId, "new_message_notification", {
-              message,
-              conversationId,
-            });
-          }
+          emitToUser(otherId, "new_message_notification", {
+            message,
+            conversationId,
+          });
         } catch (error) {
           socket.emit("error", {
             message: error instanceof Error ? error.message : "Failed to send message",
