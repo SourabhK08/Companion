@@ -51,16 +51,26 @@ function BuddyCard({ buddy }: { buddy: Companion }) {
 
   return (
     <div className="overflow-hidden rounded-[22px] border border-[#f0dfe3] bg-white shadow-[0_8px_22px_rgba(122,31,57,0.08)]">
-      <div className="relative h-52 w-full overflow-hidden">
-        <div
-          className="h-full w-full bg-gradient-to-br from-[#7a1f39]/80 via-[#7a1f39]/60 to-[#d9a3ad]/40"
-        />
-        {buddy.avatar && (
-          <div
-            className="absolute inset-0 h-full w-full bg-cover bg-center mix-blend-overlay"
-            style={{ backgroundImage: `url(${buddy.avatar})` }}
+      <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-[#7a1f39]/80 via-[#7a1f39]/60 to-[#d9a3ad]/40">
+        {buddy.avatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={buddy.avatar}
+            alt={buddy.name}
+            className="size-full object-cover transition-transform duration-300 hover:scale-105"
           />
+        ) : (
+          <div className="flex size-full items-center justify-center text-3xl font-bold text-white/60">
+            {buddy.name
+              .split(" ")
+              .map((n) => n[0])
+              .filter(Boolean)
+              .slice(0, 2)
+              .join("")
+              .toUpperCase()}
+          </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 top-0 flex items-center justify-between px-3 py-3">
           {buddy.isVerified && (
             <div className="flex items-center gap-1 rounded-full bg-white/85 px-2 py-1 text-[10px] font-semibold text-[#7a1f39] backdrop-blur-sm">

@@ -179,8 +179,17 @@ function CheckoutContent() {
               Companion Details
             </h2>
             <div className="mt-4 flex items-center gap-4">
-              <div className="size-16 shrink-0 rounded-full bg-gradient-to-br from-dusty-rose to-berry flex items-center justify-center text-white text-lg font-bold">
-                {companion.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
+              <div className="size-16 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-sm bg-gradient-to-br from-dusty-rose to-berry flex items-center justify-center text-white text-lg font-bold">
+                {companion.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={companion.avatar}
+                    alt={companion.name}
+                    className="size-full object-cover"
+                  />
+                ) : (
+                  companion.name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-1.5">

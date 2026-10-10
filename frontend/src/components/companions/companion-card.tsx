@@ -21,15 +21,27 @@ export function CompanionCard({ companion }: { companion: Companion }) {
 
   return (
     <div className="group overflow-hidden rounded-2xl border border-soft-border bg-white shadow-sm transition-shadow hover:shadow-md">
-      {/* Image placeholder */}
-      <div className="relative h-52 overflow-hidden">
-        <div
-          className={cn(
-            "absolute inset-0 bg-gradient-to-br",
-            "from-berry-dark/80 via-berry/60 to-dusty-rose/40"
-          )}
-        />
-        <div className="absolute inset-0 bg-black/5 transition-opacity group-hover:bg-black/0" />
+      {/* Image / Avatar */}
+      <div className="relative h-52 overflow-hidden bg-gradient-to-br from-berry-dark/80 via-berry/60 to-dusty-rose/40">
+        {companion.avatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={companion.avatar}
+            alt={companion.name}
+            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center text-3xl font-bold text-white/60">
+            {companion.name
+              .split(" ")
+              .map((n) => n[0])
+              .filter(Boolean)
+              .slice(0, 2)
+              .join("")
+              .toUpperCase()}
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
         {/* Verified badge */}
         {companion.isVerified && (

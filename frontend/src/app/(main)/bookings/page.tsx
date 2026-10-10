@@ -163,8 +163,17 @@ function BookingCard({
       {/* Header Row */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="size-12 shrink-0 rounded-full bg-gradient-to-br from-dusty-rose to-berry flex items-center justify-center text-white text-sm font-bold">
-            {otherPerson.fullName.split(" ").map((n) => n[0]).join("").substring(0, 2)}
+          <div className="size-12 shrink-0 overflow-hidden rounded-full border border-soft-border bg-gradient-to-br from-dusty-rose to-berry flex items-center justify-center text-white text-sm font-bold">
+            {otherPerson.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={otherPerson.avatar}
+                alt={otherPerson.fullName}
+                className="size-full object-cover"
+              />
+            ) : (
+              otherPerson.fullName.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()
+            )}
           </div>
           <div>
             <div className="flex items-center gap-1.5">

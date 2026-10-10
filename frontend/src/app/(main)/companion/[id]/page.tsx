@@ -309,7 +309,16 @@ export default function CompanionProfilePage({
                 </button>
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
-                {[1,2,3,4].map((i) => (
+                {companion.avatar && (
+                  <div className="aspect-square overflow-hidden rounded-xl bg-gray-100 ring-2 ring-[#7a1f39]/20">
+                    <img 
+                      src={companion.avatar}
+                      alt={companion.name} 
+                      className="h-full w-full object-cover transition-transform hover:scale-110"
+                    />
+                  </div>
+                )}
+                {[1, 2, 3, 4].slice(0, companion.avatar ? 3 : 4).map((i) => (
                   <div key={i} className="aspect-square overflow-hidden rounded-xl bg-gray-100">
                     <img 
                       src={`https://images.unsplash.com/photo-152${i}504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80`}
@@ -350,7 +359,7 @@ export default function CompanionProfilePage({
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#2d111b]">Phone Number Verified</p>
-                    <p className="text-xs text-[#6a4953]">+91 98765 43210</p>
+                   
                   </div>
                 </div>
                 <div className="relative flex items-start gap-4">
@@ -359,18 +368,17 @@ export default function CompanionProfilePage({
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#2d111b]">Email Verified</p>
-                    <p className="text-xs text-[#6a4953]">user@example.com</p>
+                  
                   </div>
                 </div>
-                <div className="relative flex items-start gap-4">
+                {/* <div className="relative flex items-start gap-4">
                   <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 ring-4 ring-white z-10">
                     <CheckCircle2 className="size-3.5 text-white" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#2d111b]">Profile Photo Verified</p>
-                    <p className="text-xs text-[#6a4953]">Face matched successfully</p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
