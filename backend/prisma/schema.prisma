@@ -42,8 +42,36 @@ model User {
   notifications        Notification[]
   coFounderProfile    CoFounderProfile?
   chatSubscriptions   ChatSubscription[]
+  profilePhotos       ProfilePhoto[]
 
   @@map("users")
+}
+
+/// Profile photo stored in Azure Blob Storage.
+/// Only metadata is stored in the database — never the image binary.
+/// storageKey is the blob path: users/{userId}/{uuid}.webp
+model ProfilePhoto {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  storageKey       String   @unique  /// Azure blob path, e.g. "users/abc123/uuid.webp"
+  originalFilename String?            /// Original name the user uploaded (for display only)
+  mimeType         String?            /// e.g. "image/jpeg", "image/webp"
+  sizeBytes        Int?               /// File size in bytes
+  width            Int?               /// Image width in pixels (populated after confirmation)
+  height           Int?               /// Image height in pixels (populated after confirmation)
+
+  sortOrder        Int      @default(0)
+  isProfilePhoto   Boolean  @default(false)  /// The user's current avatar
+
+  status           String   @default("PENDING")  /// "PENDING" | "CONFIRMED" | "FAILED"
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@map("profile_photos")
 }
 
 /// 1-to-1 conversation thread between two users.

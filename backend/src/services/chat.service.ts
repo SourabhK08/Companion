@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import { resolveAvatars } from "./cloudinary.service.js";
 
 // ─── Participant ordering helper ──────────────────────────
 // Always store the lexicographically smaller ID as participant1
@@ -59,7 +60,7 @@ export async function getOrCreateConversation(userId: string, recipientId: strin
     });
   }
 
-  return conversation;
+  return resolveAvatars(conversation);
 }
 
 // ─── Get All Conversations for a User ─────────────────────
@@ -118,7 +119,7 @@ export async function getUserConversations(userId: string) {
     })
   );
 
-  return conversationsWithUnread;
+  return resolveAvatars(conversationsWithUnread);
 }
 
 // ─── Get Messages for a Conversation (paginated) ──────────
@@ -173,7 +174,7 @@ export async function getConversationMessages(
   if (hasMore) messages.pop(); // remove the extra
 
   return {
-    messages: messages.reverse(), // oldest first for display
+    messages: resolveAvatars(messages.reverse()), // oldest first for display
     hasMore,
     nextCursor: hasMore ? messages[0]?.id : undefined,
   };
@@ -231,7 +232,7 @@ export async function sendMessage(
     }),
   ]);
 
-  return message;
+  return resolveAvatars(message);
 }
 
 // ─── Mark Messages as Read ────────────────────────────────

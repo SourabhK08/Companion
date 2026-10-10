@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "./auth.service.js";
+import { resolveAvatars } from "./cloudinary.service.js";
 import type {
   CreateCoFounderInput,
   UpdateCoFounderInput,
@@ -68,7 +69,7 @@ export async function createOrUpdateProfile(userId: string, input: CreateCoFound
     select: cofounderSelect,
   });
 
-  return profile;
+  return resolveAvatars(profile);
 }
 
 export async function updateProfile(userId: string, input: UpdateCoFounderInput) {
@@ -99,7 +100,7 @@ export async function updateProfile(userId: string, input: UpdateCoFounderInput)
     select: cofounderSelect,
   });
 
-  return profile;
+  return resolveAvatars(profile);
 }
 
 export async function listCoFounders(query: ListCoFoundersQuery, excludeUserId?: string) {
@@ -139,7 +140,7 @@ export async function listCoFounders(query: ListCoFoundersQuery, excludeUserId?:
   ]);
 
   return {
-    profiles,
+    profiles: resolveAvatars(profiles),
     pagination: {
       page,
       limit,
@@ -159,7 +160,7 @@ export async function getById(id: string) {
     throw new AppError(404, "Co-Founder profile not found");
   }
 
-  return profile;
+  return resolveAvatars(profile);
 }
 
 export async function getByUserId(userId: string) {
@@ -168,5 +169,5 @@ export async function getByUserId(userId: string) {
     select: cofounderSelect,
   });
 
-  return profile;
+  return resolveAvatars(profile);
 }

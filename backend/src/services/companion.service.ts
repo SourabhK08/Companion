@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "./auth.service.js";
+import { resolveAvatars } from "./cloudinary.service.js";
 import type {
   CreateCompanionInput,
   UpdateCompanionInput,
@@ -86,7 +87,7 @@ export async function createOrUpdateCompanion(
     select: companionSelect,
   });
 
-  return companion;
+  return resolveAvatars(companion);
 }
 
 // ─── Update Profile ───────────────────────────────────────
@@ -124,7 +125,7 @@ export async function updateCompanion(
     select: companionSelect,
   });
 
-  return companion;
+  return resolveAvatars(companion);
 }
 
 // ─── List Companions (with gender/city filter + pagination) ─
@@ -167,7 +168,7 @@ export async function listCompanions(query: ListCompanionsQuery) {
   ]);
 
   return {
-    companions,
+    companions: resolveAvatars(companions),
     pagination: {
       page,
       limit,
@@ -189,7 +190,7 @@ export async function getCompanionById(companionId: string) {
     throw new AppError(404, "Companion not found");
   }
 
-  return companion;
+  return resolveAvatars(companion);
 }
 
 // ─── Get Companion by userId ──────────────────────────────
@@ -200,5 +201,5 @@ export async function getCompanionByUserId(userId: string) {
     select: companionSelect,
   });
 
-  return companion; // Can be null if user hasn't created a profile
+  return resolveAvatars(companion); // Can be null if user hasn't created a profile
 }

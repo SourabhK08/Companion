@@ -2,6 +2,7 @@ import { prisma } from "../lib/prisma.js";
 import * as walletService from "./wallet.service.js";
 import crypto from "crypto";
 import { clearMeetingTimers } from "../lib/meeting-timer.js";
+import { resolveAvatars } from "./cloudinary.service.js";
 
 // ─── Constants ────────────────────────────────────────────
 const PLATFORM_FEE_PERCENT = 10;
@@ -162,7 +163,7 @@ export async function createBooking(input: CreateBookingInput) {
     data: { bookingId: booking.id },
   });
 
-  return booking;
+  return resolveAvatars(booking);
 }
 
 // ─── Accept Booking (Companion) ───────────────────────────
@@ -198,7 +199,7 @@ export async function acceptBooking(bookingId: string, companionUserId: string) 
     select: bookingSelect,
   });
 
-  return { booking: updated, otpCode };
+  return { booking: resolveAvatars(updated), otpCode };
 }
 
 // ─── Reject Booking (Companion) ───────────────────────────
@@ -239,7 +240,7 @@ export async function rejectBooking(
     select: bookingSelect,
   });
 
-  return updated;
+  return resolveAvatars(updated);
 }
 
 // ─── Cancel Booking (Client) ──────────────────────────────
@@ -273,7 +274,7 @@ export async function cancelBooking(bookingId: string, clientId: string) {
     select: bookingSelect,
   });
 
-  return updated;
+  return resolveAvatars(updated);
 }
 
 // ─── Verify OTP (Companion starts meeting) ────────────────
@@ -329,7 +330,7 @@ export async function verifyOTP(
     select: bookingSelect,
   });
 
-  return updated;
+  return resolveAvatars(updated);
 }
 
 // ─── End Meeting ──────────────────────────────────────────
@@ -369,7 +370,7 @@ export async function endMeeting(bookingId: string, companionUserId: string) {
     select: bookingSelect,
   });
 
-  return updated;
+  return resolveAvatars(updated);
 }
 
 // ─── List Bookings ────────────────────────────────────────
@@ -404,7 +405,7 @@ export async function listBookings(
   ]);
 
   return {
-    bookings,
+    bookings: resolveAvatars(bookings),
     pagination: {
       page,
       limit,
@@ -435,10 +436,10 @@ export async function getBooking(bookingId: string, userId: string) {
   // Strip OTP code from response if user is not the client
   // (client sees the OTP; companion enters it)
   const isClient = booking.clientId === userId;
-  return {
+  return resolveAvatars({
     ...booking,
     otpCode: isClient ? booking.otpCode : null,
-  };
+  });
 }
 
 // ─── Regenerate OTP ───────────────────────────────────────

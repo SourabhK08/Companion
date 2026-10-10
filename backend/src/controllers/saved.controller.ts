@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import type { AuthRequest } from "../middleware/auth.js";
 import { prisma } from "../lib/prisma.js";
+import { resolveAvatars } from "../services/cloudinary.service.js";
 
 // ─── POST /api/users/me/saved/:companionProfileId ─────────
 
@@ -124,7 +125,7 @@ export async function getSavedCompanions(req: AuthRequest, res: Response): Promi
 
     const companions = saved.map(s => s.companionProfile);
 
-    res.status(200).json({ success: true, data: { companions } });
+    res.status(200).json({ success: true, data: { companions: resolveAvatars(companions) } });
   } catch (error) {
     console.error("Get saved companions error:", error);
     res.status(500).json({ success: false, message: "Failed to get saved companions" });

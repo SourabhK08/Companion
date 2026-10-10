@@ -44,6 +44,7 @@ import { bookingRoutes } from "./routes/booking.routes.js";
 import { notificationRoutes } from "./routes/notification.routes.js";
 import { cofounderRoutes } from "./routes/cofounder.routes.js";
 import { chatSubscriptionRoutes } from "./routes/chat-subscription.routes.js";
+import { profilePhotoRoutes } from "./routes/profile-photo.routes.js";
 
 // ─── Routes ───────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
@@ -55,6 +56,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/cofounders", cofounderRoutes);
 app.use("/api/chat-subscriptions", chatSubscriptionRoutes);
+app.use("/api/profile/photos", profilePhotoRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────
 app.use((_req, res) => {

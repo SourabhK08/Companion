@@ -45,6 +45,7 @@ import {
 } from "@/config/settings-data";
 import { CompanionSettings } from "./companion-settings";
 import { CoFounderSettings } from "./cofounder-settings";
+import { AvatarUpload } from "@/components/settings/avatar-upload";
 
 /**
  * Toggle Switch Component
@@ -309,28 +310,15 @@ function SettingsContent() {
           <section className="rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
-                {/* Avatar with Camera badge */}
-                <div className="relative size-16 shrink-0">
-                  <div className="size-16 overflow-hidden rounded-full border-2 border-white shadow-sm bg-gradient-to-br from-dusty-rose to-berry flex items-center justify-center text-white text-lg font-bold">
-                    {userProfile.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={userProfile.avatar}
-                        alt={userProfile.name}
-                        className="size-full object-cover"
-                      />
-                    ) : (
-                      <span>{userProfile.name.split(" ").map((n) => n[0]).join("")}</span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    aria-label="Upload photo"
-                    className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full bg-berry text-white shadow-md hover:bg-berry-dark transition-colors"
-                  >
-                    <Camera className="size-3" />
-                  </button>
-                </div>
+                {/* Avatar with Camera upload */}
+                <AvatarUpload
+                  currentAvatar={userProfile.avatar}
+                  userName={userProfile.name}
+                  onAvatarUpdated={(newUrl) => {
+                    setUserProfile((prev) => ({ ...prev, avatar: newUrl }));
+                  }}
+                  size="md"
+                />
 
                 {/* Name & Contact Info */}
                 <div>

@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { prisma } from "../lib/prisma.js";
 import { env } from "../config/env.js";
 import type { RegisterInput, LoginInput } from "../schemas/auth.schema.js";
+import { resolveImageUrl } from "./cloudinary.service.js";
 
 const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_EXPIRY = "15m";
@@ -55,7 +56,7 @@ function sanitizeUser(user: {
     gender: user.gender,
     dateOfBirth: user.dateOfBirth,
     city: user.city,
-    avatar: user.avatar,
+    avatar: resolveImageUrl(user.avatar, "profile"),
     bio: user.bio,
     interests: user.interests,
     languages: user.languages,

@@ -102,9 +102,18 @@ export function Topbar() {
 
         {/* User profile */}
         <Link href="/settings" className="flex items-center gap-2.5 rounded-xl pl-1 pr-2 py-1 transition-colors hover:bg-muted">
-          {/* Avatar placeholder */}
-          <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-berry to-dusty-rose text-xs font-bold text-white">
-            {userInitials}
+          {/* Avatar */}
+          <div className="size-8 overflow-hidden rounded-full border border-soft-border bg-gradient-to-br from-berry to-dusty-rose text-xs font-bold text-white flex items-center justify-center shrink-0">
+            {user?.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.avatarUrl}
+                alt={displayName}
+                className="size-full object-cover"
+              />
+            ) : (
+              userInitials
+            )}
           </div>
           <div className="hidden sm:flex flex-col text-left">
             <span className="flex items-center gap-1 text-sm font-semibold leading-tight text-foreground">

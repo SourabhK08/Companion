@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "./auth.service.js";
+import { resolveAvatars } from "./cloudinary.service.js";
 import type { UpdateMeInput } from "../schemas/user.schema.js";
 
 const userSelect = {
@@ -37,5 +38,5 @@ export async function updateMe(userId: string, input: UpdateMeInput) {
     select: userSelect,
   });
 
-  return updatedUser;
+  return resolveAvatars(updatedUser);
 }
