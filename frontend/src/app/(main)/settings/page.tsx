@@ -47,6 +47,7 @@ import { CompanionSettings } from "./companion-settings";
 import { CoFounderSettings } from "./cofounder-settings";
 import { AvatarUpload } from "@/components/settings/avatar-upload";
 import { PhoneVerification } from "@/components/verification/phone-verification";
+import { EmailVerification } from "@/components/verification/email-verification";
 
 /**
  * Toggle Switch Component
@@ -389,7 +390,11 @@ function SettingsContent() {
                   ) : (
                     <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
                       <ShieldCheck className="size-3.5 text-amber-600" />
-                      Verify your phone to get the badge
+                      {!user?.isPhoneVerified && !user?.isEmailVerified
+                        ? "Verify phone & email to get the badge"
+                        : !user?.isPhoneVerified
+                          ? "Verify your phone to get the badge"
+                          : "Verify your email to get the badge"}
                     </div>
                   )}
                 </div>
@@ -462,48 +467,14 @@ function SettingsContent() {
                 )}
               </div>
 
-              {/* Email Address */}
-              <div className="flex items-center justify-between py-3.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-berry/5 text-berry">
-                    <Mail className="size-4.5" />
-                  </div>
-                  <div>
-                    <span className="text-xs sm:text-sm text-muted-foreground font-medium block">
-                      Email Address
-                    </span>
-                    {editingField === "email" ? (
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="email"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="h-9 rounded-lg border border-berry px-3 text-sm text-foreground focus:outline-none"
-                        />
-                        <button
-                          onClick={() => saveFieldEdit("email")}
-                          className="rounded-lg bg-berry px-3 py-1.5 text-xs font-semibold text-white"
-                        >
-                          Save
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-sm sm:text-base font-semibold text-foreground">
-                        {userProfile.email}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {editingField !== "email" && (
-                  <button
-                    onClick={() => startEditing("email", userProfile.email)}
-                    className="flex items-center gap-1.5 rounded-lg border border-soft-border px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-muted-foreground hover:border-berry hover:text-berry transition-colors cursor-pointer"
-                  >
-                    <Pencil className="size-3.5 text-berry" />
-                    Edit
-                  </button>
-                )}
-              </div>
+              {/* Email Address — verified via OTP (login identifier, not editable) */}
+              {user && (
+                <EmailVerification
+                  email={user.email}
+                  isEmailVerified={!!user.isEmailVerified}
+                  onVerified={() => refreshUser()}
+                />
+              )}
 
               {/* Phone Number — changes go through OTP verification */}
               <PhoneVerification

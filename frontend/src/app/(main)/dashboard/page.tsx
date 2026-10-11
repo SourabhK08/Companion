@@ -187,11 +187,12 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <Link
-                    href="/settings?tab=account"
+                    href="/verify-account"
                     className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-amber-800 backdrop-blur-sm ring-1 ring-amber-300/80 hover:bg-amber-50 transition-colors"
                   >
                     <ShieldCheck className="size-3.5 text-amber-600" />
-                    Verify Phone & Get Badge →
+                    Verify phone &amp; email to get the badge (
+                    {Number(!!user?.isPhoneVerified) + Number(!!user?.isEmailVerified)}/2) →
                   </Link>
                 )}
 

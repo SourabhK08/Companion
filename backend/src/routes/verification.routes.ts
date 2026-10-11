@@ -4,6 +4,7 @@ import { validate } from "../middleware/validate.js";
 import {
   sendOtpSchema,
   verifyOtpSchema,
+  verifyEmailOtpSchema,
 } from "../schemas/verification.schema.js";
 import * as verificationController from "../controllers/verification.controller.js";
 
@@ -22,6 +23,14 @@ router.post(
   "/phone/verify-otp",
   validate(verifyOtpSchema),
   verificationController.verifyOtp
+);
+
+// Email verification (always targets the account email — no body on send)
+router.post("/email/send-otp", verificationController.sendEmailOtpHandler);
+router.post(
+  "/email/verify-otp",
+  validate(verifyEmailOtpSchema),
+  verificationController.verifyEmailOtpHandler
 );
 
 // Verification status

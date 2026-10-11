@@ -15,6 +15,14 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
   CLOUDINARY_API_KEY: z.string().min(1).optional(),
   CLOUDINARY_API_SECRET: z.string().min(1).optional(),
+
+  // SMTP (email OTP). Optional in development — OTP is logged + returned as devOtp.
+  // Required in production for email verification to work.
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(1).optional(), // e.g. "Modhuralap <no-reply@yourdomain.com>"
 });
 
 const parsed = envSchema.safeParse(process.env);

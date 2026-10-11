@@ -24,6 +24,7 @@ export type OtpErrorKind =
   | "locked" // too many wrong attempts (423)
   | "rate_limited" // too many OTP requests (429)
   | "auth" // session expired (401)
+  | "unavailable" // email/SMS provider down (503)
   | "network" // offline / server unreachable
   | "server"; // anything else
 
@@ -42,6 +43,7 @@ function toOtpError(error: unknown, fallback: string): OtpError {
       410: "expired",
       423: "locked",
       429: "rate_limited",
+      503: "unavailable",
     };
     const kind = kindByStatus[error.status] ?? "server";
     const message =
@@ -62,13 +64,22 @@ function toOtpError(error: unknown, fallback: string): OtpError {
   return { kind: "server", message: fallback };
 }
 
+interface OtpFlowConfig {
+  sendUrl: string;
+  verifyUrl: string;
+  /** Body for the send request (target = phone number; ignored for email). */
+  sendBody: (target: string) => Record<string, unknown>;
+  /** Body for the verify request. */
+  verifyBody: (target: string, otp: string) => Record<string, unknown>;
+}
+
 /**
- * Phone OTP verification hook.
+ * Generic OTP flow shared by phone and email verification.
  *
  * Handles API calls, loading flags, categorised errors, the OTP expiry
  * countdown and the resend cooldown. All timers are cleaned up on unmount.
  */
-export function usePhoneVerification() {
+function useOtpFlow(config: OtpFlowConfig) {
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<OtpError | null>(null);
@@ -79,6 +90,11 @@ export function usePhoneVerification() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Guards against double-submits (e.g. auto-submit + Enter key)
   const inFlightRef = useRef(false);
+  // Keep latest config without re-creating callbacks every render
+  const configRef = useRef(config);
+  useEffect(() => {
+    configRef.current = config;
+  });
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
@@ -112,18 +128,18 @@ export function usePhoneVerification() {
   const clearError = useCallback(() => setError(null), []);
 
   const sendOtp = useCallback(
-    async (phone: string): Promise<boolean> => {
+    async (target: string = ""): Promise<boolean> => {
       if (inFlightRef.current) return false;
       inFlightRef.current = true;
       setIsSending(true);
       setError(null);
       try {
         const res = await apiFetch<ApiResponse<SendOtpData>>(
-          "/api/verification/phone/send-otp",
+          configRef.current.sendUrl,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ phone }),
+            body: JSON.stringify(configRef.current.sendBody(target)),
           }
         );
         startTimer(res.data?.expiresInSeconds ?? 300);
@@ -141,20 +157,17 @@ export function usePhoneVerification() {
   );
 
   const verifyOtp = useCallback(
-    async (phone: string, otp: string): Promise<boolean> => {
+    async (target: string, otp: string): Promise<boolean> => {
       if (inFlightRef.current) return false;
       inFlightRef.current = true;
       setIsVerifying(true);
       setError(null);
       try {
-        await apiFetch<ApiResponse<unknown>>(
-          "/api/verification/phone/verify-otp",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ phone, otp }),
-          }
-        );
+        await apiFetch<ApiResponse<unknown>>(configRef.current.verifyUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(configRef.current.verifyBody(target, otp)),
+        });
         stopTimer();
         setExpiresIn(0);
         setResendIn(0);
@@ -198,4 +211,27 @@ export function usePhoneVerification() {
     expiresIn,
     devOtp,
   };
+}
+
+/** Phone OTP verification. `sendOtp(phone)` / `verifyOtp(phone, otp)`. */
+export function usePhoneVerification() {
+  return useOtpFlow({
+    sendUrl: "/api/verification/phone/send-otp",
+    verifyUrl: "/api/verification/phone/verify-otp",
+    sendBody: (phone) => ({ phone }),
+    verifyBody: (phone, otp) => ({ phone, otp }),
+  });
+}
+
+/**
+ * Email OTP verification for the account email.
+ * `sendOtp()` / `verifyOtp("", otp)` — the server always uses the account email.
+ */
+export function useEmailVerification() {
+  return useOtpFlow({
+    sendUrl: "/api/verification/email/send-otp",
+    verifyUrl: "/api/verification/email/verify-otp",
+    sendBody: () => ({}),
+    verifyBody: (_target, otp) => ({ otp }),
+  });
 }

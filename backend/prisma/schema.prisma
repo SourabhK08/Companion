@@ -46,6 +46,7 @@ model User {
   chatSubscriptions   ChatSubscription[]
   profilePhotos       ProfilePhoto[]
   phoneOtps           PhoneOtp[]
+  emailOtps           EmailOtp[]
 
   @@map("users")
 }
@@ -322,4 +323,23 @@ model PhoneOtp {
   @@index([userId, createdAt])
   @@index([phone, createdAt])
   @@map("phone_otps")
+}
+
+/// Email OTP for verification — same pattern as PhoneOtp.
+/// Always targets the account email (User.email), stored lowercase for audit.
+model EmailOtp {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  email      String   /// Email address this OTP was sent to (lowercase)
+  otpHash    String   /// bcrypt hash of the 6-digit OTP (never store plaintext)
+  expiresAt  DateTime /// OTP expiry (5 minutes from creation)
+  attempts   Int      @default(0) /// Failed verification attempts (max 5)
+  isUsed     Boolean  @default(false) /// True after success OR invalidation
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("email_otps")
 }
