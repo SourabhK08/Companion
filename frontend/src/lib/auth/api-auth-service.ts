@@ -22,6 +22,9 @@ interface ApiUser {
   isCompanion?: boolean;
   isCoFounder?: boolean;
   linkedinUrl?: string | null;
+  isVerified?: boolean;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
   authProvider?: string;
   createdAt?: string | Date;
 }
@@ -45,7 +48,9 @@ function mapUser(user: ApiUser | null | undefined): AuthUser | null {
     isCompanion: user.isCompanion ?? false,
     isCoFounder: user.isCoFounder ?? false,
     linkedinUrl: user.linkedinUrl ?? null,
-    isVerified: user.isCompanion ?? false,
+    isVerified: user.isVerified ?? false,
+    isPhoneVerified: user.isPhoneVerified ?? false,
+    isEmailVerified: user.isEmailVerified ?? false,
   };
 }
 

@@ -119,9 +119,28 @@ export async function apiFetch<T>(
   if (!response.ok) {
     const errorMessage =
       (payload as { message?: string } | null)?.message ?? "Request failed";
-    clearAccessToken();
-    throw new Error(errorMessage);
+    // Only an auth failure means our token is bad — a 400/409/429 etc.
+    // should not log the user out of their in-memory session.
+    if (response.status === 401) {
+      clearAccessToken();
+    }
+    throw new ApiError(errorMessage, response.status);
   }
 
   return payload as T;
+}
+
+/**
+ * Error thrown by apiFetch for non-2xx responses.
+ * Extends Error so existing `error instanceof Error` checks keep working,
+ * while callers that care can branch on `status`.
+ */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
 }

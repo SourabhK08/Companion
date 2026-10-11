@@ -46,6 +46,7 @@ import {
 import { CompanionSettings } from "./companion-settings";
 import { CoFounderSettings } from "./cofounder-settings";
 import { AvatarUpload } from "@/components/settings/avatar-upload";
+import { PhoneVerification } from "@/components/verification/phone-verification";
 
 /**
  * Toggle Switch Component
@@ -127,7 +128,7 @@ function SettingsContent() {
         bio: user.bio || "",
         interests: user.interests || [],
         languages: user.languages || [],
-        isVerified: false,
+        isVerified: !!user.isVerified,
       });
     }
   }, [user]);
@@ -380,10 +381,17 @@ function SettingsContent() {
                     {userProfile.phone}
                   </p>
 
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                    <Check className="size-3.5 text-emerald-600 stroke-[3]" />
-                    Verified Account
-                  </div>
+                  {userProfile.isVerified ? (
+                    <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                      <Check className="size-3.5 text-emerald-600 stroke-[3]" />
+                      Verified Account
+                    </div>
+                  ) : (
+                    <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
+                      <ShieldCheck className="size-3.5 text-amber-600" />
+                      Verify your phone to get the badge
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -497,48 +505,12 @@ function SettingsContent() {
                 )}
               </div>
 
-              {/* Phone Number */}
-              <div className="flex items-center justify-between py-3.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-berry/5 text-berry">
-                    <Phone className="size-4.5" />
-                  </div>
-                  <div>
-                    <span className="text-xs sm:text-sm text-muted-foreground font-medium block">
-                      Phone Number
-                    </span>
-                    {editingField === "phone" ? (
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="h-9 rounded-lg border border-berry px-3 text-sm text-foreground focus:outline-none"
-                        />
-                        <button
-                          onClick={() => saveFieldEdit("phone")}
-                          className="rounded-lg bg-berry px-3 py-1.5 text-xs font-semibold text-white"
-                        >
-                          Save
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-sm sm:text-base font-semibold text-foreground">
-                        {userProfile.phone}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {editingField !== "phone" && (
-                  <button
-                    onClick={() => startEditing("phone", userProfile.phone)}
-                    className="flex items-center gap-1.5 rounded-lg border border-soft-border px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-muted-foreground hover:border-berry hover:text-berry transition-colors cursor-pointer"
-                  >
-                    <Pencil className="size-3.5 text-berry" />
-                    Edit
-                  </button>
-                )}
-              </div>
+              {/* Phone Number — changes go through OTP verification */}
+              <PhoneVerification
+                phone={user?.phone}
+                isPhoneVerified={!!user?.isPhoneVerified}
+                onVerified={() => refreshUser()}
+              />
 
               {/* Gender */}
               <div className="flex items-center justify-between py-3.5">

@@ -26,6 +26,8 @@ model User {
   languages     String[]  @default([])
   linkedinUrl   String?
   isVerified    Boolean   @default(false)
+  isPhoneVerified Boolean @default(false)
+  isEmailVerified Boolean @default(false)
   authProvider  String    @default("local") /// "local" | "google" | "microsoft"
 
   createdAt     DateTime  @default(now())
@@ -43,6 +45,7 @@ model User {
   coFounderProfile    CoFounderProfile?
   chatSubscriptions   ChatSubscription[]
   profilePhotos       ProfilePhoto[]
+  phoneOtps           PhoneOtp[]
 
   @@map("users")
 }
@@ -299,4 +302,24 @@ model ChatSubscription {
 
   @@index([userId, endDate])
   @@map("chat_subscriptions")
+}
+
+/// Phone OTP for verification — stores hashed OTPs with expiry and attempt tracking.
+/// Old records should be cleaned up periodically (cron or on-demand).
+model PhoneOtp {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  phone      String   /// Phone number this OTP was sent to
+  otpHash    String   /// bcrypt hash of the 6-digit OTP (never store plaintext)
+  expiresAt  DateTime /// OTP expiry (default: 5 minutes from creation)
+  attempts   Int      @default(0) /// Failed verification attempts (max 5)
+  isUsed     Boolean  @default(false) /// Marked true after successful verification
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([phone, createdAt])
+  @@map("phone_otps")
 }

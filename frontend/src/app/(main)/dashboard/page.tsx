@@ -12,6 +12,7 @@ import {
   MapPin,
   MessageSquareText,
   ShieldCheck,
+  BadgeCheck,
   Sparkles,
   UserRound,
   Users,
@@ -179,14 +180,27 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex flex-col items-center sm:items-start pt-1 sm:pt-3">
-                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-[#7a1f39] backdrop-blur-sm ring-1 ring-white/70">
-                  <ShieldCheck className="size-3.5" />
-                  Verified User
-                </div>
+                {user?.isVerified ? (
+                  <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50/90 px-3 py-1 text-xs font-semibold text-emerald-800 backdrop-blur-sm ring-1 ring-emerald-200">
+                    <BadgeCheck className="size-3.5 text-emerald-600" />
+                    Verified User
+                  </div>
+                ) : (
+                  <Link
+                    href="/settings?tab=account"
+                    className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-amber-800 backdrop-blur-sm ring-1 ring-amber-300/80 hover:bg-amber-50 transition-colors"
+                  >
+                    <ShieldCheck className="size-3.5 text-amber-600" />
+                    Verify Phone & Get Badge →
+                  </Link>
+                )}
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-[#411522]">
-                  <h1 className="font-serif text-2xl sm:text-[34px] lg:text-[40px] font-bold leading-tight">
+                  <h1 className="font-serif text-2xl sm:text-[34px] lg:text-[40px] font-bold leading-tight inline-flex items-center gap-2">
                     {user?.name || "Your Name"}
+                    {user?.isVerified && (
+                      <BadgeCheck className="size-6 text-sky-600 shrink-0" />
+                    )}
                   </h1>
                   <span className="text-lg text-[#7a1f39]">♡</span>
                 </div>

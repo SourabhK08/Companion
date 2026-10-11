@@ -31,6 +31,8 @@ export interface AuthUser {
   isCoFounder?: boolean;
   linkedinUrl?: string | null;
   isVerified?: boolean;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
 }
 
 /** Login credentials for email/password authentication. */

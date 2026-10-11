@@ -15,9 +15,12 @@ export function validate(schema: ZodSchema) {
 
     if (!result.success) {
       const errors = result.error.flatten();
+      const firstError = Object.values(errors.fieldErrors)
+        .flat()
+        .find((msg): msg is string => typeof msg === "string");
       res.status(400).json({
         success: false,
-        message: "Validation failed",
+        message: firstError ?? "Validation failed",
         errors: errors.fieldErrors,
       });
       return;

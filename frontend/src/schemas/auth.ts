@@ -37,7 +37,10 @@ export const signupSchema = z
     mobile: z
       .string()
       .min(1, "Mobile number is required")
-      .min(10, "Enter a valid mobile number"),
+      .refine(
+        (val) => /^(\+?91)?[6-9]\d{9}$/.test(val.replace(/[\s\-()]/g, "")),
+        "Enter a valid 10-digit Indian mobile number"
+      ),
     gender: z.enum(["male", "female", "non-binary", "other"], {
       required_error: "Please select your gender",
       invalid_type_error: "Please select your gender",

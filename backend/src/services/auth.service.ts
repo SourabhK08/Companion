@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { env } from "../config/env.js";
 import type { RegisterInput, LoginInput } from "../schemas/auth.schema.js";
 import { resolveImageUrl } from "./cloudinary.service.js";
+import { normalizePhone } from "../lib/phone.js";
 
 const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_EXPIRY = "15m";
@@ -42,6 +43,8 @@ function sanitizeUser(user: {
   interests: string[];
   languages: string[];
   isVerified: boolean;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
   authProvider: string;
   createdAt: Date;
   companionProfile?: { id: string } | null;
@@ -61,6 +64,8 @@ function sanitizeUser(user: {
     interests: user.interests,
     languages: user.languages,
     isVerified: user.isVerified,
+    isPhoneVerified: user.isPhoneVerified ?? false,
+    isEmailVerified: user.isEmailVerified ?? false,
     authProvider: user.authProvider,
     createdAt: user.createdAt,
     linkedinUrl: user.linkedinUrl ?? null,
@@ -91,7 +96,7 @@ export async function registerUser(input: RegisterInput) {
       passwordHash,
       fullName: input.fullName,
       gender: input.gender,
-      phone: input.phone ?? null,
+      phone: input.phone ? normalizePhone(input.phone) : null,
       city: input.city ?? null,
       dateOfBirth: input.dateOfBirth ? new Date(input.dateOfBirth) : null,
     },

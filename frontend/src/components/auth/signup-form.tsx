@@ -93,7 +93,7 @@ export function SignupForm() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/verify-phone");
   }
 
   const inputBase =
