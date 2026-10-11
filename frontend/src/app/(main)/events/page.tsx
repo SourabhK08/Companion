@@ -84,7 +84,7 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full min-w-0 overflow-x-hidden">
       {/* ═══ HERO SECTION ═══ */}
       <section className="relative overflow-hidden bg-deep-plum">
         <div
@@ -100,7 +100,7 @@ export default function EventsPage() {
           aria-hidden="true"
         />
 
-        <div className="relative z-10 mx-auto flex max-w-[1400px] items-center justify-between px-6 py-10 lg:px-8 lg:py-14">
+        <div className="relative z-10 mx-auto flex max-w-[1400px] items-center justify-between px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
           <div className="max-w-lg">
             <div className="flex items-center gap-3">
               <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-dusty-rose/80 sm:text-xs">
@@ -108,18 +108,18 @@ export default function EventsPage() {
               </span>
               <span className="h-px w-10 bg-dusty-rose/40" aria-hidden="true" />
             </div>
-            <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+            <h1 className="mt-3 text-2xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
               Real People.
               <br />
               <span className="italic text-dusty-rose">Unforgettable Moments.</span>
             </h1>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-white/60 sm:text-base">
+            <p className="mt-3 sm:mt-4 max-w-md text-xs sm:text-sm lg:text-base leading-relaxed text-white/70">
               Discover amazing events, meet like-minded people, and be part of a
               community that celebrates connection, comfort and authenticity.
             </p>
 
             {/* Trust badges */}
-            <div className="mt-6 flex flex-wrap gap-5">
+            <div className="mt-5 sm:mt-6 flex flex-wrap gap-3 sm:gap-5">
               {[
                 { icon: Users, label: "Meet People" },
                 { icon: ShieldCheck, label: "Safe & Inclusive" },
@@ -130,7 +130,7 @@ export default function EventsPage() {
                   <div className="flex size-8 items-center justify-center rounded-full bg-white/10">
                     <badge.icon className="size-4 text-dusty-rose" />
                   </div>
-                  <span className="text-[11px] font-medium text-white/75">
+                  <span className="text-xs font-semibold text-white/90">
                     {badge.label}
                   </span>
                 </div>
@@ -157,77 +157,81 @@ export default function EventsPage() {
       </section>
 
       {/* ═══ CATEGORY ICON TABS ═══ */}
-      <section className="border-b border-soft-border bg-white">
-        <div className="mx-auto max-w-[1400px] px-6 py-5 lg:px-8">
-          <div className="flex items-center gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {eventCategories.map((cat) => {
-              const Icon = categoryIconMap[cat];
-              const isActive = activeCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={cn(
-                    "flex shrink-0 flex-col items-center gap-1.5 rounded-xl px-4 py-3 text-[11px] font-semibold transition-all",
-                    isActive
-                      ? "bg-deep-plum text-white shadow-md"
-                      : "border border-soft-border bg-white text-muted-foreground hover:border-berry/30 hover:text-berry"
-                  )}
-                >
-                  {Icon && <Icon className={cn("size-5", isActive ? "text-white" : "text-berry/60")} />}
-                  <span>{cat}</span>
-                </button>
-              );
-            })}
+      <section className="border-b border-soft-border bg-white w-full min-w-0 overflow-hidden">
+        <div className="mx-auto max-w-[1400px] px-4 py-3 sm:px-6 sm:py-5 lg:px-8 w-full min-w-0">
+          <div className="overflow-x-auto pb-1 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden w-full min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 w-max">
+              {eventCategories.map((cat) => {
+                const Icon = categoryIconMap[cat];
+                const isActive = activeCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={cn(
+                      "flex shrink-0 flex-col items-center gap-1 sm:gap-1.5 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold transition-all",
+                      isActive
+                        ? "bg-deep-plum text-white shadow-md"
+                        : "border border-soft-border bg-white text-muted-foreground hover:border-berry/30 hover:text-berry"
+                    )}
+                  >
+                    {Icon && <Icon className={cn("size-4 sm:size-5", isActive ? "text-white" : "text-berry/60")} />}
+                    <span>{cat}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
 
       {/* ═══ SEARCH + FILTER BAR ═══ */}
-      <section className="border-b border-soft-border bg-warm-white">
-        <div className="mx-auto flex max-w-[1400px] flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:gap-4 lg:px-8">
-          <div className="relative flex-1">
+      <section className="border-b border-soft-border bg-warm-white w-full min-w-0 overflow-hidden">
+        <div className="mx-auto flex max-w-[1400px] flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-4 lg:px-8 w-full min-w-0">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <Input
               type="search"
               placeholder="Search events by name, location, or interest..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 rounded-xl border-soft-border bg-white pl-10 text-sm placeholder:text-muted-foreground/50 focus-visible:border-berry focus-visible:ring-berry/20"
+              className="h-9 sm:h-10 rounded-xl border-soft-border bg-white pl-10 text-xs sm:text-sm placeholder:text-muted-foreground/50 focus-visible:border-berry focus-visible:ring-berry/20"
             />
           </div>
-          <div className="flex items-center gap-3">
-            <select className="h-10 rounded-xl border border-soft-border bg-white px-3 text-sm text-muted-foreground focus:border-berry focus:outline-none focus:ring-1 focus:ring-berry/20">
-              <option>Kolkata</option>
-            </select>
-            <select className="h-10 rounded-xl border border-soft-border bg-white px-3 text-sm text-muted-foreground focus:border-berry focus:outline-none focus:ring-1 focus:ring-berry/20">
-              <option>Any Date</option>
-              <option>This Week</option>
-              <option>This Month</option>
-              <option>Next Month</option>
-            </select>
-            <select className="h-10 rounded-xl border border-soft-border bg-white px-3 text-sm text-muted-foreground focus:border-berry focus:outline-none focus:ring-1 focus:ring-berry/20">
-              <option>Popular</option>
-              <option>Newest</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-            </select>
+          <div className="overflow-x-auto pb-1 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] sm:overflow-visible w-full sm:w-auto min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 w-max sm:w-auto">
+              <select className="h-9 sm:h-10 shrink-0 rounded-xl border border-soft-border bg-white px-2.5 sm:px-3 text-xs sm:text-sm text-muted-foreground focus:border-berry focus:outline-none focus:ring-1 focus:ring-berry/20">
+                <option>Kolkata</option>
+              </select>
+              <select className="h-9 sm:h-10 shrink-0 rounded-xl border border-soft-border bg-white px-2.5 sm:px-3 text-xs sm:text-sm text-muted-foreground focus:border-berry focus:outline-none focus:ring-1 focus:ring-berry/20">
+                <option>Any Date</option>
+                <option>This Week</option>
+                <option>This Month</option>
+                <option>Next Month</option>
+              </select>
+              <select className="h-9 sm:h-10 shrink-0 rounded-xl border border-soft-border bg-white px-2.5 sm:px-3 text-xs sm:text-sm text-muted-foreground focus:border-berry focus:outline-none focus:ring-1 focus:ring-berry/20">
+                <option>Popular</option>
+                <option>Newest</option>
+                <option>Price: Low to High</option>
+                <option>Price: High to Low</option>
+              </select>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <section className="mx-auto w-full max-w-[1400px] px-6 py-8 lg:px-8">
+      <section className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Upcoming Events
             </p>
-            <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
+            <h2 className="mt-1 text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
               Don&apos;t Miss These Amazing Events
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
               From cozy coffee meetups to exciting travel trips, find the
               perfect event for you.
             </p>
@@ -319,7 +323,7 @@ export default function EventsPage() {
                     className="w-full accent-berry"
                     aria-label="Price range"
                   />
-                  <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                  <div className="mt-1 flex justify-between text-xs font-medium text-muted-foreground">
                     <span>₹0</span>
                     <span>₹5,000+</span>
                   </div>
@@ -340,14 +344,14 @@ export default function EventsPage() {
               <h4 className="mt-3 text-base font-bold text-foreground">
                 Have an idea for a event?
               </h4>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 Connect with us with your idea and host the event with us.
               </p>
               <Link
                 href="/host-event"
-                className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-berry hover:text-berry-dark"
+                className="mt-3 inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-berry hover:text-berry-dark"
               >
-                Get Started <ArrowRight className="size-3" />
+                Get Started <ArrowRight className="size-3.5" />
               </Link>
             </div>
           </aside>
@@ -355,7 +359,7 @@ export default function EventsPage() {
       </section>
 
       {/* ═══ COMMUNITY BANNER ═══ */}
-      <section className="mx-auto w-full max-w-[1400px] px-6 pb-6 lg:px-8">
+      <section className="mx-auto w-full max-w-[1400px] px-4 pb-6 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-2xl bg-deep-plum">
           <div
             className="absolute inset-0"
@@ -365,13 +369,13 @@ export default function EventsPage() {
             }}
             aria-hidden="true"
           />
-          <div className="relative z-10 flex flex-col items-center justify-between gap-5 px-6 py-8 sm:flex-row sm:px-10">
-            <div className="flex items-center gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/10">
-                <Users className="size-6 text-dusty-rose" />
+          <div className="relative z-10 flex flex-col items-start sm:items-center justify-between gap-5 px-5 py-6 sm:flex-row sm:px-10 sm:py-8">
+            <div className="flex items-start sm:items-center gap-3.5 sm:gap-4">
+              <div className="flex size-11 sm:size-12 shrink-0 items-center justify-center rounded-full bg-white/10">
+                <Users className="size-5 sm:size-6 text-dusty-rose" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white sm:text-xl">
+                <h3 className="text-base font-bold text-white sm:text-xl">
                   Join Community for This Page for Free
                 </h3>
                 <p className="mt-0.5 text-xs text-white/55 sm:text-sm">
@@ -380,10 +384,10 @@ export default function EventsPage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex w-full sm:w-auto flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 shrink-0">
               <Link
                 href="#"
-                className="inline-flex h-9 items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 px-5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 px-5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
               >
                 {/* Instagram icon inline */}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -395,7 +399,7 @@ export default function EventsPage() {
               </Link>
               <Link
                 href="#"
-                className="inline-flex h-9 items-center gap-2 rounded-full bg-emerald-500 px-5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
               >
                 {/* WhatsApp icon inline */}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -409,13 +413,13 @@ export default function EventsPage() {
       </section>
 
       {/* ═══ PROMO CARDS ═══ */}
-      <section className="mx-auto w-full max-w-[1400px] px-6 pb-8 lg:px-8">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <section className="mx-auto w-full max-w-[1400px] px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2">
           {/* Card 1 */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-deep-plum via-berry-dark to-berry p-6 sm:p-8">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-deep-plum via-berry-dark to-berry p-5 sm:p-8">
             <div className="absolute inset-0 bg-black/10" aria-hidden="true" />
-            <div className="relative z-10 max-w-[240px]">
-              <h3 className="text-xl font-bold leading-tight text-white sm:text-2xl">
+            <div className="relative z-10 max-w-[280px]">
+              <h3 className="text-lg font-bold leading-tight text-white sm:text-2xl">
                 Make Kolkata
                 <br />
                 more special.
@@ -434,10 +438,10 @@ export default function EventsPage() {
           </div>
 
           {/* Card 2 */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-berry via-dusty-rose/80 to-dusty-rose p-6 sm:p-8">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-berry via-dusty-rose/80 to-dusty-rose p-5 sm:p-8">
             <div className="absolute inset-0 bg-black/5" aria-hidden="true" />
             <div className="relative z-10 max-w-[280px]">
-              <h3 className="text-xl font-bold leading-tight text-white sm:text-2xl">
+              <h3 className="text-lg font-bold leading-tight text-white sm:text-2xl">
                 This Puja.
                 <br />
                 Don&apos;t go alone.

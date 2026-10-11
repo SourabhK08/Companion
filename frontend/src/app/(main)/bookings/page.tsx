@@ -354,7 +354,7 @@ function BookingsContent() {
   if (!user) return null;
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 min-w-0">
       {/* Heading */}
       <div className="flex items-center justify-between">
         <div>
@@ -372,21 +372,23 @@ function BookingsContent() {
       </div>
 
       {/* Tabs */}
-      <div className="mt-6 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => { setActiveTab(tab.key); setPage(1); }}
-            className={cn(
-              "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors",
-              activeTab === tab.key
-                ? "bg-berry text-white"
-                : "border border-soft-border bg-white text-muted-foreground hover:bg-muted"
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mt-6 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden w-full min-w-0">
+        <div className="flex gap-2 w-max">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => { setActiveTab(tab.key); setPage(1); }}
+              className={cn(
+                "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                activeTab === tab.key
+                  ? "bg-berry text-white"
+                  : "border border-soft-border bg-white text-muted-foreground hover:bg-muted"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Booking List */}

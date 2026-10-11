@@ -65,7 +65,7 @@ export default function WalletPage() {
   const quickAmounts = [500, 1000, 2000, 5000];
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 min-w-0">
       {/* Heading */}
       <div>
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">My Wallet</h1>

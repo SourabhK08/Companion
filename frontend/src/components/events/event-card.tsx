@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Heart, CalendarDays, Clock, MapPin, ArrowRight } from "lucide-react";
 import { cn } from "cn";
-import { Button } from "@/components/ui/button";
 import type { Event } from "@/config/events-data";
 import { categoryColors } from "@/config/events-data";
 
@@ -35,7 +34,7 @@ export function EventCard({ event }: { event: Event }) {
         {/* Category badge */}
         <span
           className={cn(
-            "absolute left-3 top-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold shadow-sm",
+            "absolute left-3 top-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm",
             colors.bg,
             colors.text
           )}
@@ -53,7 +52,7 @@ export function EventCard({ event }: { event: Event }) {
         </button>
 
         {/* Price badge */}
-        <div className="absolute bottom-3 left-3 rounded-full bg-deep-plum/90 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
+        <div className="absolute bottom-3 left-3 rounded-full bg-deep-plum/90 px-3 py-1 text-xs sm:text-sm font-bold text-white backdrop-blur-sm">
           ₹{event.pricePerPerson.toLocaleString("en-IN")}{" "}
           <span className="font-normal text-white/70">/ person</span>
         </div>
@@ -62,19 +61,19 @@ export function EventCard({ event }: { event: Event }) {
       {/* Content */}
       <div className="p-4">
         <h3 className="text-base font-bold text-foreground leading-snug">{event.title}</h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">{event.subtitle}</p>
+        <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground">{event.subtitle}</p>
 
         {/* Details */}
         <div className="mt-3 space-y-1.5">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
             <CalendarDays className="size-3.5 shrink-0 text-berry" />
             <span>{event.date}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
             <Clock className="size-3.5 shrink-0 text-berry" />
             <span>{event.time}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
             <MapPin className="size-3.5 shrink-0 text-berry" />
             <span>{event.venue}</span>
           </div>
@@ -93,25 +92,23 @@ export function EventCard({ event }: { event: Event }) {
               ))}
             </div>
             {event.attendeeAvatars > 4 && (
-              <span className="text-[10px] font-medium text-berry">
+              <span className="text-xs font-semibold text-berry">
                 +{event.attendeeAvatars - 4}
               </span>
             )}
           </div>
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-xs sm:text-sm font-medium text-muted-foreground">
             {event.attendeesGoing} going
           </span>
         </div>
 
         {/* CTA */}
-        <Button className="mt-3 h-9 w-full rounded-xl bg-berry hover:bg-berry-dark text-white text-xs font-semibold">
-          <Link
-            href={`/events/${event.id}`}
-            className="flex items-center gap-1"
-          >
-            View Details <ArrowRight className="size-3" />
-          </Link>
-        </Button>
+        <Link
+          href={`/events/${event.id}`}
+          className="mt-3.5 flex h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-berry text-sm font-semibold text-white transition-colors hover:bg-berry-dark"
+        >
+          View Details <ArrowRight className="size-3.5" />
+        </Link>
       </div>
     </div>
   );

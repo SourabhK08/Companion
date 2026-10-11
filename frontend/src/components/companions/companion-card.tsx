@@ -20,9 +20,9 @@ export function CompanionCard({ companion }: { companion: Companion }) {
   const saved = isSaved(companion.id);
 
   return (
-    <div className="group overflow-hidden rounded-2xl border border-soft-border bg-white shadow-sm transition-shadow hover:shadow-md">
+    <div className="group flex flex-col overflow-hidden rounded-[22px] border border-soft-border bg-white shadow-[0_4px_16px_rgba(122,31,57,0.06)] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(122,31,57,0.12)] hover:-translate-y-0.5 w-full max-w-[420px] mx-auto sm:max-w-none">
       {/* Image / Avatar */}
-      <div className="relative h-52 overflow-hidden bg-gradient-to-br from-berry-dark/80 via-berry/60 to-dusty-rose/40">
+      <div className="relative h-60 sm:h-56 overflow-hidden bg-gradient-to-br from-berry-dark/80 via-berry/60 to-dusty-rose/40">
         {companion.avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -41,12 +41,12 @@ export function CompanionCard({ companion }: { companion: Companion }) {
               .toUpperCase()}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
 
         {/* Verified badge */}
         {companion.isVerified && (
-          <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-            <BadgeCheck className="size-3" />
+          <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-emerald-500/90 backdrop-blur-sm px-3 py-1 text-xs font-semibold text-white shadow-sm">
+            <BadgeCheck className="size-4" />
             Verified
           </span>
         )}
@@ -57,55 +57,68 @@ export function CompanionCard({ companion }: { companion: Companion }) {
             e.preventDefault();
             toggleSaved(companion.id);
           }}
-          className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-white/80 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-berry"
+          className="absolute right-3 top-3 z-10 flex size-9 items-center justify-center rounded-full bg-white/85 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-berry cursor-pointer"
           aria-label={`Save ${companion.name}`}
         >
-          <Heart className="size-4" fill={saved ? "currentColor" : "none"} color={saved ? "#7a1f39" : "currentColor"} />
+          <Heart className="size-4.5" fill={saved ? "currentColor" : "none"} color={saved ? "#7a1f39" : "currentColor"} />
         </button>
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="text-base font-bold text-foreground">{companion.name}</h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {companion.age} · {companion.profession}
-        </p>
-        <p className="mt-0.5 flex items-center gap-0.5 text-xs text-muted-foreground">
-          <MapPin className="size-3 text-berry" />
-          {companion.city}
-        </p>
+      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+        <div>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-lg font-bold text-foreground leading-snug">{companion.name}</h3>
+            <span className="rounded-full border border-soft-border bg-warm-white px-2.5 py-1 text-xs font-semibold text-berry">
+              {companion.city}
+            </span>
+          </div>
 
-        {/* Interest tags */}
-        <div className="mt-2.5 flex flex-wrap gap-1">
-          {companion.interests.slice(0, 3).map((interest) => (
-            <span
-              key={interest}
-              className="rounded-md border border-soft-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
-            >
-              {interest}
-            </span>
-          ))}
-          {companion.interests.length > 3 && (
-            <span className="rounded-md border border-soft-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              +{companion.interests.length - 3} more
-            </span>
-          )}
+          <p className="mt-1 text-sm text-muted-foreground">
+            {companion.age} yrs · {companion.profession}
+          </p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MapPin className="size-3.5 text-berry shrink-0" />
+            <span>{companion.city}</span>
+            <span>•</span>
+            <span className="truncate">{companion.languages.join(", ")}</span>
+          </p>
+
+          {/* Interest tags */}
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {companion.interests.slice(0, 3).map((interest) => (
+              <span
+                key={interest}
+                className="rounded-md border border-soft-border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground"
+              >
+                {interest}
+              </span>
+            ))}
+            {companion.interests.length > 3 && (
+              <span className="rounded-md border border-soft-border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                +{companion.interests.length - 3} more
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Price */}
-        <p className="mt-3 text-lg font-bold text-berry">
-          ₹{companion.pricePerHour.toLocaleString("en-IN")}
-          <span className="text-xs font-normal text-muted-foreground"> / hour</span>
-        </p>
+        <div className="mt-4 pt-3.5 border-t border-soft-border/60">
+          {/* Price */}
+          <div className="flex items-baseline justify-between">
+            <p className="text-xl font-bold text-berry">
+              ₹{companion.pricePerHour.toLocaleString("en-IN")}
+              <span className="text-sm font-normal text-muted-foreground"> / hour</span>
+            </p>
+          </div>
 
-        {/* CTA */}
-        <Button
-          className="mt-3 h-9 w-full rounded-xl bg-berry hover:bg-berry-dark text-white text-xs font-semibold"
-        >
-          <Link href={`/companion/${companion.id}`} className="flex items-center gap-1">
-            View Profile <ArrowRight className="size-3" />
+          {/* CTA */}
+          <Link
+            href={`/companion/${companion.id}`}
+            className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-berry text-sm font-semibold text-white shadow-sm transition-colors hover:bg-berry-dark cursor-pointer active:scale-[0.99]"
+          >
+            View Profile <ArrowRight className="size-4" />
           </Link>
-        </Button>
+        </div>
       </div>
     </div>
   );

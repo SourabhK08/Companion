@@ -144,14 +144,16 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply font-sans overflow-x-hidden w-full max-w-full;
+    -webkit-text-size-adjust: 100%;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden w-full max-w-full;
+    position: relative;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
-  }
-  html {
-    @apply font-sans;
   }
 }

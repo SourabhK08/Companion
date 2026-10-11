@@ -97,7 +97,7 @@ export function SignupForm() {
   }
 
   const inputBase =
-    "h-11 rounded-lg border-soft-border bg-white text-sm placeholder:text-muted-foreground/60 focus-visible:border-berry focus-visible:ring-berry/20";
+    "h-11 rounded-lg border-soft-border bg-white text-base sm:text-sm placeholder:text-muted-foreground/60 focus-visible:border-berry focus-visible:ring-berry/20";
   const inputError =
     "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20";
 

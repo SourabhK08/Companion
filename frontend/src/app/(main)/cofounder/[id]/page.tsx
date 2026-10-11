@@ -39,16 +39,16 @@ export default function CoFounderDetailPage({ params }: { params: Promise<{ id: 
   const initials = u.fullName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 py-6 lg:px-6">
+    <div className="mx-auto max-w-[1100px] px-4 py-6 lg:px-6 w-full min-w-0">
       <Link href="/explore/cofounder" className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-berry">
         <ArrowLeft className="size-4" /> Back to Co-Founders
       </Link>
 
-      <div className="overflow-hidden rounded-[24px] border border-soft-border bg-white shadow-[0_12px_32px_rgba(122,31,57,0.08)]">
+      <div className="overflow-hidden rounded-[24px] border border-soft-border bg-white shadow-[0_12px_32px_rgba(122,31,57,0.08)] w-full min-w-0">
         <div className="h-32 bg-gradient-to-r from-deep-plum via-berry-dark to-berry" />
         <div className="-mt-14 flex flex-col gap-5 px-6 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-end gap-4">
-            <div className="size-28 overflow-hidden rounded-3xl border-4 border-white bg-gradient-to-br from-berry to-dusty-rose shadow">
+            <div className="size-28 shrink-0 overflow-hidden rounded-3xl border-4 border-white bg-gradient-to-br from-berry to-dusty-rose shadow">
               {u.avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={u.avatar} alt={u.fullName} className="size-full object-cover" />
@@ -56,19 +56,19 @@ export default function CoFounderDetailPage({ params }: { params: Promise<{ id: 
                 <div className="flex size-full items-center justify-center text-3xl font-bold text-white">{initials}</div>
               )}
             </div>
-            <div className="pb-1">
+            <div className="pb-1 min-w-0">
               <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-                {u.fullName}
+                <span className="truncate">{u.fullName}</span>
                 {age ? <span className="font-normal text-muted-foreground">, {age}</span> : null}
-                {u.isVerified && <BadgeCheck className="size-5 text-berry" />}
+                {u.isVerified && <BadgeCheck className="size-5 shrink-0 text-berry" />}
               </h1>
               <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                <MapPin className="size-3.5 text-berry" /> {u.city ?? "Kolkata"}
+                <MapPin className="size-3.5 shrink-0 text-berry" /> {u.city ?? "Kolkata"}
               </p>
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <a
               href={profile.linkedinUrl}
               target="_blank"

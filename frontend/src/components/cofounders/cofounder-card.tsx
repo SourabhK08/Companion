@@ -23,7 +23,7 @@ export function CoFounderCard({ profile, isSelf, onMessage }: CoFounderCardProps
     .toUpperCase();
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-soft-border bg-white shadow-[0_8px_22px_rgba(122,31,57,0.06)] transition-shadow hover:shadow-[0_12px_28px_rgba(122,31,57,0.12)]">
+    <div className="w-full max-w-[420px] mx-auto sm:max-w-none flex flex-col overflow-hidden rounded-2xl border border-soft-border bg-white shadow-[0_8px_22px_rgba(122,31,57,0.06)] transition-shadow hover:shadow-[0_12px_28px_rgba(122,31,57,0.12)]">
       {/* Header strip */}
       <div className="relative h-10  bg-gradient-to-r/10 from-deep-plum via-berry-dark to-berry">
         {/* <a
@@ -49,29 +49,29 @@ export function CoFounderCard({ profile, isSelf, onMessage }: CoFounderCardProps
         </div>
 
         <div className="mt-2 flex items-center gap-1.5">
-          <h3 className="truncate text-base font-bold text-foreground">
+          <h3 className="truncate text-lg font-bold text-foreground">
             {user.fullName}
-            {age ? <span className="font-normal text-muted-foreground">, {age}</span> : null}
+            {age ? <span className="font-normal text-sm text-muted-foreground">, {age}</span> : null}
           </h3>
           {user.isVerified && <BadgeCheck className="size-4 shrink-0 text-berry" />}
         </div>
-        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
-          <MapPin className="size-3 text-berry" /> {user.city ?? "Kolkata"}
+        <p className="mt-0.5 flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+          <MapPin className="size-3.5 text-berry" /> {user.city ?? "Kolkata"}
         </p>
 
         {profile.pitch && (
-          <p className="mt-2.5 line-clamp-3 text-xs leading-relaxed text-[#5d2a38]">“{profile.pitch}”</p>
+          <p className="mt-2.5 line-clamp-3 text-sm leading-relaxed text-[#5d2a38]">“{profile.pitch}”</p>
         )}
 
         {profile.workInterests.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {profile.workInterests.slice(0, 4).map((w) => (
-              <span key={w} className="rounded-full bg-[#f5e8eb] px-2 py-0.5 text-[10px] font-medium text-[#5a2435]">
+              <span key={w} className="rounded-full bg-[#f5e8eb] px-2.5 py-1 text-xs font-medium text-[#5a2435]">
                 {w}
               </span>
             ))}
             {profile.workInterests.length > 4 && (
-              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+              <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
                 +{profile.workInterests.length - 4}
               </span>
             )}
@@ -81,16 +81,16 @@ export function CoFounderCard({ profile, isSelf, onMessage }: CoFounderCardProps
         <div className="mt-auto flex gap-2 pt-4">
           <Link
             href={`/cofounder/${profile.id}`}
-            className="flex h-9 flex-1 items-center justify-center gap-1 rounded-xl border border-soft-border text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+            className="flex h-10 flex-1 items-center justify-center gap-1 rounded-xl border border-soft-border text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           >
             View <ArrowRight className="size-3.5" />
           </Link>
           {!isSelf && (
             <button
               onClick={() => onMessage(profile.userId)}
-              className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-deep-plum text-xs font-semibold text-white transition-colors hover:bg-berry-dark"
+              className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-deep-plum text-sm font-semibold text-white transition-colors hover:bg-berry-dark"
             >
-              <MessageCircle className="size-3.5" /> Chat
+              <MessageCircle className="size-4" /> Chat
             </button>
           )}
         </div>

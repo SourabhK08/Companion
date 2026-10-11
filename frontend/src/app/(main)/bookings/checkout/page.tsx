@@ -148,7 +148,7 @@ function CheckoutContent() {
   const minDate = tomorrow.toISOString().split("T")[0];
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 min-w-0">
       {/* ═══ PROGRESS STEPPER ═══ */}
       <div className="flex items-center justify-between sm:justify-start sm:gap-0">
         <ProgressStep step={1} label="Booking Details" isActive={true} isCompleted={false} />

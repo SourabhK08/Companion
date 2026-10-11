@@ -22,6 +22,7 @@ import {
   Handshake,
   Info,
   LayoutGrid,
+  X,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -34,6 +35,7 @@ import {
   SheetTrigger,
   SheetContent,
   SheetTitle,
+  SheetClose,
 } from "@/components/ui/sheet";
 
 /* ─── Custom Gender Icons (not in Lucide) ─── */
@@ -409,12 +411,16 @@ export function MobileSidebarTrigger() {
       >
         <Menu className="size-5" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] bg-deep-plum p-0 border-r-white/10">
+      <SheetContent side="left" className="!w-[280px] max-w-[85vw] bg-deep-plum p-0 border-r-white/10" showCloseButton={false}>
         <SheetTitle className="sr-only">Navigation menu</SheetTitle>
         <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="flex items-center px-4 py-4 border-b border-white/8">
+          {/* Logo & Animated White Close Button */}
+          <div className="flex items-center justify-between px-4 py-4 border-b border-white/8">
             <Logo variant="light" size="sm" />
+            <SheetClose className="group flex size-8 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:bg-white/25 hover:rotate-90 hover:scale-110 active:scale-95 cursor-pointer">
+              <X className="size-4.5 text-white transition-transform duration-300 group-hover:scale-110" />
+              <span className="sr-only">Close sidebar</span>
+            </SheetClose>
           </div>
 
           {/* Nav (scrollable) */}

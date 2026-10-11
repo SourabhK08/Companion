@@ -127,7 +127,7 @@ export function LoginForm() {
                 aria-invalid={!!errors.email}
                 aria-describedby={errors.email ? "email-error" : undefined}
                 className={cn(
-                  "h-11 pl-10 pr-4 rounded-lg border-soft-border bg-white text-sm",
+                  "h-11 pl-10 pr-4 rounded-lg border-soft-border bg-white text-base sm:text-sm",
                   "placeholder:text-muted-foreground/60",
                   "focus-visible:border-berry focus-visible:ring-berry/20",
                   errors.email && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
@@ -161,7 +161,7 @@ export function LoginForm() {
                 aria-invalid={!!errors.password}
                 aria-describedby={errors.password ? "password-error" : undefined}
                 className={cn(
-                  "h-11 pl-10 pr-12 rounded-lg border-soft-border bg-white text-sm",
+                  "h-11 pl-10 pr-12 rounded-lg border-soft-border bg-white text-base sm:text-sm",
                   "placeholder:text-muted-foreground/60",
                   "focus-visible:border-berry focus-visible:ring-berry/20",
                   errors.password && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"

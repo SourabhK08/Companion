@@ -50,8 +50,8 @@ export function Topbar() {
       {/* Mobile sidebar trigger */}
       <MobileSidebarTrigger />
 
-      {/* Search */}
-      <div className="relative flex-1 max-w-md">
+      {/* Search (Desktop/Tablet only — hidden on mobile) */}
+      <div className="relative flex-1 max-w-md hidden md:block">
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
           aria-hidden="true"
@@ -63,6 +63,9 @@ export function Topbar() {
           aria-label="Search"
         />
       </div>
+
+      {/* Mobile flex spacer so only notification bell and profile are visible on right */}
+      <div className="flex-1 md:hidden" />
 
       {/* Right side controls */}
       <div className="flex items-center gap-2 sm:gap-3">
@@ -80,7 +83,7 @@ export function Topbar() {
         >
           <Bell className="size-5" />
           {notifCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-berry text-[9px] font-bold text-white">
+            <span className="absolute -right-1 -top-1 flex size-4.5 min-w-4.5 items-center justify-center rounded-full bg-berry px-1 text-[10px] font-bold text-white shadow-xs">
               {notifCount > 9 ? "9+" : notifCount}
             </span>
           )}
@@ -122,7 +125,7 @@ export function Topbar() {
                 <BadgeCheck className="size-3.5 text-berry" />
               )}
             </span>
-            <span className="text-[10px] text-muted-foreground leading-tight">
+            <span className="text-xs text-muted-foreground leading-tight">
               {user?.isVerified ? "Verified User" : "User"}
             </span>
           </div>

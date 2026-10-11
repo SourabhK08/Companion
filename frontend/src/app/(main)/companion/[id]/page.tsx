@@ -114,7 +114,7 @@ export default function CompanionProfilePage({
   }
 
   return (
-    <main className="min-h-screen bg-[#faf5f6] pb-20">
+    <main className="min-h-screen bg-[#faf5f6] pb-20 w-full min-w-0 max-w-full overflow-x-hidden">
       {/* ─── BANNER SECTION ─── */}
       <div className="relative h-[240px] w-full overflow-hidden bg-gradient-to-r from-[#fbeaf0] to-[#f4dbe2]">
         <div 
@@ -133,7 +133,7 @@ export default function CompanionProfilePage({
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 w-full min-w-0">
         {/* ─── PROFILE HEADER ─── */}
         <div className="relative -mt-20 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[#f0dfe3]">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
@@ -182,16 +182,6 @@ export default function CompanionProfilePage({
                   <CalendarPlus className="mr-2 size-4" />
                   Book Now
                 </Button>
-                {/* Chat is now exclusive to the Co-Founder section
-                <Button
-                  onClick={handleSendMessage}
-                  variant="outline"
-                  className="rounded-full border-[#7a1f39] text-[#7a1f39] hover:bg-[#7a1f39]/5"
-                >
-                  <MessageCircle className="mr-2 size-4" />
-                  Message
-                </Button>
-                */}
               </>
             ) : (
               <Button variant="outline" className="rounded-full border-[#7a1f39] text-[#7a1f39] hover:bg-[#7a1f39]/5">
@@ -206,19 +196,21 @@ export default function CompanionProfilePage({
         </div>
 
         {/* ─── TABS ─── */}
-        <div className="mt-8 flex gap-8 border-b border-[#f0dfe3] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {["About", "Interests", "Photos", "Reviews", "Badges"].map((tab, idx) => (
-            <button
-              key={tab}
-              className={`whitespace-nowrap pb-4 text-sm font-semibold transition-colors ${
-                idx === 0
-                  ? "border-b-2 border-[#7a1f39] text-[#7a1f39]"
-                  : "text-[#6a4953] hover:text-[#2d111b]"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="mt-8 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden w-full min-w-0">
+          <div className="flex gap-8 border-b border-[#f0dfe3] w-max">
+            {["About", "Interests", "Photos", "Reviews", "Badges"].map((tab, idx) => (
+              <button
+                key={tab}
+                className={`whitespace-nowrap pb-4 text-sm font-semibold transition-colors ${
+                  idx === 0
+                    ? "border-b-2 border-[#7a1f39] text-[#7a1f39]"
+                    : "text-[#6a4953] hover:text-[#2d111b]"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-6 lg:flex-row">
@@ -246,29 +238,29 @@ export default function CompanionProfilePage({
                   <div className="flex size-8 items-center justify-center rounded-full bg-[#f4dbe2] text-[#7a1f39]">
                     <User className="size-4" />
                   </div>
-                  <p className="mt-1 text-[11px] font-semibold text-[#6a4953]">Age</p>
-                  <p className="font-bold text-[#2d111b]">{companion.age}</p>
+                  <p className="mt-1 text-xs font-semibold text-[#6a4953]">Age</p>
+                  <p className="text-sm sm:text-base font-bold text-[#2d111b]">{companion.age}</p>
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex size-8 items-center justify-center rounded-full bg-[#f4dbe2] text-[#7a1f39]">
                     <Activity className="size-4" />
                   </div>
-                  <p className="mt-1 text-[11px] font-semibold text-[#6a4953]">Height</p>
-                  <p className="font-bold text-[#2d111b]">5'8"</p>
+                  <p className="mt-1 text-xs font-semibold text-[#6a4953]">Height</p>
+                  <p className="text-sm sm:text-base font-bold text-[#2d111b]">5'8"</p>
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex size-8 items-center justify-center rounded-full bg-[#f4dbe2] text-[#7a1f39]">
                     <Briefcase className="size-4" />
                   </div>
-                  <p className="mt-1 text-[11px] font-semibold text-[#6a4953]">Occupation</p>
-                  <p className="font-bold text-[#2d111b] leading-tight">{companion.profession}</p>
+                  <p className="mt-1 text-xs font-semibold text-[#6a4953]">Occupation</p>
+                  <p className="text-sm sm:text-base font-bold text-[#2d111b] leading-tight">{companion.profession}</p>
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex size-8 items-center justify-center rounded-full bg-[#f4dbe2] text-[#7a1f39]">
                     <Languages className="size-4" />
                   </div>
-                  <p className="mt-1 text-[11px] font-semibold text-[#6a4953]">Language</p>
-                  <p className="font-bold text-[#2d111b] leading-tight">{companion.languages.join(", ")}</p>
+                  <p className="mt-1 text-xs font-semibold text-[#6a4953]">Language</p>
+                  <p className="text-sm sm:text-base font-bold text-[#2d111b] leading-tight">{companion.languages.join(", ")}</p>
                 </div>
               </div>
             </div>
@@ -330,7 +322,7 @@ export default function CompanionProfilePage({
                 <div className="flex aspect-square items-center justify-center rounded-xl bg-[#2d111b] text-white">
                   <div className="text-center">
                     <p className="text-xl font-bold">+12</p>
-                    <p className="text-[10px]">More Photos</p>
+                    <p className="text-xs font-medium">More Photos</p>
                   </div>
                 </div>
               </div>
@@ -347,8 +339,8 @@ export default function CompanionProfilePage({
                   <ShieldAlert className="size-5 text-[#7a1f39]" />
                   Account Verification
                 </h3>
-                <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-600">
-                  <CheckCircle2 className="size-3" /> Verified
+                <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
+                  <CheckCircle2 className="size-3.5" /> Verified
                 </span>
               </div>
               
@@ -394,7 +386,7 @@ export default function CompanionProfilePage({
                     <CalendarDays className="size-6 text-[#7a1f39]" />
                     <div>
                       <p className="text-lg font-bold text-[#2d111b]">12</p>
-                      <p className="text-[10px] font-semibold text-[#6a4953]">Total Bookings</p>
+                      <p className="text-xs font-semibold text-[#6a4953]">Total Bookings</p>
                     </div>
                   </div>
                 </div>
@@ -403,7 +395,7 @@ export default function CompanionProfilePage({
                     <Star className="size-6 text-[#7a1f39]" />
                     <div>
                       <p className="text-lg font-bold text-[#2d111b]">{companion.reviews}</p>
-                      <p className="text-[10px] font-semibold text-[#6a4953]">Reviews Received</p>
+                      <p className="text-xs font-semibold text-[#6a4953]">Reviews Received</p>
                     </div>
                   </div>
                 </div>
@@ -412,7 +404,7 @@ export default function CompanionProfilePage({
                     <Star className="size-6 text-[#f59e0b] fill-[#f59e0b]" />
                     <div>
                       <p className="text-lg font-bold text-[#2d111b]">{companion.rating}</p>
-                      <p className="text-[10px] font-semibold text-[#6a4953]">Average Rating</p>
+                      <p className="text-xs font-semibold text-[#6a4953]">Average Rating</p>
                     </div>
                   </div>
                 </div>
@@ -421,7 +413,7 @@ export default function CompanionProfilePage({
                     <Heart className="size-6 text-[#7a1f39]" />
                     <div>
                       <p className="text-lg font-bold text-[#2d111b]">3</p>
-                      <p className="text-[10px] font-semibold text-[#6a4953]">Saved Companions</p>
+                      <p className="text-xs font-semibold text-[#6a4953]">Saved Companions</p>
                     </div>
                   </div>
                 </div>

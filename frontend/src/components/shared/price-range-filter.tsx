@@ -13,12 +13,12 @@ export function PriceRangeFilter({
 }: PriceRangeFilterProps) {
   return (
     <div className="space-y-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d4c56]">
+      <div className="text-xs font-semibold uppercase tracking-wider text-[#6d4c56]">
         Price Range
       </div>
 
-      <div className="rounded-xl border border-[#e5dbe0] bg-white p-2.5">
-        <div className="mb-3 flex items-center justify-between text-[12px] font-semibold text-[#5a1d2d]">
+      <div className="rounded-xl border border-[#e5dbe0] bg-white p-3">
+        <div className="mb-3 flex items-center justify-between text-xs sm:text-sm font-semibold text-[#5a1d2d]">
           <span>₹{min}</span>
           <span>₹{min} - ₹{value}</span>
         </div>
@@ -35,7 +35,7 @@ export function PriceRangeFilter({
             aria-label="Price range"
           />
 
-          <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-[#7a1f39]">
+          <div className="mt-2 flex items-center justify-between text-xs font-medium text-[#7a1f39]">
             <span>₹{min}</span>
             <span>₹{max}</span>
           </div>

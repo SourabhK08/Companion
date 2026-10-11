@@ -68,9 +68,9 @@ function SocialIcon({ icon, className }: { icon: string; className?: string }) {
  */
 export function DashboardFooter() {
   return (
-    <footer className="border-t border-soft-border bg-deep-plum text-white">
-      <div className="mx-auto max-w-[1400px] px-6 py-10 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-6">
+    <footer className="border-t border-soft-border bg-deep-plum text-white w-full min-w-0 max-w-full overflow-hidden">
+      <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 w-full min-w-0">
+        <div className="grid grid-cols-2 gap-6 sm:gap-8 sm:grid-cols-3 lg:grid-cols-6 w-full min-w-0">
           {/* Brand + Social */}
           <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <Logo variant="light" size="sm" />
@@ -177,18 +177,18 @@ export function DashboardFooter() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-3 px-6 py-4 text-[10px] text-white/40 sm:flex-row lg:px-8">
+      <div className="border-t border-white/10 w-full min-w-0">
+        <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-3 px-4 py-4 text-xs text-white/60 sm:flex-row sm:px-6 lg:px-8 w-full min-w-0">
           <p>© {new Date().getFullYear()} Modhuralap. All rights reserved.</p>
           <div className="flex items-center gap-3">
-            <Link href="/privacy" className="transition-colors hover:text-white/60">
+            <Link href="/privacy" className="transition-colors hover:text-white/80">
               Privacy Policy
             </Link>
-            <span className="text-white/15">|</span>
-            <Link href="/terms" className="transition-colors hover:text-white/60">
+            <span className="text-white/25">|</span>
+            <Link href="/terms" className="transition-colors hover:text-white/80">
               Terms & Conditions
             </Link>
-            <span className="text-white/15">|</span>
+            <span className="text-white/25">|</span>
             <span>18+ Only</span>
           </div>
         </div>

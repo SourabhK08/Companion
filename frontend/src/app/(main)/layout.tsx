@@ -13,14 +13,14 @@ function MainLayoutInner({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="flex min-h-screen bg-warm-white">
+    <div className="flex min-h-screen w-full min-w-0 max-w-full overflow-x-hidden bg-warm-white">
       {/* Desktop sidebar */}
       <Sidebar />
 
       {/* Main content area */}
       <div
         className={cn(
-          "flex flex-1 flex-col transition-all duration-300",
+          "flex flex-1 flex-col w-full min-w-0 max-w-full overflow-x-hidden transition-all duration-300",
           isCollapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"
         )}
       >
@@ -28,7 +28,7 @@ function MainLayoutInner({ children }: { children: React.ReactNode }) {
         <Topbar />
 
         {/* Page content */}
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 w-full min-w-0 max-w-full overflow-x-hidden">{children}</main>
 
         {/* Footer on every page */}
         <DashboardFooter />
