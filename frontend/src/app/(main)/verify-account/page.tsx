@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BadgeCheck, CheckCircle2, Circle, Loader2, ShieldCheck } from "lucide-react";
 import { cn } from "cn";
 
@@ -15,11 +15,18 @@ import { EmailVerification } from "@/components/verification/email-verification"
  *
  * The verified badge needs BOTH phone and email to be verified, so this page
  * shows both with a progress indicator.
- *  - Fully-verified users are sent straight to the dashboard
+ *  - Fully-verified users are sent to return destination (`from` param) or /dashboard
  *  - "Skip for now" is always available (can finish later in Settings)
  */
-export default function VerifyAccountPage() {
+function VerifyAccountContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawFrom = searchParams?.get("from");
+  const targetUrl =
+    rawFrom && rawFrom.startsWith("/") && !rawFrom.startsWith("//")
+      ? rawFrom
+      : "/dashboard";
+
   const { user, isLoading, refreshUser } = useAuth();
 
   const phoneDone = !!user?.isPhoneVerified;
@@ -30,10 +37,10 @@ export default function VerifyAccountPage() {
   useEffect(() => {
     if (!isLoading && allDone) {
       // Brief pause so the user sees the success state before leaving
-      const t = setTimeout(() => router.replace("/dashboard"), 1500);
+      const t = setTimeout(() => router.replace(targetUrl), 1500);
       return () => clearTimeout(t);
     }
-  }, [isLoading, allDone, router]);
+  }, [isLoading, allDone, router, targetUrl]);
 
   if (isLoading || !user) {
     return (
@@ -91,7 +98,7 @@ export default function VerifyAccountPage() {
         {allDone && (
           <p role="status" className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-emerald-700">
             <BadgeCheck className="size-4" />
-            You&apos;re verified! Taking you to your dashboard…
+            You&apos;re verified! Taking you to your destination…
           </p>
         )}
 
@@ -113,7 +120,7 @@ export default function VerifyAccountPage() {
             You can also do this later in Settings.
           </p>
           <Link
-            href="/dashboard"
+            href={targetUrl}
             className="shrink-0 text-sm font-semibold text-muted-foreground hover:text-foreground"
           >
             {allDone ? "Continue" : "Skip for now"}
@@ -121,5 +128,19 @@ export default function VerifyAccountPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyAccountPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="size-6 animate-spin text-berry" />
+        </div>
+      }
+    >
+      <VerifyAccountContent />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -42,6 +42,8 @@ import { useAuth } from "@/hooks/use-auth";
  */
 export function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams?.get("from");
   const { register: registerUser, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -93,7 +95,10 @@ export function SignupForm() {
       return;
     }
 
-    router.push("/verify-account");
+    const destination = from
+      ? `/verify-account?from=${encodeURIComponent(from)}`
+      : "/verify-account";
+    router.push(destination);
   }
 
   const inputBase =
@@ -456,7 +461,10 @@ export function SignupForm() {
       {/* ─── Login Prompt ─── */}
       <p className="mt-5 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-foreground transition-colors hover:text-berry rounded">
+        <Link
+          href={from ? `/login?from=${encodeURIComponent(from)}` : "/login"}
+          className="font-semibold text-foreground transition-colors hover:text-berry rounded"
+        >
           Login
         </Link>
       </p>

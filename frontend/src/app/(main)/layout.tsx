@@ -1,9 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { cn } from "cn";
 import { Sidebar, SidebarProvider, useSidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { DashboardFooter } from "@/components/layout/dashboard-footer";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
 /**
  * Inner layout that reacts to sidebar state.
@@ -41,6 +43,7 @@ function MainLayoutInner({ children }: { children: React.ReactNode }) {
  * Main layout for authenticated routes (/dashboard, /profile, etc.)
  *
  * Structure:
+ *   - AuthGuard: checks authentication and redirects unauthenticated users to /login?from=...
  *   - Left: Collapsible sidebar (desktop) / Sheet (mobile)
  *   - Top: Search bar + city + notifications + user
  *   - Center: Page content
@@ -51,8 +54,12 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <MainLayoutInner>{children}</MainLayoutInner>
-    </SidebarProvider>
+    <Suspense>
+      <AuthGuard>
+        <SidebarProvider>
+          <MainLayoutInner>{children}</MainLayoutInner>
+        </SidebarProvider>
+      </AuthGuard>
+    </Suspense>
   );
 }

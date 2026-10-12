@@ -1,14 +1,20 @@
+import { Suspense } from "react";
+import { GuestGuard } from "@/components/auth/guest-guard";
+
 /**
  * AUTH LAYOUT
  *
  * Keep auth screens deliberately minimal with no global app chrome.
- * The page itself owns the brand area and layout so each auth screen
- * can match its intended mockup without duplicated header/logo blocks.
+ * Wraps in GuestGuard so already logged-in users are redirected to /dashboard.
  */
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <Suspense>
+      <GuestGuard>{children}</GuestGuard>
+    </Suspense>
+  );
 }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticate, optionalAuth } from "../middleware/auth.js";
+import { authenticate } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 import { createCoFounderSchema, updateCoFounderSchema } from "../schemas/cofounder.schema.js";
 import {
@@ -17,8 +17,8 @@ router.get("/me", authenticate, getOwn);
 router.post("/", authenticate, validate(createCoFounderSchema), create);
 router.patch("/me", authenticate, validate(updateCoFounderSchema), update);
 
-// Public routes
-router.get("/", optionalAuth, list);
-router.get("/:id", getOne);
+// All cofounder endpoints require authentication
+router.get("/", authenticate, list);
+router.get("/:id", authenticate, getOne);
 
 export { router as cofounderRoutes };

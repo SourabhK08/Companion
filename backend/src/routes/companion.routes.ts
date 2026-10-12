@@ -14,8 +14,8 @@ router.post("/", authenticate, validate(createCompanionSchema), companionControl
 router.get("/me", authenticate, companionController.getOwn);
 router.patch("/me", authenticate, validate(updateCompanionSchema), companionController.update);
 
-// Public routes
-router.get("/", companionController.list);
-router.get("/:id", companionController.getOne);
+// All companion endpoints require authentication
+router.get("/", authenticate, companionController.list);
+router.get("/:id", authenticate, companionController.getOne);
 
 export default router;

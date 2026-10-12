@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,9 +34,13 @@ import { useAuth } from "@/hooks/use-auth";
  */
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const from = searchParams?.get("from");
+  const signupLink = from ? `/signup?from=${encodeURIComponent(from)}` : "/signup";
 
   const {
     register,
@@ -64,7 +68,15 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    const target =
+      from &&
+      from.startsWith("/") &&
+      !from.startsWith("//") &&
+      !from.startsWith("/login") &&
+      !from.startsWith("/signup")
+        ? from
+        : "/dashboard";
+    router.push(target);
   }
 
   return (
@@ -78,7 +90,7 @@ export function LoginForm() {
           Login
         </span>
         <Link
-          href="/signup"
+          href={signupLink}
           className="flex-1 pb-3 text-center text-lg font-medium text-muted-foreground transition-colors hover:text-foreground border-b-2 border-transparent"
         >
           Sign Up
@@ -290,7 +302,7 @@ export function LoginForm() {
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link
-            href="/signup"
+            href={signupLink}
             className="font-semibold text-foreground transition-colors hover:text-berry focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-berry/50 rounded"
           >
             Sign Up
