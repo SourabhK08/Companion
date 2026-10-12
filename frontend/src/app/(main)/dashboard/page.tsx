@@ -22,6 +22,9 @@ import {
 import Link from "next/link";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useProfilePhoto } from "@/hooks/use-profile-photo";
+import { ImageCarouselModal } from "@/components/shared/image-carousel-modal";
+import { Eye } from "lucide-react";
 
 function CigaretteOffIcon({ className }: { className?: string }) {
   return (
@@ -48,7 +51,6 @@ const tabs = [
   { label: "About", id: "about" },
   { label: "Interests", id: "interests" },
   { label: "Experience", id: "experience" },
-  { label: "Languages", id: "languages" },
 ] as const;
 
 const tagStyles =
@@ -78,16 +80,21 @@ function calculateAge(dob: string | Date | undefined): number | null {
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { photos, fetchPhotos, galleryPhotos, isLoadingPhotos } = useProfilePhoto();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["id"]>("about");
   const [showAllTags, setShowAllTags] = useState(false);
+  const [carouselOpen, setCarouselOpen] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const refs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.replace("/login");
+    } else if (isAuthenticated) {
+      fetchPhotos();
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router, fetchPhotos]);
 
   const scrollToSection = (id: (typeof tabs)[number]["id"]) => {
     setActiveTab(id);
@@ -169,14 +176,26 @@ export default function DashboardPage() {
 
           <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-4 sm:flex-row lg:gap-5">
-              <div className="relative shrink-0 overflow-hidden rounded-full border-3 sm:border-4 border-white/90 bg-[#f8d5d2] shadow-[0_8px_18px_rgba(74,19,35,0.18)]">
-                <div
-                  className="size-24 sm:size-28 lg:size-32 bg-cover bg-center"
-                  style={{
-                    backgroundImage:
-                      `url(${user?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80'})`,
-                  }}
-                />
+              {/* Avatar with fallback monogram */}
+              <div className="relative shrink-0 overflow-hidden rounded-full border-3 sm:border-4 border-white/90 bg-gradient-to-br from-dusty-rose to-berry shadow-[0_8px_18px_rgba(74,19,35,0.18)] flex items-center justify-center">
+                {user?.avatarUrl ? (
+                  <div
+                    className="size-24 sm:size-28 lg:size-32 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${user.avatarUrl})` }}
+                  />
+                ) : (
+                  <div className="size-24 sm:size-28 lg:size-32 flex items-center justify-center text-white text-3xl sm:text-4xl font-bold font-serif select-none">
+                    {user?.name
+                      ? user.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase()
+                      : "U"}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col items-center sm:items-start pt-1 sm:pt-3">
@@ -457,23 +476,71 @@ export default function DashboardPage() {
                   <Camera className="size-5" />
                   <h2 className="text-[20px] font-bold">Gallery</h2>
                 </div>
-                <button type="button" className="text-sm font-medium text-[#7a1f39]">
-                  View All →
-                </button>
+                <Link
+                  href="/settings?tab=account"
+                  className="text-xs sm:text-sm font-semibold text-[#7a1f39] hover:underline"
+                >
+                  Manage →
+                </Link>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
-                ].map((image, index) => (
-                  <div key={image + index} className="overflow-hidden rounded-[16px] border border-[#f0dfe3] bg-[#f2e9e9]">
-                    <div className="h-28 w-full bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
+              {isLoadingPhotos ? (
+                <div className="flex h-32 items-center justify-center">
+                  <Loader2 className="size-6 animate-spin text-berry" />
+                </div>
+              ) : photos.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {(galleryPhotos.length > 0 ? galleryPhotos : photos)
+                    .slice(0, 4)
+                    .map((photo, index) => (
+                      <button
+                        key={photo.id}
+                        type="button"
+                        onClick={() => {
+                          setCarouselIndex(index);
+                          setCarouselOpen(true);
+                        }}
+                        className="group relative overflow-hidden rounded-[16px] border border-[#f0dfe3] bg-[#f2e9e9] cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-berry/40"
+                      >
+                        <div
+                          className="h-28 w-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                          style={{
+                            backgroundImage: `url(${photo.imageUrl || photo.thumbnailUrl || ""})`,
+                          }}
+                        />
+                        {/* Hover hint */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <span className="rounded-full bg-black/60 p-1.5 text-white backdrop-blur-xs">
+                            <Eye className="size-4" />
+                          </span>
+                        </div>
+                        {photo.isProfilePhoto && (
+                          <span className="absolute bottom-1.5 left-1.5 rounded-full bg-berry/90 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
+                            Avatar
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center rounded-[18px] border border-dashed border-[#eadfe3] bg-white/70 p-5 text-center">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-berry/10 text-berry">
+                    <Camera className="size-5" />
                   </div>
-                ))}
-              </div>
+                  <p className="mt-2 text-xs sm:text-sm font-bold text-[#4d2a35]">
+                    No photos added yet
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-[#6a4953]">
+                    Upload photos in Settings to showcase here.
+                  </p>
+                  <Link
+                    href="/settings?tab=account"
+                    className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#7a1f39] px-3.5 py-1 text-xs font-semibold text-white hover:bg-[#66192d] transition-colors"
+                  >
+                    Add Photos
+                  </Link>
+                </div>
+              )}
             </section>
 
             <section className="rounded-[22px] border border-[#eadfe3] bg-[#f8f3f1] p-4 sm:p-5">
@@ -542,6 +609,20 @@ export default function DashboardPage() {
           </aside>
         </div>
       </div>
+
+      {/* Full-Screen Carousel Modal */}
+      <ImageCarouselModal
+        isOpen={carouselOpen}
+        onClose={() => setCarouselOpen(false)}
+        images={(galleryPhotos.length > 0 ? galleryPhotos : photos).slice(0, 4).map((p) => ({
+          id: p.id,
+          url: p.imageUrl || p.thumbnailUrl || "",
+          thumbnailUrl: p.thumbnailUrl,
+          isProfilePhoto: p.isProfilePhoto,
+        }))}
+        currentIndex={carouselIndex}
+        onNavigate={setCarouselIndex}
+      />
     </div>
   );
 }

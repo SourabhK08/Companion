@@ -11,6 +11,8 @@ import {
   deletePhoto,
   listPhotos,
   cleanupStaleUploads,
+  setAsProfilePhoto,
+  removeAvatar,
 } from "../services/profile-photo.service.js";
 import { resolveImageUrl } from "../services/cloudinary.service.js";
 
@@ -141,6 +143,80 @@ export async function resolveUrl(req: AuthRequest, res: Response): Promise<void>
     });
   } catch (error) {
     handleError(res, error, "Failed to resolve URL");
+  }
+}
+
+// ─── PATCH /api/profile/photos/:photoId/set-avatar ────────
+
+export async function setAvatar(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Unauthorized" });
+      return;
+    }
+
+    const rawPhotoId = req.params.photoId;
+    const photoId = Array.isArray(rawPhotoId) ? rawPhotoId[0] : rawPhotoId;
+    if (!photoId || typeof photoId !== "string") {
+      res.status(400).json({ success: false, message: "Photo ID is required" });
+      return;
+    }
+
+    await setAsProfilePhoto(userId, photoId);
+    const photos = await listPhotos(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo updated successfully",
+      data: { photos },
+    });
+  } catch (error) {
+    handleError(res, error, "Failed to set avatar");
+  }
+}
+
+// ─── GET /api/profile/photos/user/:userId ─────────────────
+
+export async function getUserPhotos(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const targetUserId = req.params.userId;
+    if (!targetUserId || typeof targetUserId !== "string") {
+      res.status(400).json({ success: false, message: "User ID is required" });
+      return;
+    }
+
+    const photos = await listPhotos(targetUserId);
+
+    res.status(200).json({
+      success: true,
+      data: { photos },
+    });
+  } catch (error) {
+    handleError(res, error, "Failed to list user photos");
+  }
+}
+
+// ─── DELETE /api/profile/photos/avatar ────────────────────
+
+export async function removeAvatarHandler(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Unauthorized" });
+      return;
+    }
+
+    await removeAvatar(userId);
+    const photos = await listPhotos(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Avatar removed, reverted to default",
+      data: { photos },
+    });
+  } catch (error) {
+    handleError(res, error, "Failed to remove avatar");
   }
 }
 

@@ -46,6 +46,7 @@ import {
 import { CompanionSettings } from "./companion-settings";
 import { CoFounderSettings } from "./cofounder-settings";
 import { AvatarUpload } from "@/components/settings/avatar-upload";
+import { PhotoGalleryManager } from "@/components/settings/photo-gallery-manager";
 import { PhoneVerification } from "@/components/verification/phone-verification";
 import { EmailVerification } from "@/components/verification/email-verification";
 
@@ -413,6 +414,14 @@ function SettingsContent() {
               </div>
             </div>
           </section>
+
+          {/* Profile Photo & Gallery Management */}
+          <PhotoGalleryManager
+            onAvatarUpdated={(newUrl) => {
+              setUserProfile((prev) => ({ ...prev, avatar: newUrl }));
+              refreshUser();
+            }}
+          />
 
           {/* Personal Information Card */}
           <section className="rounded-2xl border border-soft-border bg-white p-5 shadow-xs">

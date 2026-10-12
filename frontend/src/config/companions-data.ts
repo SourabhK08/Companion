@@ -25,6 +25,12 @@ export interface Companion {
   bio: string;
   languages: string[];
   gender: "male" | "female" | "other";
+  galleryPhotos?: {
+    id: string;
+    imageUrl: string | null;
+    thumbnailUrl: string | null;
+    isProfilePhoto: boolean;
+  }[];
 }
 
 export const maleCompanions: Companion[] = [

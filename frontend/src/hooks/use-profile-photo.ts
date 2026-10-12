@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -52,8 +52,15 @@ interface PhotosListResponse {
   };
 }
 
+export const MAX_TOTAL_PHOTOS = 5;
+export const MAX_GALLERY_PHOTOS = 4;
+
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
+export interface UploadPhotoOptions {
+  setAsAvatar?: boolean;
+}
 
 export function useProfilePhoto() {
   const { refreshUser } = useAuth();
@@ -70,15 +77,15 @@ export function useProfilePhoto() {
       if (res.success && res.data?.photos) {
         setPhotos(res.data.photos);
       }
-    } catch {
-      // Ignore or set error
+    } catch (err) {
+      console.error("Failed to fetch photos", err);
     } finally {
       setIsLoadingPhotos(false);
     }
   }, []);
 
   const uploadPhoto = useCallback(
-    async (file: File): Promise<ProfilePhotoItem | null> => {
+    async (file: File, options?: UploadPhotoOptions): Promise<ProfilePhotoItem | null> => {
       setError(null);
 
       // 1. Validation
@@ -159,7 +166,7 @@ export function useProfilePhoto() {
               try {
                 const parsed = JSON.parse(xhr.responseText);
                 resolve(parsed);
-              } catch (err) {
+              } catch {
                 reject(new Error("Invalid response from image server"));
               }
             } else {
@@ -199,6 +206,7 @@ export function useProfilePhoto() {
               bytes: cloudRes.bytes,
               format: cloudRes.format,
               secureUrl: cloudRes.secure_url,
+              setAsAvatar: options?.setAsAvatar,
             }),
           }
         );
@@ -209,8 +217,9 @@ export function useProfilePhoto() {
 
         setUploadProgress(100);
 
-        // 5. Refresh user session so all components (topbar, profile, dashboard) update
+        // 5. Refresh user session and photo list
         await refreshUser();
+        await fetchPhotos();
 
         return completeRes.data.photo;
       } catch (err) {
@@ -222,11 +231,46 @@ export function useProfilePhoto() {
         setIsUploading(false);
       }
     },
-    [refreshUser]
+    [refreshUser, fetchPhotos]
   );
+
+  const setAsAvatar = useCallback(
+    async (photoId: string) => {
+      setError(null);
+      try {
+        await apiFetch<{ success: boolean; data: { photos: ProfilePhotoItem[] } }>(
+          `/api/profile/photos/${photoId}/set-avatar`,
+          { method: "PATCH" }
+        );
+        await refreshUser();
+        await fetchPhotos();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to set profile photo";
+        setError(msg);
+        throw err;
+      }
+    },
+    [refreshUser, fetchPhotos]
+  );
+
+  const removeAvatar = useCallback(async () => {
+    setError(null);
+    try {
+      await apiFetch<{ success: boolean }>(`/api/profile/photos/avatar`, {
+        method: "DELETE",
+      });
+      await refreshUser();
+      await fetchPhotos();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to remove avatar";
+      setError(msg);
+      throw err;
+    }
+  }, [refreshUser, fetchPhotos]);
 
   const deletePhoto = useCallback(
     async (photoId: string) => {
+      setError(null);
       try {
         await apiFetch<{ success: boolean; message: string }>(
           `/api/profile/photos/${photoId}`,
@@ -243,11 +287,30 @@ export function useProfilePhoto() {
     [refreshUser, fetchPhotos]
   );
 
+  const avatarPhoto = useMemo(
+    () => photos.find((p) => p.isProfilePhoto) || null,
+    [photos]
+  );
+
+  const galleryPhotos = useMemo(
+    () => photos.filter((p) => !p.isProfilePhoto),
+    [photos]
+  );
+
+  const canUploadMore = photos.length < MAX_TOTAL_PHOTOS;
+  const canUploadGallery = galleryPhotos.length < MAX_GALLERY_PHOTOS;
+
   return {
     uploadPhoto,
     deletePhoto,
+    setAsAvatar,
+    removeAvatar,
     fetchPhotos,
     photos,
+    avatarPhoto,
+    galleryPhotos,
+    canUploadMore,
+    canUploadGallery,
     isUploading,
     uploadProgress,
     error,

@@ -31,9 +31,25 @@ const cofounderSelect = {
       dateOfBirth: true,
       isVerified: true,
       linkedinUrl: true,
+      profilePhotos: {
+        where: { status: "CONFIRMED" },
+        orderBy: [
+          { isProfilePhoto: "desc" },
+          { sortOrder: "asc" },
+          { createdAt: "desc" },
+        ] as { isProfilePhoto?: "asc" | "desc"; sortOrder?: "asc" | "desc"; createdAt?: "asc" | "desc" }[],
+        select: {
+          id: true,
+          storageKey: true,
+          isProfilePhoto: true,
+          sortOrder: true,
+          width: true,
+          height: true,
+        },
+      },
     },
   },
-} as const;
+};
 
 export async function createOrUpdateProfile(userId: string, input: CreateCoFounderInput) {
   const user = await prisma.user.findUnique({ where: { id: userId } });

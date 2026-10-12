@@ -46,6 +46,7 @@ export const completeUploadSchema = z.object({
   bytes: z.number().int().optional(),
   format: z.string().optional(),
   secureUrl: z.string().optional(),
+  setAsAvatar: z.boolean().optional(),
 });
 
 export type CompleteUploadInput = z.infer<typeof completeUploadSchema>;

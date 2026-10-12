@@ -7,6 +7,9 @@ import {
   removePhoto,
   cleanup,
   resolveUrl,
+  setAvatar,
+  getUserPhotos,
+  removeAvatarHandler,
 } from "../controllers/profile-photo.controller.js";
 
 const router = Router();
@@ -25,6 +28,15 @@ router.get("/", getPhotos);
 
 // Resolve a storageKey to a temporary read URL
 router.get("/resolve-url", resolveUrl);
+
+// Get another user's confirmed photos (for companion/cofounder profile views)
+router.get("/user/:userId", getUserPhotos);
+
+// Remove avatar (revert to default image/initials)
+router.delete("/avatar", removeAvatarHandler);
+
+// Set a specific photo as the profile avatar
+router.patch("/:photoId/set-avatar", setAvatar);
 
 // Delete a specific photo (blob + DB record)
 router.delete("/:photoId", removePhoto);

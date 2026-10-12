@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -30,7 +30,8 @@ import {
   SlidersHorizontal,
   ArrowRight,
   MessageCircle,
-  CalendarPlus
+  CalendarPlus,
+  Eye,
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -38,6 +39,7 @@ import { useCompanion } from "@/hooks/use-companion";
 import { useAuth } from "@/hooks/use-auth";
 import { apiFetch } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
+import { ImageCarouselModal } from "@/components/shared/image-carousel-modal";
 
 // Utility for mapping interest names to icons
 const getInterestIcon = (interest: string) => {
@@ -62,6 +64,8 @@ export default function CompanionProfilePage({
   const router = useRouter();
   const { user } = useAuth();
   const { companion, isLoading, error } = useCompanion(resolvedParams.id);
+  const [carouselOpen, setCarouselOpen] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   const handleSendMessage = async () => {
     if (!companion) return;
@@ -137,14 +141,25 @@ export default function CompanionProfilePage({
         {/* ─── PROFILE HEADER ─── */}
         <div className="relative -mt-20 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[#f0dfe3]">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
-            <div className="relative size-32 shrink-0 overflow-hidden rounded-full border-4 border-white shadow-md sm:size-40">
-              <div
-                className="h-full w-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${companion.avatar || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400&q=80'})` }}
-              />
-              <button className="absolute bottom-2 right-2 flex size-8 items-center justify-center rounded-full bg-[#7a1f39] text-white shadow-sm hover:bg-[#661b2f]">
-                <Camera className="size-4" />
-              </button>
+            <div className="relative size-32 shrink-0 overflow-hidden rounded-full border-4 border-white shadow-md sm:size-40 bg-gradient-to-br from-dusty-rose to-berry flex items-center justify-center text-white text-3xl sm:text-4xl font-bold font-serif select-none">
+              {companion.avatar ? (
+                <div
+                  className="h-full w-full bg-cover bg-center"
+                  style={{ backgroundImage: `url(${companion.avatar})` }}
+                />
+              ) : (
+                <span>
+                  {companion.name
+                    ? companion.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase()
+                    : "C"}
+                </span>
+              )}
             </div>
             <div className="mb-2">
               <h1 className="flex items-center gap-2 text-2xl font-bold text-[#2d111b] sm:text-3xl">
@@ -296,36 +311,68 @@ export default function CompanionProfilePage({
                   <CameraIcon className="size-5 text-[#7a1f39]" />
                   Photos
                 </h3>
-                <button className="flex items-center gap-1 text-xs font-bold text-[#7a1f39]">
-                  View All <ChevronRight className="size-3" />
-                </button>
+                <span className="text-xs font-semibold text-[#7a1f39]">
+                  {companion.galleryPhotos && companion.galleryPhotos.length > 0
+                    ? `${companion.galleryPhotos.length} photo${companion.galleryPhotos.length > 1 ? "s" : ""}`
+                    : companion.avatar
+                      ? "1 photo"
+                      : "0 photos"}
+                </span>
               </div>
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
-                {companion.avatar && (
-                  <div className="aspect-square overflow-hidden rounded-xl bg-gray-100 ring-2 ring-[#7a1f39]/20">
-                    <img 
-                      src={companion.avatar}
-                      alt={companion.name} 
-                      className="h-full w-full object-cover transition-transform hover:scale-110"
-                    />
+
+              {(() => {
+                // Collect all valid photos: gallery photos or fallback to avatar
+                const allPhotos =
+                  companion.galleryPhotos && companion.galleryPhotos.length > 0
+                    ? companion.galleryPhotos
+                    : companion.avatar
+                      ? [{ id: "avatar", imageUrl: companion.avatar, thumbnailUrl: companion.avatar, isProfilePhoto: true }]
+                      : [];
+
+                if (allPhotos.length === 0) {
+                  return (
+                    <div className="mt-5 flex flex-col items-center justify-center rounded-xl border border-dashed border-[#f0dfe3] bg-[#fdfafb] py-8 text-center">
+                      <CameraIcon className="size-8 text-[#7a1f39]/40" />
+                      <p className="mt-2 text-sm font-semibold text-[#2d111b]">No photos shared yet</p>
+                      <p className="mt-0.5 text-xs text-[#6a4953]">This user hasn&apos;t uploaded gallery photos.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-5">
+                    {allPhotos.map((p, idx) => (
+                      <button
+                        key={p.id || idx}
+                        type="button"
+                        onClick={() => {
+                          setCarouselIndex(idx);
+                          setCarouselOpen(true);
+                        }}
+                        className="group relative aspect-square overflow-hidden rounded-xl bg-gray-100 border border-[#f0dfe3] shadow-2xs cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#7a1f39]/40"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={p.imageUrl || p.thumbnailUrl || companion.avatar || ""}
+                          alt={`${companion.name} photo ${idx + 1}`}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        {/* Hover hint */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <span className="rounded-full bg-black/60 p-1.5 text-white backdrop-blur-xs">
+                            <Eye className="size-4" />
+                          </span>
+                        </div>
+                        {p.isProfilePhoto && (
+                          <span className="absolute bottom-1.5 left-1.5 rounded-full bg-[#7a1f39]/90 px-2 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
+                            Avatar
+                          </span>
+                        )}
+                      </button>
+                    ))}
                   </div>
-                )}
-                {[1, 2, 3, 4].slice(0, companion.avatar ? 3 : 4).map((i) => (
-                  <div key={i} className="aspect-square overflow-hidden rounded-xl bg-gray-100">
-                    <img 
-                      src={`https://images.unsplash.com/photo-152${i}504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80`}
-                      alt="Gallery" 
-                      className="h-full w-full object-cover transition-transform hover:scale-110"
-                    />
-                  </div>
-                ))}
-                <div className="flex aspect-square items-center justify-center rounded-xl bg-[#2d111b] text-white">
-                  <div className="text-center">
-                    <p className="text-xl font-bold">+12</p>
-                    <p className="text-xs font-medium">More Photos</p>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
             </div>
           </div>
 
@@ -472,6 +519,25 @@ export default function CompanionProfilePage({
           </div>
         </div>
       </div>
+
+      {/* Full-Screen Carousel Modal */}
+      <ImageCarouselModal
+        isOpen={carouselOpen}
+        onClose={() => setCarouselOpen(false)}
+        images={(companion.galleryPhotos && companion.galleryPhotos.length > 0
+          ? companion.galleryPhotos
+          : companion.avatar
+            ? [{ id: "avatar", imageUrl: companion.avatar, thumbnailUrl: companion.avatar, isProfilePhoto: true }]
+            : []
+        ).map((p) => ({
+          id: p.id,
+          url: p.imageUrl || p.thumbnailUrl || companion.avatar || "",
+          thumbnailUrl: p.thumbnailUrl,
+          isProfilePhoto: p.isProfilePhoto,
+        }))}
+        currentIndex={carouselIndex}
+        onNavigate={setCarouselIndex}
+      />
     </main>
   );
 }

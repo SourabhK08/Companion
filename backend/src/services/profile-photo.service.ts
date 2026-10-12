@@ -54,12 +54,27 @@ export interface PhotoWithUrl {
 
 // ─── Create Upload Signature ─────────────────────────────
 
+/** Maximum total photos per user (1 avatar + 4 gallery) */
+export const MAX_PHOTOS_PER_USER = 5;
+
 export async function createUploadSignature(
   userId: string,
   input: UploadUrlInput
 ): Promise<UploadSignatureResult> {
   if (!isConfigured()) {
     throw new AppError(503, "Image upload is not configured. Please set Cloudinary credentials.");
+  }
+
+  // Enforce photo limit — count only CONFIRMED photos
+  const confirmedCount = await prisma.profilePhoto.count({
+    where: { userId, status: "CONFIRMED" },
+  });
+
+  if (confirmedCount >= MAX_PHOTOS_PER_USER) {
+    throw new AppError(
+      400,
+      `Maximum ${MAX_PHOTOS_PER_USER} photos allowed (1 avatar + 4 gallery). Delete a photo first.`
+    );
   }
 
   const { filename, contentType, size } = input;
@@ -153,8 +168,21 @@ export async function completeUpload(userId: string, input: CompleteUploadInput)
     },
   });
 
-  // Automatically set as profile photo
-  await setAsProfilePhoto(userId, photoId);
+  // Determine if this photo should be set as profile photo:
+  // 1. Explicitly requested via input.setAsAvatar === true
+  // 2. OR user currently has no avatar and input.setAsAvatar !== false
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { avatar: true },
+  });
+
+  const shouldSetAsAvatar =
+    input.setAsAvatar === true ||
+    (!user?.avatar && input.setAsAvatar !== false);
+
+  if (shouldSetAsAvatar) {
+    await setAsProfilePhoto(userId, photoId);
+  }
 
   return toPhotoWithUrl(confirmed);
 }
@@ -183,6 +211,22 @@ export async function setAsProfilePhoto(userId: string, photoId: string) {
   return photo;
 }
 
+// ─── Remove Avatar / Fallback to Default ──────────────────
+
+export async function removeAvatar(userId: string) {
+  // Unset isProfilePhoto flag on all user's photos
+  await prisma.profilePhoto.updateMany({
+    where: { userId, isProfilePhoto: true },
+    data: { isProfilePhoto: false },
+  });
+
+  // Clear avatar on User model so default initials/fallback image is used
+  await prisma.user.update({
+    where: { id: userId },
+    data: { avatar: null },
+  });
+}
+
 // ─── Delete Photo ─────────────────────────────────────────
 
 export async function deletePhoto(userId: string, photoId: string) {
@@ -206,21 +250,12 @@ export async function deletePhoto(userId: string, photoId: string) {
     where: { id: photoId },
   });
 
-  // If this was the profile photo, promote another or clear avatar
+  // If this was the profile photo, clear the avatar so it falls back to default
   if (photo.isProfilePhoto) {
-    const nextPhoto = await prisma.profilePhoto.findFirst({
-      where: { userId, status: "CONFIRMED", id: { not: photoId } },
-      orderBy: { sortOrder: "asc" },
+    await prisma.user.update({
+      where: { id: userId },
+      data: { avatar: null },
     });
-
-    if (nextPhoto) {
-      await setAsProfilePhoto(userId, nextPhoto.id);
-    } else {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { avatar: null },
-      });
-    }
   }
 }
 

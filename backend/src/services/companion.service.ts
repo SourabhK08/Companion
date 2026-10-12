@@ -42,9 +42,25 @@ const companionSelect = {
       languages: true,
       dateOfBirth: true,
       isVerified: true,
+      profilePhotos: {
+        where: { status: "CONFIRMED" },
+        orderBy: [
+          { isProfilePhoto: "desc" },
+          { sortOrder: "asc" },
+          { createdAt: "desc" },
+        ] as { isProfilePhoto?: "asc" | "desc"; sortOrder?: "asc" | "desc"; createdAt?: "asc" | "desc" }[],
+        select: {
+          id: true,
+          storageKey: true,
+          isProfilePhoto: true,
+          sortOrder: true,
+          width: true,
+          height: true,
+        },
+      },
     },
   },
-} as const;
+};
 
 // ─── Create / Update Profile ──────────────────────────────
 

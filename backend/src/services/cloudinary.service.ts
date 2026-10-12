@@ -247,6 +247,20 @@ export function resolveAvatars<T>(data: T, variant: "thumbnail" | "card" | "prof
       obj.companionProfile = resolveAvatars(obj.companionProfile, variant);
     }
 
+    // Resolve profilePhotos array (e.g. on user or companion profile)
+    if ("profilePhotos" in obj && Array.isArray(obj.profilePhotos)) {
+      obj.profilePhotos = obj.profilePhotos.map((p) => {
+        if (p && typeof p === "object" && "storageKey" in p && typeof p.storageKey === "string") {
+          return {
+            ...p,
+            imageUrl: resolveImageUrl(p.storageKey, "profile"),
+            thumbnailUrl: resolveImageUrl(p.storageKey, "thumbnail"),
+          };
+        }
+        return p;
+      });
+    }
+
     return obj as T;
   }
 

@@ -19,6 +19,12 @@ interface ApiCompanionUser {
   languages: string[];
   dateOfBirth: string | null;
   isVerified: boolean;
+  profilePhotos?: {
+    id: string;
+    imageUrl?: string | null;
+    thumbnailUrl?: string | null;
+    isProfilePhoto: boolean;
+  }[];
 }
 
 interface ApiCompanion {
@@ -71,6 +77,12 @@ function mapApiToCompanion(api: ApiCompanion): Companion {
     bio: api.user.bio || "",
     languages: api.user.languages,
     gender: (api.user.gender as Companion["gender"]) ?? "other",
+    galleryPhotos: api.user.profilePhotos?.map((p) => ({
+      id: p.id,
+      imageUrl: p.imageUrl ?? null,
+      thumbnailUrl: p.thumbnailUrl ?? null,
+      isProfilePhoto: p.isProfilePhoto,
+    })) ?? [],
   };
 }
 

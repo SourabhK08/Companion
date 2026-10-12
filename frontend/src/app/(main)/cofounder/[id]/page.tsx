@@ -1,20 +1,23 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BadgeCheck, MapPin, MessageCircle, Lightbulb, Target, Languages, Loader2 } from "lucide-react";
+import { ArrowLeft, BadgeCheck, MapPin, MessageCircle, Lightbulb, Target, Languages, Loader2, Camera, Eye } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useCoFounder, calculateAge } from "@/hooks/use-cofounders";
 import { useStartCoFounderChat } from "@/hooks/use-start-cofounder-chat";
 import { ChatPassModal } from "@/components/cofounders/chat-pass-modal";
 import { LinkedinIcon } from "@/components/cofounders/linkedin-icon";
+import { ImageCarouselModal } from "@/components/shared/image-carousel-modal";
 
 export default function CoFounderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useAuth();
   const { profile, isLoading, error } = useCoFounder(id);
   const chat = useStartCoFounderChat();
+  const [carouselOpen, setCarouselOpen] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   if (isLoading) {
     return (
@@ -140,8 +143,77 @@ export default function CoFounderDetailPage({ params }: { params: Promise<{ id: 
               <p className="mt-1 text-sm text-muted-foreground">{u.languages.join(", ")}</p>
             </section>
           )}
+
+          {/* Photo Gallery */}
+          {((u.profilePhotos && u.profilePhotos.length > 0) || u.avatar) && (
+            <section className="md:col-span-2 pt-4 border-t border-soft-border/70">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <Camera className="size-4 text-berry" /> Photo Gallery
+                </h2>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {u.profilePhotos && u.profilePhotos.length > 0
+                    ? `${u.profilePhotos.length} photo${u.profilePhotos.length > 1 ? "s" : ""}`
+                    : "1 photo"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                {(u.profilePhotos && u.profilePhotos.length > 0
+                  ? u.profilePhotos
+                  : [{ id: "avatar", imageUrl: u.avatar, thumbnailUrl: u.avatar, isProfilePhoto: true }]
+                ).map((photo, index) => (
+                  <button
+                    key={photo.id || index}
+                    type="button"
+                    onClick={() => {
+                      setCarouselIndex(index);
+                      setCarouselOpen(true);
+                    }}
+                    className="group relative aspect-square overflow-hidden rounded-2xl border border-soft-border bg-[#f8f3f4] cursor-pointer text-left shadow-2xs focus:outline-none focus:ring-2 focus:ring-berry/40"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.imageUrl || photo.thumbnailUrl || u.avatar || ""}
+                      alt={`${u.fullName} photo ${index + 1}`}
+                      className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <span className="rounded-full bg-black/60 p-1.5 text-white backdrop-blur-xs">
+                        <Eye className="size-4" />
+                      </span>
+                    </div>
+                    {photo.isProfilePhoto && (
+                      <span className="absolute bottom-1.5 left-1.5 rounded-full bg-berry/90 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
+                        Avatar
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
+
+      {/* Full-Screen Carousel Modal */}
+      <ImageCarouselModal
+        isOpen={carouselOpen}
+        onClose={() => setCarouselOpen(false)}
+        images={(u.profilePhotos && u.profilePhotos.length > 0
+          ? u.profilePhotos
+          : u.avatar
+            ? [{ id: "avatar", imageUrl: u.avatar, thumbnailUrl: u.avatar, isProfilePhoto: true }]
+            : []
+        ).map((p) => ({
+          id: p.id,
+          url: p.imageUrl || p.thumbnailUrl || u.avatar || "",
+          thumbnailUrl: p.thumbnailUrl,
+          isProfilePhoto: p.isProfilePhoto,
+        }))}
+        currentIndex={carouselIndex}
+        onNavigate={setCarouselIndex}
+      />
 
       <ChatPassModal
         open={chat.passModalOpen}

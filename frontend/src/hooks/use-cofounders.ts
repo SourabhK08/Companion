@@ -20,6 +20,12 @@ export interface CoFounderUser {
   dateOfBirth: string | null;
   isVerified: boolean;
   linkedinUrl: string | null;
+  profilePhotos?: {
+    id: string;
+    imageUrl?: string | null;
+    thumbnailUrl?: string | null;
+    isProfilePhoto: boolean;
+  }[];
 }
 
 export interface CoFounderProfile {
