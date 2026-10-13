@@ -34,6 +34,11 @@ import {
   Briefcase,
   Compass,
   SlidersHorizontal,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -94,14 +99,15 @@ import { useSearchParams } from "next/navigation";
 function SettingsContent() {
   const { user, refreshUser } = useAuth();
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get("tab") || "account";
+  const rawTab = searchParams.get("tab") || "account";
+  const initialTab = rawTab === "privacy" ? "security" : rawTab;
   
   const [activeTab, setActiveTab] = useState<string>(initialTab);
 
   // Keep tab in sync when navigating client-side to /settings?tab=xxx
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab) setActiveTab(tab);
+    if (tab) setActiveTab(tab === "privacy" ? "security" : tab);
   }, [searchParams]);
 
   const tabListRef = useRef<HTMLDivElement>(null);
@@ -119,6 +125,63 @@ function SettingsContent() {
   const [editValue, setEditValue] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [preferencesModalOpen, setPreferencesModalOpen] = useState(false);
+
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMessage(null);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordMessage({ type: "error", text: "Please fill in all password fields." });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ type: "error", text: "New passwords do not match." });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordMessage({ type: "error", text: "New password must be at least 8 characters long." });
+      return;
+    }
+
+    try {
+      setPasswordLoading(true);
+      const res = await apiFetch<{ success: boolean; message: string }>("/api/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      if (res.success) {
+        setPasswordMessage({ type: "success", text: res.message || "Password updated successfully!" });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        setPasswordMessage({ type: "error", text: res.message || "Failed to update password." });
+      }
+    } catch (err: any) {
+      setPasswordMessage({
+        type: "error",
+        text: err.message || "Failed to update password. Please check your current password and try again.",
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -194,6 +257,10 @@ function SettingsContent() {
     switch (iconName) {
       case "user":
         return User;
+      case "camera":
+        return Camera;
+      case "compass":
+        return Compass;
       case "star":
         return Star;
       case "lock":
@@ -343,89 +410,93 @@ function SettingsContent() {
           <main className="lg:col-span-6 space-y-6">
             {/* Header Subtitle Card */}
             <div className="flex items-center gap-3.5 rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-berry/10 text-berry">
-              <User className="size-5" />
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-berry/10 text-berry">
+                <User className="size-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground sm:text-xl">
+                  Personal Information
+                </h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Update your personal details, contact information, and public bio.
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-foreground sm:text-xl">
-                Account Settings
-              </h2>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                Update your personal information and account details.
-              </p>
-            </div>
-          </div>
 
-          {/* Profile Overview Card */}
-          <section className="rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4">
-                {/* Avatar with Camera upload */}
-                <AvatarUpload
-                  currentAvatar={userProfile.avatar}
-                  userName={userProfile.name}
-                  onAvatarUpdated={(newUrl) => {
-                    setUserProfile((prev) => ({ ...prev, avatar: newUrl }));
-                  }}
-                  size="md"
-                />
+            {/* Profile Overview Card */}
+            <section className="rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  {/* Avatar with Camera upload */}
+                  <AvatarUpload
+                    currentAvatar={userProfile.avatar}
+                    userName={userProfile.name}
+                    onAvatarUpdated={(newUrl) => {
+                      setUserProfile((prev) => ({ ...prev, avatar: newUrl }));
+                      refreshUser();
+                    }}
+                    size="md"
+                  />
 
-                {/* Name & Contact Info */}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-foreground sm:text-xl">
-                      {userProfile.name}
-                    </h3>
-                    {userProfile.isVerified && (
-                      <BadgeCheck className="size-4 text-sky-600" />
-                    )}
+                  {/* Name & Contact Info */}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-foreground sm:text-xl">
+                        {userProfile.name}
+                      </h3>
+                      {userProfile.isVerified && (
+                        <BadgeCheck className="size-4 text-sky-600" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {userProfile.email}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {userProfile.phone}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      {userProfile.isVerified ? (
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                          <Check className="size-3.5 text-emerald-600 stroke-[3]" />
+                          Verified Account
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
+                          <ShieldCheck className="size-3.5 text-amber-600" />
+                          {!user?.isPhoneVerified && !user?.isEmailVerified
+                            ? "Verify phone & email for badge"
+                            : !user?.isPhoneVerified
+                              ? "Verify phone for badge"
+                              : "Verify email for badge"}
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("photos")}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#faecef] px-3 py-1 text-xs font-semibold text-berry hover:bg-berry hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Camera className="size-3.5" />
+                        Photos &amp; Gallery →
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {userProfile.email}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {userProfile.phone}
-                  </p>
+                </div>
 
-                  {userProfile.isVerified ? (
-                    <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                      <Check className="size-3.5 text-emerald-600 stroke-[3]" />
-                      Verified Account
-                    </div>
-                  ) : (
-                    <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
-                      <ShieldCheck className="size-3.5 text-amber-600" />
-                      {!user?.isPhoneVerified && !user?.isEmailVerified
-                        ? "Verify phone & email to get the badge"
-                        : !user?.isPhoneVerified
-                          ? "Verify your phone to get the badge"
-                          : "Verify your email to get the badge"}
-                    </div>
-                  )}
+                {/* Edit Profile CTA */}
+                <div className="sm:self-start">
+                  <Button
+                    variant="outline"
+                    onClick={() => startEditing("name", userProfile.name)}
+                    className="h-10 rounded-xl border-soft-border text-sm font-semibold text-foreground hover:border-berry hover:text-berry gap-1.5"
+                  >
+                    <Pencil className="size-3.5 text-berry" />
+                    Edit Profile
+                  </Button>
                 </div>
               </div>
-
-              {/* Edit Profile CTA */}
-              <div className="sm:self-start">
-                <Button
-                  variant="outline"
-                  onClick={() => startEditing("name", userProfile.name)}
-                  className="h-10 rounded-xl border-soft-border text-sm font-semibold text-foreground hover:border-berry hover:text-berry gap-1.5"
-                >
-                  <Pencil className="size-3.5 text-berry" />
-                  Edit Profile
-                </Button>
-              </div>
-            </div>
-          </section>
-
-          {/* Profile Photo & Gallery Management */}
-          <PhotoGalleryManager
-            onAvatarUpdated={(newUrl) => {
-              setUserProfile((prev) => ({ ...prev, avatar: newUrl }));
-              refreshUser();
-            }}
-          />
+            </section>
 
           {/* Personal Information Card */}
           <section className="rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
@@ -773,145 +844,444 @@ function SettingsContent() {
             </div>
           </section>
 
-          {/* Dating & Activity Preferences Card */}
-          <section className="rounded-2xl border border-soft-border bg-white p-5 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-soft-border pb-3.5">
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-berry/10 text-berry">
-                  <Compass className="size-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-foreground">
-                    Dating &amp; Activity Preferences
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Manage the experiences you are looking for and your partner preferences.
-                  </p>
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPreferencesModalOpen(true)}
-                className="rounded-xl border-soft-border text-xs sm:text-sm font-semibold hover:border-berry hover:text-berry gap-1.5 self-start sm:self-auto cursor-pointer"
+            {/* Quick Navigation Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab("photos")}
+                className="flex items-center justify-between p-4 rounded-2xl border border-soft-border bg-white hover:border-berry/40 hover:bg-[#faecef]/30 transition-all text-left cursor-pointer group shadow-xs"
               >
-                <Pencil className="size-3.5 text-berry" />
-                Edit Preferences
-              </Button>
-            </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-berry/10 text-berry group-hover:scale-105 transition-transform">
+                    <Camera className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Photos &amp; Gallery</p>
+                    <p className="text-xs text-muted-foreground">Manage avatar &amp; 4 gallery photos</p>
+                  </div>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground group-hover:text-berry group-hover:translate-x-0.5 transition-all" />
+              </button>
 
-            {/* What I'm Looking For Chips */}
-            <div>
-              <span className="text-xs font-semibold text-muted-foreground block mb-2">
-                What You Are Looking For
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {(user?.lookingFor && user.lookingFor.length > 0
-                  ? user.lookingFor
-                  : [
-                      "Food & Cafe Experiences",
-                      "Photography Walks",
-                      "City Exploration",
-                      "Festivals & Cultural Events",
-                      "Friendly Conversations",
-                    ]
-                ).map((activity) => (
-                  <span
-                    key={activity}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#fbf4f5] px-3 py-1 text-xs font-semibold text-deep-plum border border-berry/20"
-                  >
-                    <Check className="size-3 text-berry stroke-[3]" />
-                    {activity}
-                  </span>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab("preferences")}
+                className="flex items-center justify-between p-4 rounded-2xl border border-soft-border bg-white hover:border-berry/40 hover:bg-[#faecef]/30 transition-all text-left cursor-pointer group shadow-xs"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-berry/10 text-berry group-hover:scale-105 transition-transform">
+                    <Compass className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Dating Preferences</p>
+                    <p className="text-xs text-muted-foreground">Interests &amp; match criteria</p>
+                  </div>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground group-hover:text-berry group-hover:translate-x-0.5 transition-all" />
+              </button>
             </div>
+          </main>
+        )}
 
-            {/* Companion Preferences Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="rounded-xl bg-[#fdfafb] p-3 border border-soft-border/70">
-                <span className="text-xs font-medium text-muted-foreground block">Gender Preference</span>
-                <span className="text-sm font-bold text-foreground mt-0.5 block">
-                  {user?.preferredGender || "Open to All"}
-                </span>
-              </div>
-              <div className="rounded-xl bg-[#fdfafb] p-3 border border-soft-border/70">
-                <span className="text-xs font-medium text-muted-foreground block">Age Range</span>
-                <span className="text-sm font-bold text-foreground mt-0.5 block">
-                  {user?.preferredAgeMin ?? 18} - {user?.preferredAgeMax ?? 35} years
-                </span>
-              </div>
-              <div className="rounded-xl bg-[#fdfafb] p-3 border border-soft-border/70">
-                <span className="text-xs font-medium text-muted-foreground block">Location Preference</span>
-                <span className="text-sm font-bold text-foreground mt-0.5 block">
-                  {user?.preferredLocation || `${user?.city || "Kolkata"} (Within 20 km)`}
-                </span>
-              </div>
-              <div className="rounded-xl bg-[#fdfafb] p-3 border border-soft-border/70">
-                <span className="text-xs font-medium text-muted-foreground block">Preferred Languages</span>
-                <span className="text-sm font-bold text-foreground mt-0.5 block">
-                  {user?.preferredLanguages && user.preferredLanguages.length > 0
-                    ? user.preferredLanguages.join(", ")
-                    : "Hindi, English"}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Change Password Card */}
-          <section className="flex flex-col gap-3 rounded-2xl border border-soft-border bg-white p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-berry/8 text-berry">
-                <Lock className="size-5" />
+        {/* ─── COLUMN 2: Photos & Gallery Content (6 cols) ─── */}
+        {activeTab === "photos" && (
+          <main className="lg:col-span-6 space-y-6">
+            {/* Header Subtitle Card */}
+            <div className="flex items-center gap-3.5 rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-berry/10 text-berry">
+                <Camera className="size-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-foreground">
-                  Change Password
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Keep your account safe with a strong password.
+                <h2 className="text-lg font-bold text-foreground sm:text-xl">
+                  Photos &amp; Gallery
+                </h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Upload your profile avatar and up to 4 gallery photos to showcase on your profile.
                 </p>
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              className="h-10 shrink-0 rounded-xl border-soft-border bg-[#faecef]/60 hover:bg-[#faecef] text-berry font-semibold text-sm gap-1.5 cursor-pointer"
-            >
-              <KeyRound className="size-4 text-berry" />
-              Change Password
-            </Button>
-          </section>
+            {/* Photo Gallery Manager */}
+            <PhotoGalleryManager
+              onAvatarUpdated={(newUrl) => {
+                setUserProfile((prev) => ({ ...prev, avatar: newUrl }));
+                refreshUser();
+              }}
+            />
+          </main>
+        )}
+
+        {/* ─── COLUMN 2: Dating Preferences Content (6 cols) ─── */}
+        {activeTab === "preferences" && (
+          <main className="lg:col-span-6 space-y-6">
+            {/* Header Subtitle Card */}
+            <div className="flex items-center gap-3.5 rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-berry/10 text-berry">
+                <Compass className="size-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground sm:text-xl">
+                  Dating &amp; Activity Preferences
+                </h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Manage the experiences you are looking for and your companion preferences.
+                </p>
+              </div>
+            </div>
+
+            {/* Dating & Activity Preferences Card */}
+            <section className="rounded-2xl border border-soft-border bg-white p-5 sm:p-6 shadow-xs space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-soft-border pb-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-berry/10 text-berry">
+                    <Compass className="size-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">
+                      What I&apos;m Looking For
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Activities and hangout experiences you enjoy most.
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPreferencesModalOpen(true)}
+                  className="rounded-xl border-soft-border text-xs sm:text-sm font-semibold hover:border-berry hover:text-berry gap-1.5 self-start sm:self-auto cursor-pointer"
+                >
+                  <Pencil className="size-3.5 text-berry" />
+                  Edit Preferences
+                </Button>
+              </div>
+
+              {/* What I'm Looking For Chips */}
+              <div>
+                <span className="text-xs font-semibold text-muted-foreground block mb-2.5">
+                  Selected Activities &amp; Vibe
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {(user?.lookingFor && user.lookingFor.length > 0
+                    ? user.lookingFor
+                    : [
+                        "Food & Cafe Experiences",
+                        "Photography Walks",
+                        "City Exploration",
+                        "Festivals & Cultural Events",
+                        "Friendly Conversations",
+                      ]
+                  ).map((activity) => (
+                    <span
+                      key={activity}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#fbf4f5] px-3.5 py-1.5 text-xs font-semibold text-deep-plum border border-berry/20 shadow-2xs"
+                    >
+                      <Check className="size-3 text-berry stroke-[3]" />
+                      {activity}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Companion Preferences Details */}
+              <div className="pt-2">
+                <span className="text-xs font-semibold text-muted-foreground block mb-2.5">
+                  Companion &amp; Match Criteria
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-[#fdfafb] p-3.5 border border-soft-border/70">
+                    <span className="text-xs font-medium text-muted-foreground block">Gender Preference</span>
+                    <span className="text-sm font-bold text-foreground mt-0.5 block">
+                      {user?.preferredGender || "Open to All"}
+                    </span>
+                  </div>
+                  <div className="rounded-xl bg-[#fdfafb] p-3.5 border border-soft-border/70">
+                    <span className="text-xs font-medium text-muted-foreground block">Age Range</span>
+                    <span className="text-sm font-bold text-foreground mt-0.5 block">
+                      {user?.preferredAgeMin ?? 18} - {user?.preferredAgeMax ?? 35} years
+                    </span>
+                  </div>
+                  <div className="rounded-xl bg-[#fdfafb] p-3.5 border border-soft-border/70">
+                    <span className="text-xs font-medium text-muted-foreground block">Location Preference</span>
+                    <span className="text-sm font-bold text-foreground mt-0.5 block">
+                      {user?.preferredLocation || `${user?.city || "Kolkata"} (Within 20 km)`}
+                    </span>
+                  </div>
+                  <div className="rounded-xl bg-[#fdfafb] p-3.5 border border-soft-border/70">
+                    <span className="text-xs font-medium text-muted-foreground block">Preferred Languages</span>
+                    <span className="text-sm font-bold text-foreground mt-0.5 block">
+                      {user?.preferredLanguages && user.preferredLanguages.length > 0
+                        ? user.preferredLanguages.join(", ")
+                        : "Hindi, English"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informational Banner */}
+              <div className="rounded-xl bg-gradient-to-r from-[#faecef]/60 to-[#fdf6f7] p-4 border border-[#ecd2d8]">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="size-5 text-berry shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-[#4d2a35]">
+                      How Preferences Shape Your Experience
+                    </h4>
+                    <p className="mt-1 text-xs text-[#6a4953] leading-relaxed">
+                      Your choices directly customize which companions and activities appear on your Dashboard and Explore pages.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <Button
+                  onClick={() => setPreferencesModalOpen(true)}
+                  className="rounded-xl bg-berry text-white hover:bg-berry/90 font-semibold text-sm gap-2 cursor-pointer w-full sm:w-auto"
+                >
+                  <SlidersHorizontal className="size-4" />
+                  Customize Preferences
+                </Button>
+              </div>
+            </section>
+          </main>
+        )}
+
+        {/* ─── COLUMN 2: Security & Password Content (6 cols) ─── */}
+        {(activeTab === "security" || activeTab === "privacy") && (
+          <main className="lg:col-span-6 space-y-6">
+            {/* Header Subtitle Card */}
+            <div className="flex items-center gap-3.5 rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-berry/10 text-berry">
+                <Lock className="size-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground sm:text-xl">
+                  Security &amp; Password
+                </h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Keep your account safe with a strong password and security settings.
+                </p>
+              </div>
+            </div>
+
+            {/* Change Password Card */}
+            <section className="rounded-2xl border border-soft-border bg-white p-5 sm:p-6 shadow-xs space-y-5">
+              <div className="flex items-center gap-2.5 border-b border-soft-border pb-3.5">
+                <KeyRound className="size-5 text-berry" />
+                <div>
+                  <h3 className="text-base font-bold text-foreground">
+                    Change Password
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Choose a strong, unique password to protect your account.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                {passwordMessage && (
+                  <div
+                    className={cn(
+                      "flex items-start gap-2.5 rounded-xl p-3.5 text-xs sm:text-sm font-medium",
+                      passwordMessage.type === "success"
+                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                        : "bg-rose-50 text-rose-800 border border-rose-200"
+                    )}
+                  >
+                    {passwordMessage.type === "success" ? (
+                      <CheckCircle2 className="size-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="size-4.5 text-rose-600 shrink-0 mt-0.5" />
+                    )}
+                    <span>{passwordMessage.text}</span>
+                  </div>
+                )}
+
+                {/* Current Password */}
+                <div className="space-y-1.5">
+                  <label className="text-xs sm:text-sm font-semibold text-foreground">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Enter your current password"
+                      className="h-10 w-full rounded-xl border border-soft-border bg-white px-3.5 pr-10 text-sm text-foreground focus:border-berry focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      {showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New Password */}
+                <div className="space-y-1.5">
+                  <label className="text-xs sm:text-sm font-semibold text-foreground">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password (min. 8 characters)"
+                      className="h-10 w-full rounded-xl border border-soft-border bg-white px-3.5 pr-10 text-sm text-foreground focus:border-berry focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm New Password */}
+                <div className="space-y-1.5">
+                  <label className="text-xs sm:text-sm font-semibold text-foreground">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm your new password"
+                      className="h-10 w-full rounded-xl border border-soft-border bg-white px-3.5 pr-10 text-sm text-foreground focus:border-berry focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Helper Requirements */}
+                <div className="rounded-xl bg-[#faf5f6] p-3 border border-soft-border/60">
+                  <p className="text-xs font-semibold text-[#66303e] mb-1.5">Password Requirements:</p>
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    <li className="flex items-center gap-1.5">
+                      <span className={cn("size-1.5 rounded-full", newPassword.length >= 8 ? "bg-emerald-500" : "bg-gray-400")} />
+                      At least 8 characters in length
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <span className={cn("size-1.5 rounded-full", newPassword && newPassword === confirmPassword ? "bg-emerald-500" : "bg-gray-400")} />
+                      Passwords must match
+                    </li>
+                  </ul>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={passwordLoading}
+                  className="h-10 rounded-xl bg-berry text-white hover:bg-berry/90 font-semibold text-sm gap-2 cursor-pointer w-full sm:w-auto"
+                >
+                  {passwordLoading ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Updating Password...
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="size-4" />
+                      Update Password
+                    </>
+                  )}
+                </Button>
+              </form>
+            </section>
+
+            {/* Quick Security Status & 2FA Card */}
+            <section className="rounded-2xl border border-soft-border bg-white p-5 shadow-xs space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-soft-border pb-3.5">
+                <ShieldCheck className="size-5 text-berry" />
+                <h3 className="text-base font-bold text-foreground">
+                  Multi-Factor Authentication &amp; Alerts
+                </h3>
+              </div>
+
+              <div className="divide-y divide-soft-border/70">
+                <div className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Two-Factor Authentication</p>
+                    <p className="text-xs text-muted-foreground">Add an extra verification step during sign-in.</p>
+                  </div>
+                  <Switch
+                    checked={quickSettings.twoFactorAuth}
+                    onCheckedChange={() => toggleQuickSetting("twoFactorAuth")}
+                    ariaLabel="Toggle 2FA"
+                  />
+                </div>
+                <div className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Login Alerts</p>
+                    <p className="text-xs text-muted-foreground">Receive instant alerts when a new device signs in.</p>
+                  </div>
+                  <Switch
+                    checked={quickSettings.loginAlerts}
+                    onCheckedChange={() => toggleQuickSetting("loginAlerts")}
+                    ariaLabel="Toggle Login Alerts"
+                  />
+                </div>
+                <div className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Email Notifications</p>
+                    <p className="text-xs text-muted-foreground">Get security updates and account summaries via email.</p>
+                  </div>
+                  <Switch
+                    checked={quickSettings.emailNotifications}
+                    onCheckedChange={() => toggleQuickSetting("emailNotifications")}
+                    ariaLabel="Toggle Email Notifications"
+                  />
+                </div>
+              </div>
+            </section>
           </main>
         )}
 
         {activeTab === "companion" && <CompanionSettings />}
         {activeTab === "cofounder" && <CoFounderSettings />}
 
-        {activeTab !== "account" && activeTab !== "companion" && activeTab !== "cofounder" && (
-          <main className="lg:col-span-6 space-y-6">
-            <div className="flex items-center gap-3 rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-berry/10 text-berry">
-                <SettingsIcon className="size-5" />
+        {activeTab !== "account" &&
+          activeTab !== "photos" &&
+          activeTab !== "preferences" &&
+          activeTab !== "security" &&
+          activeTab !== "privacy" &&
+          activeTab !== "companion" &&
+          activeTab !== "cofounder" && (
+            <main className="lg:col-span-6 space-y-6">
+              <div className="flex items-center gap-3 rounded-2xl border border-soft-border bg-white p-5 shadow-xs">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-berry/10 text-berry">
+                  <SettingsIcon className="size-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-foreground sm:text-lg">
+                    {settingsNavLinks.find((t) => t.id === activeTab)?.label ?? "Settings"}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Preferences and configurations for {settingsNavLinks.find((t) => t.id === activeTab)?.label.toLowerCase() ?? "this section"}.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-base font-bold text-foreground sm:text-lg">
-                  {settingsNavLinks.find((t) => t.id === activeTab)?.label ?? "Settings"}
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Preferences and configurations for {settingsNavLinks.find((t) => t.id === activeTab)?.label.toLowerCase() ?? "this section"}.
-                </p>
-              </div>
-            </div>
 
-            <section className="rounded-2xl border border-soft-border bg-white p-6 sm:p-8 shadow-xs text-center">
-              <p className="text-sm font-medium text-muted-foreground">
-                Settings and controls for {settingsNavLinks.find((t) => t.id === activeTab)?.label} are coming soon.
-              </p>
-            </section>
-          </main>
-        )}
+              <section className="rounded-2xl border border-soft-border bg-white p-6 sm:p-8 shadow-xs text-center">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Settings and controls for {settingsNavLinks.find((t) => t.id === activeTab)?.label} are coming soon.
+                </p>
+              </section>
+            </main>
+          )}
         {/* ─── COLUMN 3: Quick Settings & Safety (3 cols) ─── */}
         <aside className="lg:col-span-3 space-y-6">
           {/* Quick Settings Card */}

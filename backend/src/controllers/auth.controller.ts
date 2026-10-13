@@ -6,6 +6,7 @@ import {
   refreshAccessToken,
   logoutUser,
   getCurrentUser,
+  changeUserPassword,
   AppError,
 } from "../services/auth.service.js";
 
@@ -199,6 +200,50 @@ export async function me(req: AuthRequest, res: Response): Promise<void> {
     res.status(500).json({
       success: false,
       message: "Something went wrong. Please try again.",
+    });
+  }
+}
+
+// ─── POST /api/auth/change-password ───────────────────────
+
+export async function changePassword(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+      return;
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({
+        success: false,
+        message: "Current password and new password are required",
+      });
+      return;
+    }
+
+    const result = await changeUserPassword(req.userId, currentPassword, newPassword);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
+    console.error("Change password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while updating password.",
     });
   }
 }

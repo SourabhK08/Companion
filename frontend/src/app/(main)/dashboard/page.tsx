@@ -479,7 +479,7 @@ export default function DashboardPage() {
                   <h2 className="text-[20px] font-bold">Gallery</h2>
                 </div>
                 <Link
-                  href="/settings?tab=account"
+                  href="/settings?tab=photos"
                   className="text-xs sm:text-sm font-semibold text-[#7a1f39] hover:underline"
                 >
                   Manage →
@@ -536,7 +536,7 @@ export default function DashboardPage() {
                     Upload photos in Settings to showcase here.
                   </p>
                   <Link
-                    href="/settings?tab=account"
+                    href="/settings?tab=photos"
                     className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#7a1f39] px-3.5 py-1 text-xs font-semibold text-white hover:bg-[#66192d] transition-colors"
                   >
                     Add Photos

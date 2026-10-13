@@ -50,10 +50,12 @@ export const initialQuickSettings: QuickSettings = {
 };
 
 export const settingsNavLinks = [
-  { id: "account", label: "Account Settings", icon: "user" as const },
+  { id: "account", label: "Personal Information", icon: "user" as const },
+  { id: "photos", label: "Photos & Gallery", icon: "camera" as const },
+  { id: "preferences", label: "Dating Preferences", icon: "compass" as const },
+  { id: "security", label: "Security & Password", icon: "lock" as const },
   { id: "companion", label: "Companion Profile", icon: "star" as const },
   { id: "cofounder", label: "Co-Founder Profile", icon: "briefcase" as const },
-  { id: "privacy", label: "Privacy & Security", icon: "lock" as const },
   { id: "notifications", label: "Notifications", icon: "bell" as const },
   { id: "payment", label: "Payment Methods", icon: "credit-card" as const },
   { id: "language", label: "Language & Region", icon: "globe" as const },

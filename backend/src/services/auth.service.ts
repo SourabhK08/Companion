@@ -256,6 +256,46 @@ export async function getCurrentUser(userId: string) {
   return sanitizeUser(user);
 }
 
+// ─── Change Password ──────────────────────────────────────
+
+export async function changeUserPassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError(404, "User not found");
+  }
+
+  if (!user.passwordHash) {
+    throw new AppError(400, "This account is linked to a third-party login and does not have a password set.");
+  }
+
+  // Verify current password
+  const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isValid) {
+    throw new AppError(400, "Current password is incorrect");
+  }
+
+  if (newPassword.length < 8) {
+    throw new AppError(400, "New password must be at least 8 characters long");
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash: hashedPassword },
+  });
+
+  return { message: "Password updated successfully" };
+}
+
 // ─── Custom Error Class ───────────────────────────────────
 
 export class AppError extends Error {
