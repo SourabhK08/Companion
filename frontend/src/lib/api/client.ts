@@ -89,6 +89,14 @@ export async function apiFetch<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  if (
+    options.body &&
+    typeof options.body === "string" &&
+    !headers.has("Content-Type")
+  ) {
+    headers.set("Content-Type", "application/json");
+  }
+
   const requestOptions: RequestInit = {
     ...options,
     credentials: "include",

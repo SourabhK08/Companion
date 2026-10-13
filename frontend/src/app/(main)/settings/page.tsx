@@ -162,6 +162,9 @@ function SettingsContent() {
       setPasswordLoading(true);
       const res = await apiFetch<{ success: boolean; message: string }>("/api/auth/change-password", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
 

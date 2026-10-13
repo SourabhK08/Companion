@@ -216,7 +216,7 @@ export async function changePassword(req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword } = req.body || {};
 
     if (!currentPassword || !newPassword) {
       res.status(400).json({
