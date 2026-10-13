@@ -24,7 +24,8 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfilePhoto } from "@/hooks/use-profile-photo";
 import { ImageCarouselModal } from "@/components/shared/image-carousel-modal";
-import { Eye } from "lucide-react";
+import { PreferencesModal } from "@/components/preferences/preferences-modal";
+import { Eye, Edit3 } from "lucide-react";
 
 function CigaretteOffIcon({ className }: { className?: string }) {
   return (
@@ -86,6 +87,7 @@ export default function DashboardPage() {
   const [showAllTags, setShowAllTags] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [preferencesModalOpen, setPreferencesModalOpen] = useState(false);
   const refs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
@@ -544,24 +546,37 @@ export default function DashboardPage() {
             </section>
 
             <section className="rounded-[22px] border border-[#eadfe3] bg-[#f8f3f1] p-4 sm:p-5">
-              <div className="mb-4 flex items-center gap-2 text-[#5d2436]">
-                <Heart className="size-5 text-[#7a1f39]" />
-                <h2 className="text-[20px] font-bold">What I&apos;m Looking For</h2>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-[#5d2436]">
+                  <Heart className="size-5 text-[#7a1f39]" />
+                  <h2 className="text-[20px] font-bold">What I&apos;m Looking For</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreferencesModalOpen(true)}
+                  className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#7a1f39] hover:underline cursor-pointer"
+                >
+                  <Edit3 className="size-3.5" />
+                  Edit
+                </button>
               </div>
 
               <ul className="space-y-3 text-[15px] text-[#4d2832]">
-                {[
-                  "Food & Cafe Experiences",
-                  "Photography Walks",
-                  "City Exploration",
-                  "Festivals & Cultural Events",
-                  "Friendly Conversations",
-                ].map((item) => (
+                {(user?.lookingFor && user.lookingFor.length > 0
+                  ? user.lookingFor
+                  : [
+                      "Food & Cafe Experiences",
+                      "Photography Walks",
+                      "City Exploration",
+                      "Festivals & Cultural Events",
+                      "Friendly Conversations",
+                    ]
+                ).map((item) => (
                   <li key={item} className="flex items-center gap-3">
-                    <span className="flex size-5 items-center justify-center rounded-full bg-[#f8e4ea] text-[#7a1f39]">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#f8e4ea] text-[#7a1f39]">
                       <Check className="size-3.5" />
                     </span>
-                    <span>{item}</span>
+                    <span className="leading-snug">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -622,6 +637,12 @@ export default function DashboardPage() {
         }))}
         currentIndex={carouselIndex}
         onNavigate={setCarouselIndex}
+      />
+
+      {/* Edit Preferences & Intent Modal */}
+      <PreferencesModal
+        isOpen={preferencesModalOpen}
+        onClose={() => setPreferencesModalOpen(false)}
       />
     </div>
   );

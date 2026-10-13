@@ -42,6 +42,12 @@ const companionSelect = {
       languages: true,
       dateOfBirth: true,
       isVerified: true,
+      lookingFor: true,
+      preferredGender: true,
+      preferredAgeMin: true,
+      preferredAgeMax: true,
+      preferredLocation: true,
+      preferredLanguages: true,
       profilePhotos: {
         where: { status: "CONFIRMED" },
         orderBy: [

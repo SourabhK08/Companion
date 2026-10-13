@@ -50,6 +50,12 @@ function sanitizeUser(user: {
   companionProfile?: { id: string } | null;
   coFounderProfile?: { id: string } | null;
   linkedinUrl?: string | null;
+  lookingFor?: string[];
+  preferredGender?: string | null;
+  preferredAgeMin?: number | null;
+  preferredAgeMax?: number | null;
+  preferredLocation?: string | null;
+  preferredLanguages?: string[];
 }) {
   return {
     id: user.id,
@@ -69,6 +75,12 @@ function sanitizeUser(user: {
     authProvider: user.authProvider,
     createdAt: user.createdAt,
     linkedinUrl: user.linkedinUrl ?? null,
+    lookingFor: user.lookingFor ?? [],
+    preferredGender: user.preferredGender ?? null,
+    preferredAgeMin: user.preferredAgeMin ?? 18,
+    preferredAgeMax: user.preferredAgeMax ?? 35,
+    preferredLocation: user.preferredLocation ?? null,
+    preferredLanguages: user.preferredLanguages ?? [],
     isCompanion: !!user.companionProfile,
     isCoFounder: !!user.coFounderProfile,
   };

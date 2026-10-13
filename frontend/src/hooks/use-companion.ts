@@ -25,6 +25,12 @@ interface ApiCompanionUser {
     thumbnailUrl?: string | null;
     isProfilePhoto: boolean;
   }[];
+  lookingFor?: string[];
+  preferredGender?: string | null;
+  preferredAgeMin?: number | null;
+  preferredAgeMax?: number | null;
+  preferredLocation?: string | null;
+  preferredLanguages?: string[];
 }
 
 interface ApiCompanion {
@@ -83,6 +89,12 @@ function mapApiToCompanion(api: ApiCompanion): Companion {
       thumbnailUrl: p.thumbnailUrl ?? null,
       isProfilePhoto: p.isProfilePhoto,
     })) ?? [],
+    lookingFor: api.user.lookingFor ?? [],
+    preferredGender: api.user.preferredGender ?? null,
+    preferredAgeMin: api.user.preferredAgeMin ?? 18,
+    preferredAgeMax: api.user.preferredAgeMax ?? 35,
+    preferredLocation: api.user.preferredLocation ?? null,
+    preferredLanguages: api.user.preferredLanguages ?? [],
   };
 }
 

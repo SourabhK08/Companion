@@ -11,6 +11,12 @@ export const updateMeSchema = z.object({
   interests: z.array(z.string()).optional(),
   languages: z.array(z.string()).optional(),
   linkedinUrl: z.string().url("Must be a valid URL").optional().nullable(),
+  lookingFor: z.array(z.string()).optional(),
+  preferredGender: z.string().optional().nullable(),
+  preferredAgeMin: z.number().int().min(18).max(100).optional().nullable(),
+  preferredAgeMax: z.number().int().min(18).max(100).optional().nullable(),
+  preferredLocation: z.string().optional().nullable(),
+  preferredLanguages: z.array(z.string()).optional(),
 });
 
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;

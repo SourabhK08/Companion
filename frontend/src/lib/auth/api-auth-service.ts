@@ -22,6 +22,12 @@ interface ApiUser {
   isCompanion?: boolean;
   isCoFounder?: boolean;
   linkedinUrl?: string | null;
+  lookingFor?: string[];
+  preferredGender?: string | null;
+  preferredAgeMin?: number | null;
+  preferredAgeMax?: number | null;
+  preferredLocation?: string | null;
+  preferredLanguages?: string[];
   isVerified?: boolean;
   isPhoneVerified?: boolean;
   isEmailVerified?: boolean;
@@ -48,6 +54,12 @@ function mapUser(user: ApiUser | null | undefined): AuthUser | null {
     isCompanion: user.isCompanion ?? false,
     isCoFounder: user.isCoFounder ?? false,
     linkedinUrl: user.linkedinUrl ?? null,
+    lookingFor: user.lookingFor ?? [],
+    preferredGender: user.preferredGender ?? undefined,
+    preferredAgeMin: user.preferredAgeMin ?? undefined,
+    preferredAgeMax: user.preferredAgeMax ?? undefined,
+    preferredLocation: user.preferredLocation ?? undefined,
+    preferredLanguages: user.preferredLanguages ?? [],
     isVerified: user.isVerified ?? false,
     isPhoneVerified: user.isPhoneVerified ?? false,
     isEmailVerified: user.isEmailVerified ?? false,

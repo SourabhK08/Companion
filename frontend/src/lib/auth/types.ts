@@ -33,6 +33,12 @@ export interface AuthUser {
   isVerified?: boolean;
   isPhoneVerified?: boolean;
   isEmailVerified?: boolean;
+  lookingFor?: string[];
+  preferredGender?: string | null;
+  preferredAgeMin?: number | null;
+  preferredAgeMax?: number | null;
+  preferredLocation?: string | null;
+  preferredLanguages?: string[];
 }
 
 /** Login credentials for email/password authentication. */

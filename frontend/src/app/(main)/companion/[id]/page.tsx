@@ -40,6 +40,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { apiFetch } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { ImageCarouselModal } from "@/components/shared/image-carousel-modal";
+import { PreferencesModal } from "@/components/preferences/preferences-modal";
 
 // Utility for mapping interest names to icons
 const getInterestIcon = (interest: string) => {
@@ -66,6 +67,7 @@ export default function CompanionProfilePage({
   const { companion, isLoading, error } = useCompanion(resolvedParams.id);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [preferencesModalOpen, setPreferencesModalOpen] = useState(false);
 
   const handleSendMessage = async () => {
     if (!companion) return;
@@ -467,33 +469,66 @@ export default function CompanionProfilePage({
               </div>
             </div>
 
-            {/* Your Preferences */}
+            {/* Preferences */}
             <div className="rounded-2xl border border-[#f0dfe3] bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 text-base font-bold text-[#2d111b]">
                   <SlidersHorizontal className="size-5 text-[#7a1f39]" />
-                  Your Preferences
+                  {user?.id === companion.userId ? "Your Preferences" : `${companion.name.split(" ")[0]}'s Preferences`}
                 </h3>
-                <button className="flex items-center gap-1 text-xs font-bold text-[#7a1f39]">
-                  <Edit2 className="size-3" /> Edit
-                </button>
+                {user?.id === companion.userId && (
+                  <button
+                    type="button"
+                    onClick={() => setPreferencesModalOpen(true)}
+                    className="flex items-center gap-1 text-xs font-bold text-[#7a1f39] hover:underline cursor-pointer"
+                  >
+                    <Edit2 className="size-3" /> Edit
+                  </button>
+                )}
               </div>
               <div className="mt-5 space-y-4">
                 {[
-                  { icon: User, label: "Gender Preference", value: "Female" },
-                  { icon: Activity, label: "Age Range", value: "18 - 35 years" },
-                  { icon: MapPin, label: "Location Preference", value: "Kolkata (Within 20 km)" },
-                  { icon: Languages, label: "Languages", value: "Hindi, English" },
-                  { icon: Heart, label: "Interests", value: "Travel, Cricket, Music, Food" }
+                  {
+                    icon: User,
+                    label: "Gender Preference",
+                    value: companion.preferredGender || "Open to All",
+                  },
+                  {
+                    icon: Activity,
+                    label: "Age Range",
+                    value: `${companion.preferredAgeMin ?? 18} - ${companion.preferredAgeMax ?? 35} years`,
+                  },
+                  {
+                    icon: MapPin,
+                    label: "Location Preference",
+                    value: companion.preferredLocation || `${companion.city} (Within 20 km)`,
+                  },
+                  {
+                    icon: Languages,
+                    label: "Languages",
+                    value:
+                      companion.preferredLanguages && companion.preferredLanguages.length > 0
+                        ? companion.preferredLanguages.join(", ")
+                        : companion.languages.join(", ") || "Hindi, English",
+                  },
+                  {
+                    icon: Heart,
+                    label: "Interests",
+                    value:
+                      companion.interests && companion.interests.length > 0
+                        ? companion.interests.join(", ")
+                        : "Travel, Music, Food",
+                  },
                 ].map((pref) => (
-                  <div key={pref.label} className="flex items-center justify-between group cursor-pointer">
+                  <div key={pref.label} className="flex items-center justify-between group">
                     <div className="flex items-center gap-3">
                       <pref.icon className="size-4 text-[#7a1f39]" />
                       <span className="text-sm font-medium text-[#6a4953]">{pref.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-[#2d111b] max-w-[120px] truncate">{pref.value}</span>
-                      <ChevronRight className="size-4 text-[#d5c0c6] group-hover:text-[#7a1f39]" />
+                      <span className="text-sm font-medium text-[#2d111b] max-w-[150px] truncate text-right">
+                        {pref.value}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -537,6 +572,12 @@ export default function CompanionProfilePage({
         }))}
         currentIndex={carouselIndex}
         onNavigate={setCarouselIndex}
+      />
+
+      {/* Edit Preferences Modal */}
+      <PreferencesModal
+        isOpen={preferencesModalOpen}
+        onClose={() => setPreferencesModalOpen(false)}
       />
     </main>
   );

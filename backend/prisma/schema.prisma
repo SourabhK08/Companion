@@ -25,6 +25,12 @@ model User {
   interests     String[]  @default([])
   languages     String[]  @default([])
   linkedinUrl   String?
+  lookingFor          String[]  @default([])  /// e.g. ["Food & Cafe Experiences", "Photography Walks"]
+  preferredGender     String?                 /// "Female" | "Male" | "Non-Binary" | "All"
+  preferredAgeMin     Int?      @default(18)
+  preferredAgeMax     Int?      @default(35)
+  preferredLocation   String?                 /// e.g. "Kolkata (Within 20 km)"
+  preferredLanguages  String[]  @default([])  /// e.g. ["English", "Hindi"]
   isVerified    Boolean   @default(false)
   isPhoneVerified Boolean @default(false)
   isEmailVerified Boolean @default(false)

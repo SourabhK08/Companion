@@ -31,6 +31,12 @@ export interface Companion {
     thumbnailUrl: string | null;
     isProfilePhoto: boolean;
   }[];
+  lookingFor?: string[];
+  preferredGender?: string | null;
+  preferredAgeMin?: number | null;
+  preferredAgeMax?: number | null;
+  preferredLocation?: string | null;
+  preferredLanguages?: string[];
 }
 
 export const maleCompanions: Companion[] = [

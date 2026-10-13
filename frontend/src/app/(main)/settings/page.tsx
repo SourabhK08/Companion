@@ -32,6 +32,8 @@ import {
   ChevronRight,
   ArrowRight,
   Briefcase,
+  Compass,
+  SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -47,6 +49,7 @@ import { CompanionSettings } from "./companion-settings";
 import { CoFounderSettings } from "./cofounder-settings";
 import { AvatarUpload } from "@/components/settings/avatar-upload";
 import { PhotoGalleryManager } from "@/components/settings/photo-gallery-manager";
+import { PreferencesModal } from "@/components/preferences/preferences-modal";
 import { PhoneVerification } from "@/components/verification/phone-verification";
 import { EmailVerification } from "@/components/verification/email-verification";
 
@@ -115,6 +118,7 @@ function SettingsContent() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [preferencesModalOpen, setPreferencesModalOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -769,6 +773,92 @@ function SettingsContent() {
             </div>
           </section>
 
+          {/* Dating & Activity Preferences Card */}
+          <section className="rounded-2xl border border-soft-border bg-white p-5 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-soft-border pb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-berry/10 text-berry">
+                  <Compass className="size-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">
+                    Dating &amp; Activity Preferences
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Manage the experiences you are looking for and your partner preferences.
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPreferencesModalOpen(true)}
+                className="rounded-xl border-soft-border text-xs sm:text-sm font-semibold hover:border-berry hover:text-berry gap-1.5 self-start sm:self-auto cursor-pointer"
+              >
+                <Pencil className="size-3.5 text-berry" />
+                Edit Preferences
+              </Button>
+            </div>
+
+            {/* What I'm Looking For Chips */}
+            <div>
+              <span className="text-xs font-semibold text-muted-foreground block mb-2">
+                What You Are Looking For
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {(user?.lookingFor && user.lookingFor.length > 0
+                  ? user.lookingFor
+                  : [
+                      "Food & Cafe Experiences",
+                      "Photography Walks",
+                      "City Exploration",
+                      "Festivals & Cultural Events",
+                      "Friendly Conversations",
+                    ]
+                ).map((activity) => (
+                  <span
+                    key={activity}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#fbf4f5] px-3 py-1 text-xs font-semibold text-deep-plum border border-berry/20"
+                  >
+                    <Check className="size-3 text-berry stroke-[3]" />
+                    {activity}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Companion Preferences Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="rounded-xl bg-[#fdfafb] p-3 border border-soft-border/70">
+                <span className="text-xs font-medium text-muted-foreground block">Gender Preference</span>
+                <span className="text-sm font-bold text-foreground mt-0.5 block">
+                  {user?.preferredGender || "Open to All"}
+                </span>
+              </div>
+              <div className="rounded-xl bg-[#fdfafb] p-3 border border-soft-border/70">
+                <span className="text-xs font-medium text-muted-foreground block">Age Range</span>
+                <span className="text-sm font-bold text-foreground mt-0.5 block">
+                  {user?.preferredAgeMin ?? 18} - {user?.preferredAgeMax ?? 35} years
+                </span>
+              </div>
+              <div className="rounded-xl bg-[#fdfafb] p-3 border border-soft-border/70">
+                <span className="text-xs font-medium text-muted-foreground block">Location Preference</span>
+                <span className="text-sm font-bold text-foreground mt-0.5 block">
+                  {user?.preferredLocation || `${user?.city || "Kolkata"} (Within 20 km)`}
+                </span>
+              </div>
+              <div className="rounded-xl bg-[#fdfafb] p-3 border border-soft-border/70">
+                <span className="text-xs font-medium text-muted-foreground block">Preferred Languages</span>
+                <span className="text-sm font-bold text-foreground mt-0.5 block">
+                  {user?.preferredLanguages && user.preferredLanguages.length > 0
+                    ? user.preferredLanguages.join(", ")
+                    : "Hindi, English"}
+                </span>
+              </div>
+            </div>
+          </section>
+
           {/* Change Password Card */}
           <section className="flex flex-col gap-3 rounded-2xl border border-soft-border bg-white p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -975,6 +1065,12 @@ function SettingsContent() {
           </div>
         </aside>
       </div>
+
+      {/* Edit Preferences Modal */}
+      <PreferencesModal
+        isOpen={preferencesModalOpen}
+        onClose={() => setPreferencesModalOpen(false)}
+      />
     </div>
   );
 }
