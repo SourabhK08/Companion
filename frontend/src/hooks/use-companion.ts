@@ -19,6 +19,9 @@ interface ApiCompanionUser {
   languages: string[];
   dateOfBirth: string | null;
   isVerified: boolean;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
+  createdAt?: string;
   profilePhotos?: {
     id: string;
     imageUrl?: string | null;
@@ -41,6 +44,7 @@ interface ApiCompanion {
   reviewCount: number;
   responseRate: number;
   isAvailable: boolean;
+  isCompanion?: boolean;
   createdAt: string;
   updatedAt: string;
   user: ApiCompanionUser;
@@ -79,6 +83,10 @@ function mapApiToCompanion(api: ApiCompanion): Companion {
     reviews: api.reviewCount,
     responseRate: api.responseRate,
     isVerified: api.user.isVerified,
+    isPhoneVerified: api.user.isPhoneVerified ?? false,
+    isEmailVerified: api.user.isEmailVerified ?? false,
+    isCompanion: api.isCompanion !== undefined ? api.isCompanion : (api.hourlyRate > 0 || (api.id !== api.userId)),
+    createdAt: api.user.createdAt,
     avatar: api.user.avatar,
     bio: api.user.bio || "",
     languages: api.user.languages,

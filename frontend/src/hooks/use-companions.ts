@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { useAuth } from "@/hooks/use-auth";
 import type { Companion } from "@/config/companions-data";
 
 /**
@@ -113,6 +114,7 @@ interface UseCompanionsResult {
  *   const { companions, pagination, isLoading } = useCompanions({ gender: "male" });
  */
 export function useCompanions(options: UseCompanionsOptions = {}): UseCompanionsResult {
+  const { user } = useAuth();
   const { gender, city, search, page = 1, limit = 12, minPrice, maxPrice, sortBy, interests, languages } = options;
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [pagination, setPagination] = useState<ApiPagination | null>(null);
@@ -141,7 +143,8 @@ export function useCompanions(options: UseCompanionsOptions = {}): UseCompanions
       );
 
       if (response.success && response.data) {
-        setCompanions(response.data.companions.map(mapApiToCompanion));
+        const mapped = response.data.companions.map(mapApiToCompanion);
+        setCompanions(user?.id ? mapped.filter((c) => c.userId !== user.id) : mapped);
         setPagination(response.data.pagination);
       }
     } catch (err) {

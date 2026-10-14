@@ -136,6 +136,7 @@ function BuddyCard({ buddy }: { buddy: Companion }) {
 
         <Link
           href={`/companion/${buddy.id}`}
+          scroll={true}
           className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f39] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#661b2f] cursor-pointer active:scale-[0.99]"
         >
           View Profile

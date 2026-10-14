@@ -115,6 +115,7 @@ function SavedCompanionCard({
           <Button className="h-9 flex-1 rounded-xl border border-berry bg-white hover:bg-berry/5 text-berry text-xs font-semibold">
             <Link
               href={`/companion/${companion.id}`}
+              scroll={true}
               className="flex items-center gap-1"
             >
               View Profile
@@ -390,6 +391,7 @@ export default function SavedCompanionsPage() {
                 <Link
                   key={person.id}
                   href={`/companion/${person.id}`}
+                  scroll={true}
                   className="flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-muted"
                 >
                   {/* Avatar placeholder */}

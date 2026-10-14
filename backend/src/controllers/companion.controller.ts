@@ -38,10 +38,10 @@ export async function create(req: AuthRequest, res: Response): Promise<void> {
 
 // ─── GET /api/companions — List with filters ──────────────
 
-export async function list(req: Request, res: Response): Promise<void> {
+export async function list(req: AuthRequest, res: Response): Promise<void> {
   try {
     const query = listCompanionsQuerySchema.parse(req.query);
-    const result = await listCompanions(query);
+    const result = await listCompanions(query, req.userId);
 
     res.status(200).json({
       success: true,

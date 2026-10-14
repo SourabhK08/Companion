@@ -114,6 +114,7 @@ export function CompanionCard({ companion }: { companion: Companion }) {
           {/* CTA */}
           <Link
             href={`/companion/${companion.id}`}
+            scroll={true}
             className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-berry text-sm font-semibold text-white shadow-sm transition-colors hover:bg-berry-dark cursor-pointer active:scale-[0.99]"
           >
             View Profile <ArrowRight className="size-4" />

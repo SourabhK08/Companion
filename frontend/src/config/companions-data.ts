@@ -31,6 +31,10 @@ export interface Companion {
     thumbnailUrl: string | null;
     isProfilePhoto: boolean;
   }[];
+  isCompanion?: boolean;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
+  createdAt?: string;
   lookingFor?: string[];
   preferredGender?: string | null;
   preferredAgeMin?: number | null;

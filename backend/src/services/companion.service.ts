@@ -42,6 +42,9 @@ const companionSelect = {
       languages: true,
       dateOfBirth: true,
       isVerified: true,
+      isPhoneVerified: true,
+      isEmailVerified: true,
+      createdAt: true,
       lookingFor: true,
       preferredGender: true,
       preferredAgeMin: true,
@@ -152,7 +155,7 @@ export async function updateCompanion(
 
 // ─── List Companions (with gender/city filter + pagination) ─
 
-export async function listCompanions(query: ListCompanionsQuery) {
+export async function listCompanions(query: ListCompanionsQuery, excludeUserId?: string) {
   const { gender, city, page, limit, search } = query;
   const skip = (page - 1) * limit;
 
@@ -161,6 +164,7 @@ export async function listCompanions(query: ListCompanionsQuery) {
   const where: any = {
     isAvailable: true,
     user: {},
+    ...(excludeUserId && { userId: { not: excludeUserId } }),
   };
 
   if (gender) {
@@ -202,17 +206,73 @@ export async function listCompanions(query: ListCompanionsQuery) {
 
 // ─── Get Single Companion ─────────────────────────────────
 
-export async function getCompanionById(companionId: string) {
-  const companion = await prisma.companionProfile.findUnique({
-    where: { id: companionId },
+export async function getCompanionById(idOrUserId: string) {
+  // 1. Try finding companionProfile by ID
+  let companion = await prisma.companionProfile.findUnique({
+    where: { id: idOrUserId },
     select: companionSelect,
   });
 
+  // 2. Try finding companionProfile by userId
   if (!companion) {
-    throw new AppError(404, "Companion not found");
+    companion = await prisma.companionProfile.findUnique({
+      where: { userId: idOrUserId },
+      select: companionSelect,
+    });
   }
 
-  return resolveAvatars(companion);
+  if (companion) {
+    return resolveAvatars({
+      ...companion,
+      isCompanion: true,
+    });
+  }
+
+  // 3. Fallback: Lookup User directly (e.g., Explore Buddies / users who are not companions)
+  const user = await prisma.user.findUnique({
+    where: { id: idOrUserId },
+    select: {
+      ...companionSelect.user.select,
+      companionProfile: {
+        select: {
+          id: true,
+          hourlyRate: true,
+          rating: true,
+          reviewCount: true,
+          responseRate: true,
+          isAvailable: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    throw new AppError(404, "Profile not found");
+  }
+
+  const cp = user.companionProfile;
+  const isCompanion = !!cp && cp.isAvailable;
+
+  const result = {
+    id: cp?.id || user.id,
+    userId: user.id,
+    hourlyRate: cp?.hourlyRate || 0,
+    rating: cp?.rating || 5.0,
+    reviewCount: cp?.reviewCount || 0,
+    responseRate: cp?.responseRate || 100,
+    isAvailable: cp?.isAvailable || false,
+    isCompanion,
+    createdAt: cp?.createdAt || user.createdAt,
+    updatedAt: cp?.updatedAt || user.createdAt,
+    user: {
+      ...user,
+      companionProfile: undefined,
+    },
+  };
+
+  return resolveAvatars(result);
 }
 
 // ─── Get Companion by userId ──────────────────────────────
