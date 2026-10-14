@@ -30,6 +30,8 @@ interface ConversationProps {
   isLoading: boolean;
   isTyping: boolean;
   otherUserName: string;
+  otherUserAvatar?: string | null;
+  onAvatarClick?: () => void;
   hasMore: boolean;
   onLoadMore: () => void;
 }
@@ -39,6 +41,8 @@ export default function Conversation({
   isLoading,
   isTyping,
   otherUserName,
+  otherUserAvatar,
+  onAvatarClick,
   hasMore,
   onLoadMore,
 }: ConversationProps) {
@@ -47,10 +51,21 @@ export default function Conversation({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevMessagesLengthRef = useRef(0);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom inside the chat container when new messages arrive.
+  // Using container.scrollTop / container.scrollTo prevents window-level page jumping!
   useEffect(() => {
     if (messages.length > prevMessagesLengthRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      const container = scrollContainerRef.current;
+      if (container) {
+        if (prevMessagesLengthRef.current === 0) {
+          container.scrollTop = container.scrollHeight;
+        } else {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      }
     }
     prevMessagesLengthRef.current = messages.length;
   }, [messages.length]);
@@ -81,9 +96,24 @@ export default function Conversation({
   if (messages.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center text-center px-8">
-        <div className="flex size-16 items-center justify-center rounded-full bg-[#f6e9ec] mb-4">
-          <span className="text-2xl">💬</span>
-        </div>
+        {otherUserAvatar ? (
+          <button
+            type="button"
+            onClick={onAvatarClick}
+            className="mb-4 relative group cursor-pointer focus:outline-none"
+            title="Click to view full photo"
+          >
+            <img
+              src={otherUserAvatar}
+              alt={otherUserName}
+              className="size-16 rounded-full object-cover border-2 border-[#ebd5d9] shadow-sm transition group-hover:scale-105 group-hover:ring-2 group-hover:ring-[#7a1f39]"
+            />
+          </button>
+        ) : (
+          <div className="flex size-16 items-center justify-center rounded-full bg-[#f6e9ec] mb-4 text-2xl font-bold text-[#7a1f39]">
+            {otherUserName.slice(0, 2).toUpperCase()}
+          </div>
+        )}
         <p className="text-sm font-semibold text-[#4d0d1d]">
           Start your conversation
         </p>
@@ -130,8 +160,26 @@ export default function Conversation({
               </div>
             )}
             <div
-              className={`flex ${isMe ? "justify-end" : "justify-start"} mb-1`}
+              className={`flex items-end gap-2 ${isMe ? "justify-end" : "justify-start"} mb-1`}
             >
+              {!isMe && (
+                <button
+                  type="button"
+                  onClick={onAvatarClick}
+                  className="shrink-0 size-7 rounded-full overflow-hidden border border-[#ebd5d9] bg-gradient-to-br from-[#d4a2ab] to-[#7a1f39] text-[10px] font-semibold text-white flex items-center justify-center mb-0.5 cursor-pointer hover:opacity-90 focus:outline-none"
+                  title="Click to view full photo"
+                >
+                  {otherUserAvatar ? (
+                    <img
+                      src={otherUserAvatar}
+                      alt={otherUserName}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    otherUserName.slice(0, 1).toUpperCase()
+                  )}
+                </button>
+              )}
               <div
                 className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
                   isMe
@@ -170,7 +218,18 @@ export default function Conversation({
 
       {/* Typing indicator */}
       {isTyping && (
-        <div className="flex justify-start mb-1">
+        <div className="flex items-end gap-2 justify-start mb-1">
+          <div className="shrink-0 size-7 rounded-full overflow-hidden border border-[#ebd5d9] bg-gradient-to-br from-[#d4a2ab] to-[#7a1f39] text-[10px] font-semibold text-white flex items-center justify-center mb-0.5">
+            {otherUserAvatar ? (
+              <img
+                src={otherUserAvatar}
+                alt={otherUserName}
+                className="size-full object-cover"
+              />
+            ) : (
+              otherUserName.slice(0, 1).toUpperCase()
+            )}
+          </div>
           <div className="rounded-2xl rounded-bl-md bg-[#fdeff4] px-4 py-3">
             <div className="flex items-center gap-1">
               <span className="inline-block size-2 animate-bounce rounded-full bg-[#7a1f39]/40 [animation-delay:0ms]" />

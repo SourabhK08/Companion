@@ -3,7 +3,7 @@
 import React from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSocket } from "@/providers/socket-provider";
-import type { ConversationSummary } from "@/hooks/use-chat";
+import type { ConversationSummary, ChatParticipant } from "@/hooks/use-chat";
 
 function getInitials(name: string) {
   return name
@@ -34,10 +34,17 @@ interface ChatListProps {
   conversations: ConversationSummary[];
   activeId: string | null;
   onSelect: (id: string) => void;
+  onAvatarClick?: (user: ChatParticipant) => void;
   isLoading: boolean;
 }
 
-export default function ChatList({ conversations, activeId, onSelect, isLoading }: ChatListProps) {
+export default function ChatList({
+  conversations,
+  activeId,
+  onSelect,
+  onAvatarClick,
+  isLoading,
+}: ChatListProps) {
   const { user } = useAuth();
   const { onlineUsers } = useSocket();
 
@@ -93,12 +100,33 @@ export default function ChatList({ conversations, activeId, onSelect, isLoading 
             >
               <div className="flex items-center gap-3">
                 {/* Avatar */}
-                <div className="relative">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#d4a2ab] to-[#7a1f39] text-sm font-semibold text-white">
-                    {getInitials(otherUser.fullName)}
+                <div className="relative shrink-0">
+                  <div
+                    role={onAvatarClick ? "button" : undefined}
+                    tabIndex={onAvatarClick ? 0 : undefined}
+                    onClick={(e) => {
+                      if (onAvatarClick) {
+                        e.stopPropagation();
+                        onAvatarClick(otherUser);
+                      }
+                    }}
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full overflow-hidden border border-[#ebd5d9] bg-gradient-to-br from-[#d4a2ab] to-[#7a1f39] text-sm font-semibold text-white ${
+                      onAvatarClick ? "cursor-pointer hover:ring-2 hover:ring-[#7a1f39] transition" : ""
+                    }`}
+                    title={onAvatarClick ? `View ${otherUser.fullName}'s photo` : otherUser.fullName}
+                  >
+                    {otherUser.avatar ? (
+                      <img
+                        src={otherUser.avatar}
+                        alt={otherUser.fullName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      getInitials(otherUser.fullName)
+                    )}
                   </div>
                   {isOnline && (
-                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400" />
+                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400 pointer-events-none" />
                   )}
                 </div>
 

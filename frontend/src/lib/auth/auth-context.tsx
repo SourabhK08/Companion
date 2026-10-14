@@ -81,16 +81,11 @@ export function AuthProvider({ children, authService }: AuthProviderProps) {
 
   const login = useCallback(
     async (credentials: LoginCredentials): Promise<AuthResult> => {
-      setIsLoading(true);
-      try {
-        const result = await authService.login(credentials);
-        if (result.success && result.user) {
-          setUser(result.user);
-        }
-        return result;
-      } finally {
-        setIsLoading(false);
+      const result = await authService.login(credentials);
+      if (result.success && result.user) {
+        setUser(result.user);
       }
+      return result;
     },
     [authService]
   );
@@ -105,28 +100,20 @@ export function AuthProvider({ children, authService }: AuthProviderProps) {
       city?: string;
       dateOfBirth?: string;
     }): Promise<AuthResult> => {
-      setIsLoading(true);
-      try {
-        const result = await authService.register(data);
-        if (result.success && result.user) {
-          setUser(result.user);
-        }
-        return result;
-      } finally {
-        setIsLoading(false);
+      const result = await authService.register(data);
+      if (result.success && result.user) {
+        setUser(result.user);
       }
+      return result;
     },
     [authService]
   );
 
   const logout = useCallback(async () => {
-    setIsLoading(true);
     try {
       await authService.logout();
-      setUser(null);
-      // Future: clear TanStack Query cache here.
     } finally {
-      setIsLoading(false);
+      setUser(null);
     }
   }, [authService]);
 

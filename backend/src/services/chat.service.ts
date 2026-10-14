@@ -21,6 +21,20 @@ const conversationSelect = {
       id: true,
       fullName: true,
       avatar: true,
+      profilePhotos: {
+        where: { status: "CONFIRMED" },
+        orderBy: [
+          { isProfilePhoto: "desc" },
+          { sortOrder: "asc" },
+          { createdAt: "desc" },
+        ] as { isProfilePhoto?: "asc" | "desc"; sortOrder?: "asc" | "desc"; createdAt?: "asc" | "desc" }[],
+        select: {
+          id: true,
+          storageKey: true,
+          isProfilePhoto: true,
+          sortOrder: true,
+        },
+      },
     },
   },
   user2: {
@@ -28,6 +42,20 @@ const conversationSelect = {
       id: true,
       fullName: true,
       avatar: true,
+      profilePhotos: {
+        where: { status: "CONFIRMED" },
+        orderBy: [
+          { isProfilePhoto: "desc" },
+          { sortOrder: "asc" },
+          { createdAt: "desc" },
+        ] as { isProfilePhoto?: "asc" | "desc"; sortOrder?: "asc" | "desc"; createdAt?: "asc" | "desc" }[],
+        select: {
+          id: true,
+          storageKey: true,
+          isProfilePhoto: true,
+          sortOrder: true,
+        },
+      },
     },
   },
 };

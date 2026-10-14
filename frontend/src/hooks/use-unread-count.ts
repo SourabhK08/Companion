@@ -42,10 +42,19 @@ export function useUnreadCount() {
 
     socket.on("new_message_notification", handleNewMessage);
     socket.on("messages_read", handleMessagesRead);
+    socket.on("own_messages_marked_read", handleMessagesRead);
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("messages_read_locally", handleMessagesRead);
+    }
 
     return () => {
       socket.off("new_message_notification", handleNewMessage);
       socket.off("messages_read", handleMessagesRead);
+      socket.off("own_messages_marked_read", handleMessagesRead);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("messages_read_locally", handleMessagesRead);
+      }
     };
   }, [socket, fetchUnreadCount]);
 

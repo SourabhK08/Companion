@@ -21,12 +21,28 @@ export interface ChatMessage {
   };
 }
 
+export interface ChatPhoto {
+  id: string;
+  storageKey?: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  isProfilePhoto?: boolean;
+  sortOrder?: number;
+}
+
+export interface ChatParticipant {
+  id: string;
+  fullName: string;
+  avatar: string | null;
+  profilePhotos?: ChatPhoto[];
+}
+
 export interface ConversationSummary {
   id: string;
   participant1: string;
   participant2: string;
-  user1: { id: string; fullName: string; avatar: string | null };
-  user2: { id: string; fullName: string; avatar: string | null };
+  user1: ChatParticipant;
+  user2: ChatParticipant;
   lastMessage: ChatMessage | null;
   lastMessageAt: string | null;
   unreadCount: number;

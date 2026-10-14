@@ -148,6 +148,9 @@ export function initSocket(httpServer: HttpServer): Server {
           conversationId,
           readBy: userId,
         });
+
+        // Also notify reader's own sockets so unread counters update in real time
+        emitToUser(userId, "own_messages_marked_read", { conversationId });
       } catch (error) {
         console.error("Mark read socket error:", error);
       }

@@ -52,7 +52,9 @@ export function GuestGuard({ children }: GuestGuardProps) {
           <Loader2 className="absolute size-9 animate-spin text-white/50 sm:size-11" />
         </div>
         <p className="text-xs text-white/70 sm:text-sm">
-          Taking you to your dashboard…
+          {isAuthenticated || isRedirecting
+            ? "Taking you to your dashboard…"
+            : "Checking session…"}
         </p>
       </div>
     );

@@ -238,6 +238,15 @@ export function resolveAvatars<T>(data: T, variant: "thumbnail" | "card" | "prof
     if ("participant2User" in obj && obj.participant2User) {
       obj.participant2User = resolveAvatars(obj.participant2User, variant);
     }
+    if ("user1" in obj && obj.user1 && typeof obj.user1 === "object") {
+      obj.user1 = resolveAvatars(obj.user1, variant);
+    }
+    if ("user2" in obj && obj.user2 && typeof obj.user2 === "object") {
+      obj.user2 = resolveAvatars(obj.user2, variant);
+    }
+    if ("sender" in obj && obj.sender && typeof obj.sender === "object") {
+      obj.sender = resolveAvatars(obj.sender, variant);
+    }
 
     // Resolve client/companion in bookings
     if ("client" in obj && obj.client && typeof obj.client === "object") {

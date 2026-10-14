@@ -29,6 +29,7 @@ import { cn } from "cn";
 import { Logo } from "@/components/shared/logo";
 import { sidebarExploreLinks, sidebarUserLinks } from "@/config/site";
 import { useAuth } from "@/hooks/use-auth";
+import { useUnreadCount } from "@/hooks/use-unread-count";
 import { useRouter } from "next/navigation";
 import {
   Sheet,
@@ -193,32 +194,41 @@ function SidebarNavItem({
       title={isCollapsed ? label : undefined}
       className={cn(
         "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+        isCollapsed && "justify-center px-0",
         isActive
           ? "bg-berry text-white shadow-md shadow-berry/25"
           : "text-white/70 hover:bg-white/8 hover:text-white"
       )}
     >
-      {Icon && (
-        <Icon
-          className={cn(
-            "size-5 shrink-0 transition-colors",
-            isActive ? "text-white" : "text-white/60 group-hover:text-white"
-          )}
-        />
-      )}
+      <div className="relative shrink-0 flex items-center justify-center">
+        {Icon && (
+          <Icon
+            className={cn(
+              "size-5 shrink-0 transition-colors",
+              isActive ? "text-white" : "text-white/60 group-hover:text-white"
+            )}
+          />
+        )}
+        {isCollapsed && badge && badge > 0 ? (
+          <span
+            className="absolute -top-1.5 -right-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-xs"
+          >
+            {badge > 9 ? "9+" : badge}
+          </span>
+        ) : null}
+      </div>
+
       {!isCollapsed && (
         <span className="leading-snug">{label}</span>
       )}
-      {badge && badge > 0 && (
+
+      {!isCollapsed && badge && badge > 0 ? (
         <span
-          className={cn(
-            "flex size-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white",
-            isCollapsed ? "absolute -right-1 -top-1" : "ml-auto shrink-0"
-          )}
+          className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shrink-0 shadow-xs"
         >
-          {badge}
+          {badge > 9 ? "9+" : badge}
         </span>
-      )}
+      ) : null}
     </Link>
   );
 }
@@ -226,6 +236,8 @@ function SidebarNavItem({
 /* ─── Nav Content (shared between desktop + mobile) ─── */
 
 function SidebarNavContent({ isCollapsed }: { isCollapsed: boolean }) {
+  const unreadCount = useUnreadCount();
+
   return (
     <nav
       className="flex-1 overflow-y-auto px-3 py-2 space-y-1 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
@@ -246,16 +258,19 @@ function SidebarNavContent({ isCollapsed }: { isCollapsed: boolean }) {
       <div className="!my-3 mx-1 border-t border-white/10" aria-hidden="true" />
 
       {/* Group 2: User actions */}
-      {sidebarUserLinks.map((link) => (
-        <SidebarNavItem
-          key={link.href}
-          href={link.href}
-          icon={link.icon}
-          label={link.label}
-          badge={"badge" in link ? link.badge : undefined}
-          isCollapsed={isCollapsed}
-        />
-      ))}
+      {sidebarUserLinks.map((link) => {
+        const badge = link.href === "/messages" ? unreadCount : ("badge" in link ? (link as any).badge : undefined);
+        return (
+          <SidebarNavItem
+            key={link.href}
+            href={link.href}
+            icon={link.icon}
+            label={link.label}
+            badge={badge}
+            isCollapsed={isCollapsed}
+          />
+        );
+      })}
     </nav>
   );
 }

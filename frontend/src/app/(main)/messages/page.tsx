@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { MessageCircle, ArrowLeft, ArrowRight, Briefcase, Check, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSocket } from "@/providers/socket-provider";
-import { useChatList, useChat } from "@/hooks/use-chat";
+import { useChatList, useChat, type ChatParticipant } from "@/hooks/use-chat";
 import { useChatAccess } from "@/hooks/use-chat-access";
 import { ChatPassModal } from "@/components/cofounders/chat-pass-modal";
+import { ImageCarouselModal, type CarouselImage } from "@/components/shared/image-carousel-modal";
 import ChatList from "@/components/messages/chat-list";
 import Conversation from "@/components/messages/conversation";
 import MessageInput from "@/components/messages/message-input";
@@ -22,6 +23,46 @@ function MessagesContent() {
   const access = useChatAccess();
   const [passModalOpen, setPassModalOpen] = useState(false);
   const [accessDenied, setAccessDenied] = useState<string | null>(null);
+
+  // Avatar / photo gallery lightbox
+  const [lightboxUser, setLightboxUser] = useState<ChatParticipant | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  const handleOpenAvatarModal = (target: ChatParticipant) => {
+    setLightboxUser(target);
+    setCarouselIndex(0);
+    setLightboxOpen(true);
+  };
+
+  const carouselImages: CarouselImage[] = useMemo(() => {
+    if (!lightboxUser) return [];
+
+    const gallery = (lightboxUser.profilePhotos || [])
+      .filter((p) => p.imageUrl)
+      .map((p) => ({
+        id: p.id,
+        url: p.imageUrl!,
+        thumbnailUrl: p.thumbnailUrl || p.imageUrl,
+        title: `${lightboxUser.fullName}'s Photo`,
+        isProfilePhoto: p.isProfilePhoto,
+      }));
+
+    if (gallery.length > 0) return gallery;
+
+    if (lightboxUser.avatar) {
+      return [
+        {
+          id: "avatar",
+          url: lightboxUser.avatar,
+          title: `${lightboxUser.fullName}'s Profile Photo`,
+          isProfilePhoto: true,
+        },
+      ];
+    }
+
+    return [];
+  }, [lightboxUser]);
 
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     chatParam || null
@@ -85,6 +126,9 @@ function MessagesContent() {
     if (activeConversationId) {
       markRead();
       markConversationRead(activeConversationId);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("messages_read_locally"));
+      }
     }
   }, [activeConversationId, markRead, markConversationRead]);
 
@@ -157,6 +201,7 @@ function MessagesContent() {
                 conversations={conversations}
                 activeId={activeConversationId}
                 onSelect={handleSelectConversation}
+                onAvatarClick={handleOpenAvatarModal}
                 isLoading={listLoading}
               />
             </div>
@@ -183,15 +228,36 @@ function MessagesContent() {
 
                     {/* Avatar */}
                     <div className="relative">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#d4a2ab] to-[#7a1f39] text-sm font-semibold text-white">
-                        {otherUser.fullName
-                          .split(" ")
-                          .map((p) => p[0])
-                          .slice(0, 2)
-                          .join("")}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAvatarModal(otherUser)}
+                        className={`group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full overflow-hidden border border-[#ebd5d9] bg-gradient-to-br from-[#d4a2ab] to-[#7a1f39] text-sm font-semibold text-white focus:outline-none transition ${
+                          otherUser.avatar || (otherUser.profilePhotos && otherUser.profilePhotos.length > 0)
+                            ? "cursor-pointer hover:ring-2 hover:ring-[#7a1f39]"
+                            : ""
+                        }`}
+                        title={
+                          otherUser.avatar || (otherUser.profilePhotos && otherUser.profilePhotos.length > 0)
+                            ? `Click to view ${otherUser.fullName}'s photo`
+                            : otherUser.fullName
+                        }
+                      >
+                        {otherUser.avatar ? (
+                          <img
+                            src={otherUser.avatar}
+                            alt={otherUser.fullName}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          otherUser.fullName
+                            .split(" ")
+                            .map((p) => p[0])
+                            .slice(0, 2)
+                            .join("")
+                        )}
+                      </button>
                       {isOtherOnline && (
-                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400" />
+                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400 pointer-events-none" />
                       )}
                     </div>
 
@@ -217,6 +283,8 @@ function MessagesContent() {
                     isLoading={messagesLoading}
                     isTyping={isTyping}
                     otherUserName={otherUser.fullName}
+                    otherUserAvatar={otherUser.avatar}
+                    onAvatarClick={() => handleOpenAvatarModal(otherUser)}
                     hasMore={hasMore}
                     onLoadMore={loadOlderMessages}
                   />
@@ -338,6 +406,14 @@ function MessagesContent() {
         onClose={() => setPassModalOpen(false)}
         onSubscribe={access.subscribe}
         onSuccess={() => setAccessDenied(null)}
+      />
+
+      <ImageCarouselModal
+        isOpen={lightboxOpen && carouselImages.length > 0}
+        onClose={() => setLightboxOpen(false)}
+        images={carouselImages}
+        currentIndex={carouselIndex}
+        onNavigate={setCarouselIndex}
       />
     </main>
   );

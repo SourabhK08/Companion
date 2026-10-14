@@ -71,7 +71,7 @@ export const sidebarExploreLinks = [
 
 export const sidebarUserLinks = [
   { label: "My Bookings", href: "/bookings", icon: "calendar-check" as const },
-  { label: "Messages", href: "/messages", icon: "message-circle" as const, badge: 2 },
+  { label: "Messages", href: "/messages", icon: "message-circle" as const },
   { label: "Saved Companions", href: "/saved", icon: "heart" as const },
   { label: "Reviews", href: "/reviews", icon: "star" as const },
   { label: "Wallets", href: "/wallet", icon: "wallet" as const },
