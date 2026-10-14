@@ -638,30 +638,7 @@ export default function CompanionProfilePage({
                   </div>
                 </div>
 
-                {/* Photo / Identity verification */}
-                <div className="flex items-start gap-3.5">
-                  <div
-                    className={`flex size-6 shrink-0 items-center justify-center rounded-full mt-0.5 ${
-                      companion.isVerified
-                        ? "bg-emerald-500 text-white"
-                        : "bg-gray-100 text-gray-400 border border-gray-200"
-                    }`}
-                  >
-                    {companion.isVerified ? (
-                      <CheckCircle2 className="size-3.5" />
-                    ) : (
-                      <X className="size-3.5" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#2d111b]">
-                      {companion.isVerified ? "Identity & Photo Verified" : "Identity Verification"}
-                    </p>
-                    <p className="text-xs text-[#6a4953]">
-                      {companion.isVerified ? "Verified by Modhuralap Safety" : "Community verification review pending"}
-                    </p>
-                  </div>
-                </div>
+                
               </div>
             </div>
 
