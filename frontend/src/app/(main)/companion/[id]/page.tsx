@@ -335,11 +335,11 @@ export default function CompanionProfilePage({
                 {companion.city}, West Bengal
               </div>
 
-              {companion.profession && (
+              {/* {companion.profession && (
                 <p className="mt-3 text-sm italic text-[#4a2b35]">
                   "{companion.profession.slice(0, 70)}"
                 </p>
-              )}
+              )} */}
               
               <div className="mt-4 flex flex-wrap gap-2">
                 {["Friendly", "Respectful", "Verified Profile"].map((badge) => (
@@ -416,7 +416,7 @@ export default function CompanionProfilePage({
                 {companion.bio || "No detailed bio provided yet."}
               </p>
 
-              <div className="mt-6 grid grid-cols-2 gap-4 rounded-xl bg-[#fdfafb] p-5 sm:grid-cols-4">
+              <div className="mt-6 grid grid-cols-3 gap-4 rounded-xl bg-[#fdfafb] p-5 border border-[#f4dbe2]">
                 <div className="flex flex-col gap-1">
                   <div className="flex size-8 items-center justify-center rounded-full bg-[#f4dbe2] text-[#7a1f39]">
                     <User className="size-4" />
@@ -431,13 +431,13 @@ export default function CompanionProfilePage({
                   <p className="mt-1 text-xs font-semibold text-[#6a4953]">Gender</p>
                   <p className="text-sm sm:text-base font-bold text-[#2d111b] capitalize">{companion.gender || "Not specified"}</p>
                 </div>
-                <div className="flex flex-col gap-1">
+                {/* <div className="flex flex-col gap-1">
                   <div className="flex size-8 items-center justify-center rounded-full bg-[#f4dbe2] text-[#7a1f39]">
                     <Briefcase className="size-4" />
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#6a4953]">Occupation</p>
                   <p className="text-sm sm:text-base font-bold text-[#2d111b] leading-tight truncate">{companion.profession}</p>
-                </div>
+                </div> */}
                 <div className="flex flex-col gap-1">
                   <div className="flex size-8 items-center justify-center rounded-full bg-[#f4dbe2] text-[#7a1f39]">
                     <Languages className="size-4" />

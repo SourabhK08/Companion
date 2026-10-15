@@ -76,7 +76,6 @@ export const sidebarUserLinks = [
   { label: "Reviews", href: "/reviews", icon: "star" as const },
   { label: "Wallets", href: "/wallet", icon: "wallet" as const },
   { label: "Trust & Safety", href: "/safety", icon: "shield" as const },
-  { label: "My Profile", href: "/profile", icon: "user" as const },
   { label: "Settings", href: "/settings", icon: "settings" as const },
   { label: "Terms & Condition", href: "/terms", icon: "file-text" as const },
   { label: "Become a Partner", href: "/become-partner", icon: "handshake" as const },

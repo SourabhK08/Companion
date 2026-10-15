@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Heart,
   MapPin,
@@ -9,6 +9,7 @@ import {
   Star,
   RotateCcw,
   X,
+  Search,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -35,7 +36,7 @@ const chips = [
 
 const sortOptions = ["Recommended", "Newest", "Top Rated", "Nearby"] as const;
 const genders = ["Female", "Male", "Non-binary", "Any"] as const;
-const locationOptions = ["Kolkata", "Mumbai", "Delhi", "Bangalore"] as const;
+const locationOptions = ["All Locations", "Kolkata", "Mumbai", "Delhi", "Bangalore"] as const;
 const languageOptions = ["English", "Hindi", "Bengali", "Tamil"] as const;
 const interestOptions = [
   "Coffee & Cafés",
@@ -164,8 +165,8 @@ function BuddyFilterControls({
   toggleInterest,
   setCurrentPage,
 }: {
-  maxPrice: number;
-  setMaxPrice: (val: number) => void;
+  maxPrice: number | null;
+  setMaxPrice: (val: number | null) => void;
   priceMin: number;
   priceMax: number;
   selectedAge: string;
@@ -310,20 +311,36 @@ export default function ExploreBuddiesPage() {
   const [selectedChip, setSelectedChip] = useState<(typeof chips)[number]>("All");
   const [selectedSort, setSelectedSort] = useState<(typeof sortOptions)[number]>("Recommended");
   const [selectedGender, setSelectedGender] = useState<(typeof genders)[number]>("Any");
-  const [selectedLocation, setSelectedLocation] = useState<(typeof locationOptions)[number]>("Kolkata");
+  const [selectedLocation, setSelectedLocation] = useState<(typeof locationOptions)[number]>("All Locations");
   const [selectedAge, setSelectedAge] = useState("");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number>(2500);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const priceMin = 300;
-  const priceMax = 2500;
+  const priceMax = 10000;
 
-  const apiGender = selectedGender === "Male" ? "male" :
-                    selectedGender === "Female" ? "female" :
-                    selectedGender === "Non-binary" ? "non-binary" : undefined;
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const apiGender =
+    selectedGender === "Male"
+      ? "male"
+      : selectedGender === "Female"
+      ? "female"
+      : selectedGender === "Non-binary"
+      ? "non-binary"
+      : undefined;
 
   let apiSortBy = "recommended";
   if (selectedSort === "Newest") apiSortBy = "newest";
@@ -337,10 +354,12 @@ export default function ExploreBuddiesPage() {
 
   const { companions: filteredBuddies, pagination, isLoading, error } = useCompanions({
     gender: apiGender,
-    city: selectedLocation === "Kolkata" ? "Kolkata" : undefined,
+    city: selectedLocation !== "All Locations" ? selectedLocation : undefined,
+    search: debouncedSearch || undefined,
+    age: selectedAge || undefined,
     page: currentPage,
     limit: 12,
-    maxPrice,
+    maxPrice: maxPrice && maxPrice < priceMax ? maxPrice : undefined,
     sortBy: apiSortBy,
     interests: allInterests.length > 0 ? allInterests.join(",") : undefined,
     languages: selectedLanguages.length > 0 ? selectedLanguages.join(",") : undefined,
@@ -368,23 +387,26 @@ export default function ExploreBuddiesPage() {
     let count = 0;
     if (selectedChip !== "All") count++;
     if (selectedGender !== "Any") count++;
-    if (selectedLocation !== "Kolkata") count++;
+    if (selectedLocation !== "All Locations") count++;
     if (selectedAge) count++;
-    if (maxPrice < 2500) count++;
+    if (maxPrice !== null && maxPrice < priceMax) count++;
+    if (searchQuery.trim()) count++;
     count += selectedLanguages.length;
     count += selectedInterests.length;
     return count;
-  }, [selectedChip, selectedGender, selectedLocation, selectedAge, maxPrice, selectedLanguages, selectedInterests]);
+  }, [selectedChip, selectedGender, selectedLocation, selectedAge, maxPrice, searchQuery, selectedLanguages, selectedInterests, priceMax]);
 
   const handleReset = () => {
     setSelectedChip("All");
     setSelectedSort("Recommended");
     setSelectedGender("Any");
-    setSelectedLocation("Kolkata");
+    setSelectedLocation("All Locations");
     setSelectedAge("");
     setSelectedLanguages([]);
     setSelectedInterests([]);
-    setMaxPrice(2500);
+    setMaxPrice(null);
+    setSearchQuery("");
+    setDebouncedSearch("");
     setCurrentPage(1);
   };
 
@@ -461,10 +483,22 @@ export default function ExploreBuddiesPage() {
           </div>
         </section>
 
-        <div className="mt-5 sm:mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[14px] sm:text-[15px] font-semibold text-[#3f1b27]">
-            Showing 1-{filteredBuddies.length} of {pagination?.total ?? filteredBuddies.length} buddies
-          </p>
+        <div className="mt-5 sm:mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-1 items-center gap-3">
+            <div className="relative w-full max-w-xs sm:max-w-sm">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#7a1f39]/60 pointer-events-none" />
+              <input
+                type="search"
+                placeholder="Search buddies by name, bio, city..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-10 w-full rounded-full border border-[#e9d5d9] bg-white pl-10 pr-4 text-xs sm:text-sm text-[#5a1d2d] placeholder:text-[#5a1d2d]/45 shadow-xs focus:border-[#7a1f39] focus:outline-none"
+              />
+            </div>
+            <p className="text-[13px] sm:text-[14px] font-semibold text-[#3f1b27] shrink-0">
+              Showing 1-{filteredBuddies.length} of {pagination?.total ?? filteredBuddies.length} buddies
+            </p>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
             <label className="flex items-center gap-2 rounded-full border border-[#e9d5d9] bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#5a1d2d] shadow-sm">

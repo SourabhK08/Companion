@@ -26,6 +26,7 @@ interface SeedCompanion {
   rating: number;
   reviewCount: number;
   responseRate: number;
+  dateOfBirth?: string;
 }
 
 const companions: SeedCompanion[] = [
@@ -374,6 +375,7 @@ async function main() {
           fullName: c.fullName,
           gender: c.gender,
           city: c.city,
+          dateOfBirth: c.dateOfBirth ? new Date(c.dateOfBirth) : new Date("1998-06-15"),
           isVerified: true,
           authProvider: "local",
         },

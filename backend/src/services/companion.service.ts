@@ -153,13 +153,27 @@ export async function updateCompanion(
   return resolveAvatars(companion);
 }
 
-// ─── List Companions (with gender/city filter + pagination) ─
+// ─── List Companions (with full DB filtering + pagination) ─
 
 export async function listCompanions(query: ListCompanionsQuery, excludeUserId?: string) {
-  const { gender, city, page, limit, search } = query;
+  const {
+    gender,
+    city,
+    page,
+    limit,
+    search,
+    minPrice,
+    maxPrice,
+    age,
+    minAge: queryMinAge,
+    maxAge: queryMaxAge,
+    interests,
+    languages,
+    sortBy,
+  } = query;
   const skip = (page - 1) * limit;
 
-  // Build where clause — filter on the related User's gender/city
+  // Build where clause
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {
     isAvailable: true,
@@ -167,19 +181,161 @@ export async function listCompanions(query: ListCompanionsQuery, excludeUserId?:
     ...(excludeUserId && { userId: { not: excludeUserId } }),
   };
 
+  // 1. Gender Filter
   if (gender) {
-    where.user.gender = gender;
+    if (gender === "queer" || gender === "non-binary") {
+      where.user.gender = { in: ["non-binary", "other", "queer", "transgender"], mode: "insensitive" };
+    } else {
+      where.user.gender = { equals: gender, mode: "insensitive" };
+    }
   }
 
-  if (city) {
-    where.user.city = { equals: city, mode: "insensitive" };
+  // 2. City / Location Filter
+  if (city && city.toLowerCase() !== "all" && city.toLowerCase() !== "any") {
+    where.user.city = { equals: city.trim(), mode: "insensitive" };
   }
 
-  if (search) {
-    where.OR = [
-      { user: { bio: { contains: search, mode: "insensitive" } } },
-      { user: { fullName: { contains: search, mode: "insensitive" } } },
+  // 3. Price / Hourly Rate Filter
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    where.hourlyRate = {};
+    if (minPrice !== undefined) where.hourlyRate.gte = minPrice;
+    if (maxPrice !== undefined) where.hourlyRate.lte = maxPrice;
+  }
+
+  // 4. Age / Date of Birth Filter
+  let parsedMinAge = queryMinAge;
+  let parsedMaxAge = queryMaxAge;
+
+  if (age) {
+    if (age.includes("+")) {
+      const lower = parseInt(age.replace("+", "").trim(), 10);
+      if (!isNaN(lower)) parsedMinAge = lower;
+    } else if (age.includes("-") || age.includes("–")) {
+      const parts = age.split(/[-–]/).map((p) => parseInt(p.trim(), 10));
+      if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        parsedMinAge = parts[0];
+        parsedMaxAge = parts[1];
+      }
+    }
+  }
+
+  if (parsedMinAge !== undefined || parsedMaxAge !== undefined) {
+    const now = new Date();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dobCondition: any = {};
+    if (parsedMaxAge !== undefined) {
+      const oldestDob = new Date(now.getFullYear() - parsedMaxAge - 1, now.getMonth(), now.getDate() + 1);
+      dobCondition.gte = oldestDob;
+    }
+    if (parsedMinAge !== undefined) {
+      const youngestDob = new Date(now.getFullYear() - parsedMinAge, now.getMonth(), now.getDate());
+      dobCondition.lte = youngestDob;
+    }
+
+    const is25InRange =
+      (parsedMinAge === undefined || 25 >= parsedMinAge) &&
+      (parsedMaxAge === undefined || 25 <= parsedMaxAge);
+
+    if (is25InRange) {
+      where.AND = [
+        ...(where.AND || []),
+        {
+          OR: [
+            { user: { dateOfBirth: dobCondition } },
+            { user: { dateOfBirth: null } },
+          ],
+        },
+      ];
+    } else {
+      where.user.dateOfBirth = dobCondition;
+    }
+  }
+
+  // 5. Interests Filter
+  if (interests) {
+    const ignoredKeywords = new Set([
+      "all",
+      "all men",
+      "all women",
+      "all queer",
+      "more",
+    ]);
+
+    const rawInterests = interests
+      .split(",")
+      .map((i) => i.trim())
+      .filter((i) => i.length > 0 && !ignoredKeywords.has(i.toLowerCase()));
+
+    if (rawInterests.length > 0) {
+      const expandedSet = new Set<string>();
+      for (const item of rawInterests) {
+        expandedSet.add(item);
+        expandedSet.add(item.toLowerCase());
+        expandedSet.add(item.charAt(0).toUpperCase() + item.slice(1));
+
+        // Sub-word handling for compound interests like "Coffee & Cafés", "Food & Dining", etc.
+        const subParts = item.split(/[&,/]/).map((s) => s.trim()).filter((s) => s.length > 1);
+        for (const sub of subParts) {
+          expandedSet.add(sub);
+          expandedSet.add(sub.toLowerCase());
+          expandedSet.add(sub.charAt(0).toUpperCase() + sub.slice(1));
+        }
+      }
+
+      where.user.interests = {
+        hasSome: Array.from(expandedSet),
+      };
+    }
+  }
+
+  // 6. Languages Filter
+  if (languages) {
+    const rawLanguages = languages
+      .split(",")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+    if (rawLanguages.length > 0) {
+      const expandedLangs = new Set<string>();
+      for (const lang of rawLanguages) {
+        expandedLangs.add(lang);
+        expandedLangs.add(lang.toLowerCase());
+        expandedLangs.add(lang.charAt(0).toUpperCase() + lang.slice(1));
+      }
+      where.user.languages = {
+        hasSome: Array.from(expandedLangs),
+      };
+    }
+  }
+
+  // 7. Search Filter (Debounced text search across Name, Bio, City)
+  if (search && search.trim()) {
+    const searchTerm = search.trim();
+    where.AND = [
+      ...(where.AND || []),
+      {
+        OR: [
+          { user: { fullName: { contains: searchTerm, mode: "insensitive" } } },
+          { user: { bio: { contains: searchTerm, mode: "insensitive" } } },
+          { user: { city: { contains: searchTerm, mode: "insensitive" } } },
+        ],
+      },
     ];
+  }
+
+  // 8. Sorting Logic
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let orderBy: any = [{ rating: "desc" }, { reviewCount: "desc" }];
+  if (sortBy === "newest") {
+    orderBy = { createdAt: "desc" };
+  } else if (sortBy === "top_rated") {
+    orderBy = [{ rating: "desc" }, { reviewCount: "desc" }];
+  } else if (sortBy === "price_low") {
+    orderBy = { hourlyRate: "asc" };
+  } else if (sortBy === "price_high") {
+    orderBy = { hourlyRate: "desc" };
+  } else if (sortBy === "recommended") {
+    orderBy = [{ rating: "desc" }, { reviewCount: "desc" }];
   }
 
   const [companions, total] = await Promise.all([
@@ -188,7 +344,7 @@ export async function listCompanions(query: ListCompanionsQuery, excludeUserId?:
       select: companionSelect,
       skip,
       take: limit,
-      orderBy: { rating: "desc" },
+      orderBy,
     }),
     prisma.companionProfile.count({ where }),
   ]);

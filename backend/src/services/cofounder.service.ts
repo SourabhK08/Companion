@@ -137,10 +137,13 @@ export async function listCoFounders(query: ListCoFoundersQuery, excludeUserId?:
   }
 
   if (search) {
+    const s = search.trim();
     where.OR = [
-      { user: { fullName: { contains: search, mode: "insensitive" } } },
-      { pitch: { contains: search, mode: "insensitive" } },
-      { lookingFor: { contains: search, mode: "insensitive" } }
+      { user: { fullName: { contains: s, mode: "insensitive" } } },
+      { user: { bio: { contains: s, mode: "insensitive" } } },
+      { user: { city: { contains: s, mode: "insensitive" } } },
+      { pitch: { contains: s, mode: "insensitive" } },
+      { lookingFor: { contains: s, mode: "insensitive" } },
     ];
   }
 

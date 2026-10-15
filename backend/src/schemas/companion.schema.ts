@@ -30,13 +30,22 @@ export const createCompanionSchema = z.object({
 export const updateCompanionSchema = createCompanionSchema.partial();
 
 export const listCompanionsQuerySchema = z.object({
-  gender: z.enum(["male", "female", "non-binary", "other"]).optional(),
+  gender: z.enum(["male", "female", "non-binary", "other", "queer"]).optional(),
   city: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),
   search: z.string().optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  age: z.string().optional(),
+  minAge: z.coerce.number().int().min(18).optional(),
+  maxAge: z.coerce.number().int().min(18).optional(),
+  interests: z.string().optional(),
+  languages: z.string().optional(),
+  sortBy: z.enum(["recommended", "newest", "top_rated", "price_low", "price_high"]).optional(),
 });
 
 export type CreateCompanionInput = z.infer<typeof createCompanionSchema>;
 export type UpdateCompanionInput = z.infer<typeof updateCompanionSchema>;
 export type ListCompanionsQuery = z.infer<typeof listCompanionsQuerySchema>;
+

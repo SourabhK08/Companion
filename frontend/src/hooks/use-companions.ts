@@ -69,6 +69,7 @@ function calculateAge(dob: string | null): number {
 function mapApiToCompanion(api: ApiCompanion): Companion {
   return {
     id: api.id,
+    userId: api.userId,
     name: api.user.fullName,
     age: calculateAge(api.user.dateOfBirth),
     profession: api.user.bio ? api.user.bio.split(".")[0].slice(0, 40) : "Professional",
@@ -83,6 +84,7 @@ function mapApiToCompanion(api: ApiCompanion): Companion {
     bio: api.user.bio || "",
     languages: api.user.languages,
     gender: (api.user.gender as Companion["gender"]) ?? "other",
+    isCompanion: api.isAvailable,
   };
 }
 
@@ -94,6 +96,9 @@ interface UseCompanionsOptions {
   limit?: number;
   minPrice?: number;
   maxPrice?: number;
+  age?: string;
+  minAge?: number;
+  maxAge?: number;
   sortBy?: string;
   interests?: string;
   languages?: string;
@@ -115,51 +120,97 @@ interface UseCompanionsResult {
  */
 export function useCompanions(options: UseCompanionsOptions = {}): UseCompanionsResult {
   const { user } = useAuth();
-  const { gender, city, search, page = 1, limit = 12, minPrice, maxPrice, sortBy, interests, languages } = options;
+  const userId = user?.id;
+  const {
+    gender,
+    city,
+    search,
+    page = 1,
+    limit = 12,
+    minPrice,
+    maxPrice,
+    age,
+    minAge,
+    maxAge,
+    sortBy,
+    interests,
+    languages,
+  } = options;
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [pagination, setPagination] = useState<ApiPagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refetchIndex, setRefetchIndex] = useState(0);
 
-  const fetchCompanions = useCallback(async () => {
+  const refetch = useCallback(() => {
     setIsLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams();
-      if (gender && gender !== "Any") params.set("gender", gender);
-      if (city) params.set("city", city);
-      if (search) params.set("search", search);
-      if (minPrice !== undefined) params.set("minPrice", String(minPrice));
-      if (maxPrice !== undefined) params.set("maxPrice", String(maxPrice));
-      if (sortBy) params.set("sortBy", sortBy);
-      if (interests) params.set("interests", interests);
-      if (languages) params.set("languages", languages);
-      params.set("page", String(page));
-      params.set("limit", String(limit));
-
-      const response = await apiFetch<ApiCompanionsResponse>(
-        `/api/companions?${params.toString()}`
-      );
-
-      if (response.success && response.data) {
-        const mapped = response.data.companions.map(mapApiToCompanion);
-        setCompanions(user?.id ? mapped.filter((c) => c.userId !== user.id) : mapped);
-        setPagination(response.data.pagination);
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to fetch companions";
-      setError(message);
-      setCompanions([]);
-      setPagination(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [gender, city, search, page, limit, minPrice, maxPrice, sortBy, interests, languages]);
+    setRefetchIndex((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
-    fetchCompanions();
-  }, [fetchCompanions]);
+    let ignore = false;
 
-  return { companions, pagination, isLoading, error, refetch: fetchCompanions };
+    (async () => {
+      try {
+        const params = new URLSearchParams();
+        if (gender && gender !== "Any" && gender !== "any") params.set("gender", gender);
+        if (city && city !== "All" && city !== "all") params.set("city", city);
+        if (search && search.trim()) params.set("search", search.trim());
+        if (minPrice !== undefined) params.set("minPrice", String(minPrice));
+        if (maxPrice !== undefined) params.set("maxPrice", String(maxPrice));
+        if (age) params.set("age", age);
+        if (minAge !== undefined) params.set("minAge", String(minAge));
+        if (maxAge !== undefined) params.set("maxAge", String(maxAge));
+        if (sortBy) params.set("sortBy", sortBy);
+        if (interests) params.set("interests", interests);
+        if (languages) params.set("languages", languages);
+        params.set("page", String(page));
+        params.set("limit", String(limit));
+
+        const response = await apiFetch<ApiCompanionsResponse>(
+          `/api/companions?${params.toString()}`
+        );
+
+        if (!ignore && response.success && response.data) {
+          const mapped = response.data.companions.map(mapApiToCompanion);
+          setCompanions(userId ? mapped.filter((c) => c.userId !== userId) : mapped);
+          setPagination(response.data.pagination);
+          setError(null);
+        }
+      } catch (err) {
+        if (!ignore) {
+          const message = err instanceof Error ? err.message : "Failed to fetch companions";
+          setError(message);
+          setCompanions([]);
+          setPagination(null);
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [
+    gender,
+    city,
+    search,
+    page,
+    limit,
+    minPrice,
+    maxPrice,
+    age,
+    minAge,
+    maxAge,
+    sortBy,
+    interests,
+    languages,
+    userId,
+    refetchIndex,
+  ]);
+
+  return { companions, pagination, isLoading, error, refetch };
 }

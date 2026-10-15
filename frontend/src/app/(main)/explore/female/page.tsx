@@ -67,8 +67,8 @@ function FemaleFilterControls({
   setSelectedAvailability,
   setCurrentPage,
 }: {
-  maxPrice: number;
-  setMaxPrice: (val: number) => void;
+  maxPrice: number | null;
+  setMaxPrice: (val: number | null) => void;
   priceMin: number;
   priceMax: number;
   selectedAge: string;
@@ -143,7 +143,11 @@ function FemaleFilterControls({
             setCurrentPage(1);
           }}
         >
+          <option value="all">All Locations</option>
           <option value="kolkata">Kolkata</option>
+          <option value="mumbai">Mumbai</option>
+          <option value="delhi">Delhi</option>
+          <option value="bangalore">Bangalore</option>
         </select>
       </div>
 
@@ -173,15 +177,15 @@ export default function ExploreFemalePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>(["Dating"]);
-  const [maxPrice, setMaxPrice] = useState<number>(2500);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [selectedAge, setSelectedAge] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("kolkata");
+  const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedAvailability, setSelectedAvailability] = useState("any");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const priceMin = 300;
-  const priceMax = 2500;
+  const priceMax = 10000;
   const perPage = 9;
 
   useEffect(() => {
@@ -196,17 +200,28 @@ export default function ExploreFemalePage() {
     setSearchQuery(value);
   };
 
+  // Combine category tab + selected interests
+  const interestsList = [...selectedInterests];
+  if (activeCategory !== "All Women" && activeCategory !== "More" && !interestsList.includes(activeCategory)) {
+    interestsList.push(activeCategory);
+  }
+
   const { companions, pagination, isLoading, error } = useCompanions({
     gender: "female",
+    city: selectedLocation && selectedLocation !== "all" ? selectedLocation : undefined,
     search: debouncedSearch || undefined,
     page: currentPage,
     limit: perPage,
+    maxPrice: maxPrice && maxPrice < priceMax ? maxPrice : undefined,
+    age: selectedAge || undefined,
+    interests: interestsList.length > 0 ? interestsList.join(",") : undefined,
   });
 
   const totalCompanions = pagination?.total ?? 0;
   const totalPages = pagination?.totalPages ?? 1;
 
   function toggleInterest(interest: string) {
+    setCurrentPage(1);
     setSelectedInterests((prev) =>
       prev.includes(interest)
         ? prev.filter((i) => i !== interest)
@@ -218,25 +233,25 @@ export default function ExploreFemalePage() {
     let count = 0;
     if (activeCategory !== "All Women") count++;
     if (searchQuery.trim()) count++;
-    if (maxPrice < 2500) count++;
+    if (maxPrice !== null && maxPrice < priceMax) count++;
     if (selectedAge) count++;
-    if (selectedLocation !== "kolkata") count++;
+    if (selectedLocation !== "all") count++;
     if (selectedAvailability !== "any") count++;
-    if (selectedInterests.length !== 1 || selectedInterests[0] !== "Dating") {
+    if (selectedInterests.length > 0) {
       count += selectedInterests.length;
     }
     return count;
-  }, [activeCategory, searchQuery, maxPrice, selectedAge, selectedLocation, selectedAvailability, selectedInterests]);
+  }, [activeCategory, searchQuery, maxPrice, selectedAge, selectedLocation, selectedAvailability, selectedInterests, priceMax]);
 
   const handleReset = () => {
     setActiveCategory("All Women");
     setSearchQuery("");
     setDebouncedSearch("");
-    setMaxPrice(2500);
+    setMaxPrice(null);
     setSelectedAge("");
-    setSelectedLocation("kolkata");
+    setSelectedLocation("all");
     setSelectedAvailability("any");
-    setSelectedInterests(["Dating"]);
+    setSelectedInterests([]);
     setCurrentPage(1);
   };
 
@@ -453,7 +468,10 @@ export default function ExploreFemalePage() {
             {femaleCompanionCategories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setCurrentPage(1);
+                }}
                 className={cn(
                   "shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-colors",
                   activeCategory === cat

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -77,14 +77,16 @@ export default function ExploreCoFounderPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const perPage = 12;
 
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
-    // basic debounce
-    if ((window as any)._searchTimer) clearTimeout((window as any)._searchTimer);
-    (window as any)._searchTimer = setTimeout(() => {
-      setDebouncedSearch(value);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
       setCurrentPage(1);
     }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
   };
 
   const { profiles, pagination, isLoading, error } = useCoFounders({

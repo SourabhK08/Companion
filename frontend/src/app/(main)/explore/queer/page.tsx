@@ -91,8 +91,8 @@ function QueerFilterControls({
   setSelectedAvailability,
   setCurrentPage,
 }: {
-  maxPrice: number;
-  setMaxPrice: (val: number) => void;
+  maxPrice: number | null;
+  setMaxPrice: (val: number | null) => void;
   priceMin: number;
   priceMax: number;
   selectedAge: string;
@@ -215,7 +215,11 @@ function QueerFilterControls({
             setCurrentPage(1);
           }}
         >
+          <option value="all">All Locations</option>
           <option value="kolkata">Kolkata</option>
+          <option value="mumbai">Mumbai</option>
+          <option value="delhi">Delhi</option>
+          <option value="bangalore">Bangalore</option>
         </select>
       </div>
 
@@ -245,17 +249,17 @@ export default function ExploreQueerPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>(["Dating"]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedIdentities, setSelectedIdentities] = useState<string[]>([]);
   const [selectedOrientations, setSelectedOrientations] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number>(2500);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [selectedAge, setSelectedAge] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("kolkata");
+  const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedAvailability, setSelectedAvailability] = useState("any");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const priceMin = 300;
-  const priceMax = 2500;
+  const priceMax = 10000;
   const perPage = 9;
 
   useEffect(() => {
@@ -270,17 +274,34 @@ export default function ExploreQueerPage() {
     setSearchQuery(value);
   };
 
+  // Combine category tab + selected interests + identities/orientations
+  const interestsList = [...selectedInterests];
+  if (activeCategory !== "All Queer" && activeCategory !== "More" && !interestsList.includes(activeCategory)) {
+    interestsList.push(activeCategory);
+  }
+  for (const id of selectedIdentities) {
+    if (!interestsList.includes(id)) interestsList.push(id);
+  }
+  for (const or of selectedOrientations) {
+    if (!interestsList.includes(or)) interestsList.push(or);
+  }
+
   const { companions, pagination, isLoading, error } = useCompanions({
-    gender: "non-binary",
+    gender: "queer",
+    city: selectedLocation && selectedLocation !== "all" ? selectedLocation : undefined,
     search: debouncedSearch || undefined,
     page: currentPage,
     limit: perPage,
+    maxPrice: maxPrice && maxPrice < priceMax ? maxPrice : undefined,
+    age: selectedAge || undefined,
+    interests: interestsList.length > 0 ? interestsList.join(",") : undefined,
   });
 
   const totalCompanions = pagination?.total ?? 0;
   const totalPages = pagination?.totalPages ?? 1;
 
   function toggleInterest(interest: string) {
+    setCurrentPage(1);
     setSelectedInterests((prev) =>
       prev.includes(interest)
         ? prev.filter((i) => i !== interest)
@@ -289,6 +310,7 @@ export default function ExploreQueerPage() {
   }
 
   function toggleIdentity(identity: string) {
+    setCurrentPage(1);
     setSelectedIdentities((prev) =>
       prev.includes(identity)
         ? prev.filter((i) => i !== identity)
@@ -297,6 +319,7 @@ export default function ExploreQueerPage() {
   }
 
   function toggleOrientation(orientation: string) {
+    setCurrentPage(1);
     setSelectedOrientations((prev) =>
       prev.includes(orientation)
         ? prev.filter((o) => o !== orientation)
@@ -308,29 +331,29 @@ export default function ExploreQueerPage() {
     let count = 0;
     if (activeCategory !== "All Queer") count++;
     if (searchQuery.trim()) count++;
-    if (maxPrice < 2500) count++;
+    if (maxPrice !== null && maxPrice < priceMax) count++;
     if (selectedAge) count++;
-    if (selectedLocation !== "kolkata") count++;
+    if (selectedLocation !== "all") count++;
     if (selectedAvailability !== "any") count++;
     count += selectedIdentities.length;
     count += selectedOrientations.length;
-    if (selectedInterests.length !== 1 || selectedInterests[0] !== "Dating") {
+    if (selectedInterests.length > 0) {
       count += selectedInterests.length;
     }
     return count;
-  }, [activeCategory, searchQuery, maxPrice, selectedAge, selectedLocation, selectedAvailability, selectedIdentities, selectedOrientations, selectedInterests]);
+  }, [activeCategory, searchQuery, maxPrice, selectedAge, selectedLocation, selectedAvailability, selectedIdentities, selectedOrientations, selectedInterests, priceMax]);
 
   const handleReset = () => {
     setActiveCategory("All Queer");
     setSearchQuery("");
     setDebouncedSearch("");
-    setMaxPrice(2500);
+    setMaxPrice(null);
     setSelectedAge("");
-    setSelectedLocation("kolkata");
+    setSelectedLocation("all");
     setSelectedAvailability("any");
     setSelectedIdentities([]);
     setSelectedOrientations([]);
-    setSelectedInterests(["Dating"]);
+    setSelectedInterests([]);
     setCurrentPage(1);
   };
 
@@ -552,7 +575,10 @@ export default function ExploreQueerPage() {
             {queerCompanionCategories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setCurrentPage(1);
+                }}
                 className={cn(
                   "shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-colors",
                   activeCategory === cat
