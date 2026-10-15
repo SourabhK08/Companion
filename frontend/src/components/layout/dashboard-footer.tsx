@@ -98,7 +98,7 @@ export function DashboardFooter() {
                 { label: "Male Companions", href: "/explore/male" },
                 { label: "Female Companions", href: "/explore/female" },
                 { label: "Events", href: "/events" },
-                { label: "How It Works", href: "/how-it-works" },
+                // { label: "How It Works", href: "/how-it-works" },
                 { label: "Blog", href: "/blog" },
               ].map((link) => (
                 <li key={link.href}>

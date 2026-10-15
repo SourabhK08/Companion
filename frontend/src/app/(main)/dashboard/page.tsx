@@ -8,7 +8,6 @@ import {
   Check,
   Clock3,
   Heart,
-  LockKeyhole,
   MapPin,
   MessageSquareText,
   ShieldCheck,
@@ -18,14 +17,28 @@ import {
   Users,
   Loader2,
   ArrowRight,
+  Eye,
+  Edit3,
+  Wallet,
+  Star,
+  Coffee,
+  Compass,
+  Briefcase,
+  Sliders,
+  ChevronRight,
+  Shield,
+  HeartHandshake,
 } from "lucide-react";
 import Link from "next/link";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useProfilePhoto } from "@/hooks/use-profile-photo";
+import { useSavedCompanions } from "@/hooks/use-saved-companions";
+import { useUnreadCount } from "@/hooks/use-unread-count";
+import { useWallet } from "@/hooks/use-wallet";
+import { useCompanions } from "@/hooks/use-companions";
 import { ImageCarouselModal } from "@/components/shared/image-carousel-modal";
 import { PreferencesModal } from "@/components/preferences/preferences-modal";
-import { Eye, Edit3 } from "lucide-react";
 
 function CigaretteOffIcon({ className }: { className?: string }) {
   return (
@@ -67,6 +80,13 @@ const highlightItems = [
 
 import { ProfileCompleteness } from "@/components/dashboard/profile-completeness";
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 function calculateAge(dob: string | Date | undefined): number | null {
   if (!dob) return null;
   const birthDate = new Date(dob);
@@ -82,6 +102,10 @@ function calculateAge(dob: string | Date | undefined): number | null {
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { photos, fetchPhotos, galleryPhotos, isLoadingPhotos } = useProfilePhoto();
+  const unreadCount = useUnreadCount();
+  const { savedIds: savedIdsSet } = useSavedCompanions();
+  const { availableInRupees } = useWallet();
+  const { companions: recommendedCompanions, isLoading: isLoadingRecommended } = useCompanions({ limit: 4 });
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["id"]>("about");
   const [showAllTags, setShowAllTags] = useState(false);
@@ -121,7 +145,140 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1360px] px-3 py-4 sm:px-4 lg:px-6 lg:py-5">
+    <div className="mx-auto max-w-[1360px] px-3 py-4 sm:px-4 lg:px-6 lg:py-5 space-y-6">
+      {/* ─── Top Greeting & Quick Actions Header ─── */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-[#ebdbe0] bg-gradient-to-r from-white via-[#fff9f9] to-[#fbf4f6] p-4 sm:p-5 shadow-[0_4px_16px_rgba(122,31,57,0.04)]">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#fcedf0] px-2.5 py-0.5 text-xs font-semibold text-[#7a1f39]">
+              <Sparkles className="size-3 text-[#7a1f39]" />
+              {getGreeting()}
+            </span>
+            <span className="text-xs text-[#8a5d6a] font-medium hidden sm:inline">
+              • {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+            </span>
+          </div>
+          <h1 className="mt-1 font-serif text-2xl sm:text-3xl font-bold text-[#3d1320]">
+            Welcome back, <span className="text-[#7a1f39]">{user?.name?.split(" ")[0] || "Friend"}</span>!
+          </h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-[#6d4955]">
+            Explore companions, check active bookings, or personalize your dating preferences.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 flex-wrap">
+          <Link
+            href="/explore"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full bg-[#7a1f39] px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-xs transition-colors hover:bg-[#66192d]"
+          >
+            <Compass className="size-4" />
+            Explore Buddies
+          </Link>
+          <button
+            type="button"
+            onClick={() => setPreferencesModalOpen(true)}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-[#e4d3d7] bg-white px-3.5 py-2 text-xs sm:text-sm font-semibold text-[#6a2638] shadow-xs transition-colors hover:bg-[#faf4f6] cursor-pointer"
+          >
+            <Sliders className="size-3.5" />
+            Preferences
+          </button>
+        </div>
+      </div>
+
+      {/* ─── Interactive Quick Stats Ribbon ─── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Messages Card */}
+        <Link
+          href="/messages"
+          className="group relative overflow-hidden rounded-2xl border border-[#ebdbe0] bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_rgba(122,31,57,0.03)] hover:shadow-[0_6px_20px_rgba(122,31,57,0.08)] transition-all hover:border-[#7a1f39]/30"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#7c525f]">Unread Messages</span>
+            <div className="flex size-8 items-center justify-center rounded-full bg-[#fcedf0] text-[#7a1f39] group-hover:scale-110 transition-transform">
+              <MessageSquareText className="size-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold font-serif text-[#3d1320]">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+            <span className="text-[11px] text-[#8a5d6a]">
+              {unreadCount === 0 ? "All caught up" : unreadCount === 1 ? "1 message" : `${unreadCount} messages`}
+            </span>
+          </div>
+          <div className="mt-2 text-[11px] font-semibold text-[#7a1f39] flex items-center gap-1">
+            Open Chat List <ChevronRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </Link>
+
+        {/* Saved Companions Card */}
+        <Link
+          href="/explore"
+          className="group relative overflow-hidden rounded-2xl border border-[#ebdbe0] bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_rgba(122,31,57,0.03)] hover:shadow-[0_6px_20px_rgba(122,31,57,0.08)] transition-all hover:border-[#7a1f39]/30"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#7c525f]">Saved Companions</span>
+            <div className="flex size-8 items-center justify-center rounded-full bg-rose-50 text-rose-600 group-hover:scale-110 transition-transform">
+              <Heart className="size-4 fill-rose-500 text-rose-500" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold font-serif text-[#3d1320]">
+              {savedIdsSet.size}
+            </span>
+            <span className="text-[11px] text-[#8a5d6a]">
+              {savedIdsSet.size === 1 ? "Bookmarked" : "Bookmarked"}
+            </span>
+          </div>
+          <div className="mt-2 text-[11px] font-semibold text-[#7a1f39] flex items-center gap-1">
+            Browse Favorites <ChevronRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </Link>
+
+        {/* Wallet Balance Card */}
+        <Link
+          href="/wallet"
+          className="group relative overflow-hidden rounded-2xl border border-[#ebdbe0] bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_rgba(122,31,57,0.03)] hover:shadow-[0_6px_20px_rgba(122,31,57,0.08)] transition-all hover:border-[#7a1f39]/30"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#7c525f]">Wallet Balance</span>
+            <div className="flex size-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 group-hover:scale-110 transition-transform">
+              <Wallet className="size-4 text-emerald-600" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold font-serif text-[#3d1320]">
+              ₹{availableInRupees.toLocaleString("en-IN")}
+            </span>
+            <span className="text-[11px] text-emerald-700 font-medium">Available</span>
+          </div>
+          <div className="mt-2 text-[11px] font-semibold text-[#7a1f39] flex items-center gap-1">
+            Manage &amp; Add Funds <ChevronRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </Link>
+
+        {/* Verification Status Card */}
+        <Link
+          href="/verify-account"
+          className="group relative overflow-hidden rounded-2xl border border-[#ebdbe0] bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_rgba(122,31,57,0.03)] hover:shadow-[0_6px_20px_rgba(122,31,57,0.08)] transition-all hover:border-[#7a1f39]/30"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#7c525f]">Trust &amp; Verification</span>
+            <div className={`flex size-8 items-center justify-center rounded-full ${user?.isVerified ? "bg-sky-50 text-sky-600" : "bg-amber-50 text-amber-600"} group-hover:scale-110 transition-transform`}>
+              <BadgeCheck className="size-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className={`text-base sm:text-lg font-bold font-serif ${user?.isVerified ? "text-emerald-700" : "text-amber-800"}`}>
+              {user?.isVerified ? "100% Verified" : "Needs Verification"}
+            </span>
+          </div>
+          <div className="mt-2 text-[11px] font-semibold text-[#7a1f39] flex items-center gap-1">
+            {user?.isVerified ? "View Badge Status" : "Verify Phone & Email →"}
+          </div>
+        </Link>
+      </div>
+
       {user && !user.isCompanion && (
         <div className="mb-6 overflow-hidden rounded-2xl border border-berry/20 bg-gradient-to-r from-berry/10 to-berry/5 shadow-sm">
           <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -582,6 +739,53 @@ export default function DashboardPage() {
               </ul>
             </section>
 
+            {/* ─── Match & Discovery Preferences ─── */}
+            <section className="rounded-[22px] border border-[#eadfe3] bg-[#f8f3f1] p-4 sm:p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-[#5d2436]">
+                  <Sliders className="size-5 text-[#7a1f39]" />
+                  <h2 className="text-[20px] font-bold">Your Preferences</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreferencesModalOpen(true)}
+                  className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#7a1f39] hover:underline cursor-pointer"
+                >
+                  <Edit3 className="size-3.5" />
+                  Edit
+                </button>
+              </div>
+
+              <div className="space-y-2.5 text-xs sm:text-sm text-[#4d2832]">
+                <div className="flex items-center justify-between rounded-xl bg-white/70 px-3.5 py-2.5 border border-[#eadfe3]">
+                  <span className="text-[#6a4953] font-medium">Looking to Meet</span>
+                  <span className="font-bold text-[#4d2832] capitalize">
+                    {user?.preferredGender === "any" || !user?.preferredGender ? "Anyone" : user.preferredGender}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl bg-white/70 px-3.5 py-2.5 border border-[#eadfe3]">
+                  <span className="text-[#6a4953] font-medium">Age Range</span>
+                  <span className="font-bold text-[#4d2832]">
+                    {user?.preferredAgeMin ?? 18} – {user?.preferredAgeMax ?? 35} yrs
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl bg-white/70 px-3.5 py-2.5 border border-[#eadfe3]">
+                  <span className="text-[#6a4953] font-medium">Location</span>
+                  <span className="font-bold text-[#4d2832] truncate max-w-[150px]">
+                    {user?.preferredLocation || user?.city || "Any City"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl bg-white/70 px-3.5 py-2.5 border border-[#eadfe3]">
+                  <span className="text-[#6a4953] font-medium">Languages</span>
+                  <span className="font-bold text-[#4d2832] truncate max-w-[150px]">
+                    {user?.preferredLanguages && user.preferredLanguages.length > 0
+                      ? user.preferredLanguages.join(", ")
+                      : "English, Hindi"}
+                  </span>
+                </div>
+              </div>
+            </section>
+
             {/* ─── Meeting OTP (temporarily commented out) ───
             <section className="rounded-[22px] border border-[#f3dfe6] bg-[#f7e9ed] p-4 sm:p-5">
               <div className="mb-3 flex items-center gap-2 text-[#5d2436]">
@@ -624,6 +828,355 @@ export default function DashboardPage() {
           </aside>
         </div>
       </div>
+
+      {/* ─── Explore by Category Hub ─── */}
+      <section className="mt-10">
+        <div className="mb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#7a1f39]">
+              <Compass className="size-3.5" />
+              Discover Connections
+            </div>
+            <h2 className="mt-1 font-serif text-2xl sm:text-3xl font-bold text-[#411522]">
+              Explore by Category
+            </h2>
+          </div>
+          <Link
+            href="/explore"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-[#7a1f39] hover:underline"
+          >
+            View all categories
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            href="/explore/female"
+            className="group relative overflow-hidden rounded-[24px] border border-[#f0e3e7] bg-gradient-to-br from-[#fff7f9] to-[#fbf2f4] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[#d9a8b5]"
+          >
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7a1f39] to-[#992849] text-white shadow-sm group-hover:scale-110 transition-transform">
+              <Heart className="size-6" />
+            </div>
+            <h3 className="mt-4 font-serif text-lg font-bold text-[#411522] group-hover:text-[#7a1f39] transition-colors">
+              Female Companions
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#6a4953]">
+              Artisan cafe visits, culinary outings, gallery tours &amp; meaningful conversations.
+            </p>
+            <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-[#7a1f39]">
+              <span>Explore profiles</span>
+              <ChevronRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            href="/explore/male"
+            className="group relative overflow-hidden rounded-[24px] border border-[#f0e3e7] bg-gradient-to-br from-[#f8f9fc] to-[#f0f3fa] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[#b8c7e0]"
+          >
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2a4365] to-[#3182ce] text-white shadow-sm group-hover:scale-110 transition-transform">
+              <Users className="size-6" />
+            </div>
+            <h3 className="mt-4 font-serif text-lg font-bold text-[#1a202c] group-hover:text-[#2b6cb0] transition-colors">
+              Male Companions
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#4a5568]">
+              Fitness partners, city adventures, sporting events &amp; relaxed casual hangouts.
+            </p>
+            <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-[#2b6cb0]">
+              <span>Explore profiles</span>
+              <ChevronRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            href="/explore/queer"
+            className="group relative overflow-hidden rounded-[24px] border border-[#f0e3e7] bg-gradient-to-br from-[#faf7fc] to-[#f5edfa] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[#d6bcfa]"
+          >
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6b46c1] to-[#805ad5] text-white shadow-sm group-hover:scale-110 transition-transform">
+              <Sparkles className="size-6" />
+            </div>
+            <h3 className="mt-4 font-serif text-lg font-bold text-[#322659] group-hover:text-[#6b46c1] transition-colors">
+              Queer Friendly
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#553c9a]">
+              Inclusive, affirming and warm spaces for genuine, judgment-free social connection.
+            </p>
+            <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-[#6b46c1]">
+              <span>Explore profiles</span>
+              <ChevronRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            href="/explore/cofounder"
+            className="group relative overflow-hidden rounded-[24px] border border-[#f0e3e7] bg-gradient-to-br from-[#f7faf9] to-[#edf7f4] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[#9ae6b4]"
+          >
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234e52] to-[#285e61] text-white shadow-sm group-hover:scale-110 transition-transform">
+              <Briefcase className="size-6" />
+            </div>
+            <h3 className="mt-4 font-serif text-lg font-bold text-[#1d4044] group-hover:text-[#234e52] transition-colors">
+              Find a Co-Founder
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#285e61]">
+              Meet passionate entrepreneurs, tech leads &amp; creative minds to build your vision.
+            </p>
+            <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-[#234e52]">
+              <span>Explore profiles</span>
+              <ChevronRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* ─── Top Rated Companions Around You ─── */}
+      <section className="mt-10">
+        <div className="mb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#7a1f39]">
+              <Star className="size-3.5 fill-[#7a1f39]" />
+              Featured Members
+            </div>
+            <h2 className="mt-1 font-serif text-2xl sm:text-3xl font-bold text-[#411522]">
+              Recommended for You
+            </h2>
+          </div>
+          <Link
+            href="/explore"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-[#7a1f39] hover:underline"
+          >
+            See all companions
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
+
+        {isLoadingRecommended ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="animate-pulse rounded-[24px] border border-[#f0e3e7] bg-white p-4 space-y-3"
+              >
+                <div className="h-44 w-full rounded-[18px] bg-[#f2e6ea]" />
+                <div className="h-4 w-3/4 rounded bg-[#f2e6ea]" />
+                <div className="h-3 w-1/2 rounded bg-[#f2e6ea]" />
+                <div className="h-8 w-full rounded-xl bg-[#f2e6ea]" />
+              </div>
+            ))}
+          </div>
+        ) : recommendedCompanions && recommendedCompanions.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recommendedCompanions.map((comp) => (
+              <div
+                key={comp.id}
+                className="group flex flex-col rounded-[24px] border border-[#f0e3e7] bg-white p-3.5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[#d9a8b5]"
+              >
+                {/* Image / Avatar */}
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[18px] bg-[#f8e4ea]">
+                  {comp.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={comp.avatar}
+                      alt={comp.name}
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center bg-gradient-to-br from-[#7a1f39]/20 to-[#7a1f39]/5 text-3xl font-serif font-bold text-[#7a1f39]">
+                      {comp.name.charAt(0)}
+                    </div>
+                  )}
+
+                  {/* Rating Badge */}
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded-full bg-black/60 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
+                    <Star className="size-3 fill-amber-400 text-amber-400" />
+                    <span>{comp.rating ? comp.rating.toFixed(1) : "5.0"}</span>
+                  </div>
+
+                  {/* City Pill */}
+                  <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-semibold text-[#4d2a35] shadow-sm">
+                    <MapPin className="size-3 text-[#7a1f39]" />
+                    <span>{comp.city || "Kolkata"}</span>
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div className="mt-3 flex flex-1 flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-1">
+                      <h4 className="font-serif text-base font-bold text-[#411522] truncate flex items-center gap-1.5">
+                        {comp.name}
+                        {comp.isVerified && (
+                          <BadgeCheck className="size-4 text-sky-600 shrink-0" />
+                        )}
+                      </h4>
+                      <span className="text-xs font-bold text-[#7a1f39] shrink-0">
+                        ₹{comp.pricePerHour}/hr
+                      </span>
+                    </div>
+
+                    <p className="mt-1 line-clamp-1 text-xs text-[#6a4953]">
+                      {comp.profession || comp.bio || "Friendly Companion"}
+                    </p>
+
+                    {/* Interests pills */}
+                    {comp.interests && comp.interests.length > 0 && (
+                      <div className="mt-2.5 flex flex-wrap gap-1">
+                        {comp.interests.slice(0, 2).map((interest) => (
+                          <span
+                            key={interest}
+                            className="rounded-full bg-[#f8e4ea] px-2 py-0.5 text-[10px] font-medium text-[#7a1f39]"
+                          >
+                            {interest}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <Link
+                    href={`/companion/${comp.id}`}
+                    className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-full bg-[#7a1f39] py-2 text-xs font-semibold text-white transition-colors hover:bg-[#66192d]"
+                  >
+                    <span>View Profile</span>
+                    <ArrowRight className="size-3.5" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-[24px] border border-[#f0e3e7] bg-white p-8 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-[#f8e4ea] text-[#7a1f39]">
+              <Compass className="size-7" />
+            </div>
+            <h3 className="mt-3 font-serif text-lg font-bold text-[#411522]">
+              Discover Companions
+            </h3>
+            <p className="mt-1 max-w-md text-xs sm:text-sm text-[#6a4953]">
+              Browse verified companions ready to join you for dining, cafes, events and more.
+            </p>
+            <Link
+              href="/explore"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#7a1f39] px-5 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-[#66192d] transition-colors"
+            >
+              Browse All Companions
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        )}
+      </section>
+
+      {/* ─── Popular Meeting Vibes in Your City ─── */}
+      <section className="mt-10">
+        <div className="mb-4">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#7a1f39]">
+            <Coffee className="size-3.5" />
+            Curated Experiences
+          </div>
+          <h2 className="mt-1 font-serif text-2xl sm:text-3xl font-bold text-[#411522]">
+            Popular Meeting Vibes
+          </h2>
+          <p className="mt-1 text-xs sm:text-sm text-[#6a4953]">
+            Find companions who match your favorite social activities and weekend plans.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { label: "Artisan Cafes", icon: "☕", search: "Cafe" },
+            { label: "Street & Heritage Walks", icon: "📸", search: "Photography" },
+            { label: "Fine Dining", icon: "🍽️", search: "Food" },
+            { label: "Art & Exhibitions", icon: "🎨", search: "Art" },
+            { label: "Festivals & Gigs", icon: "🎭", search: "Music" },
+            { label: "Fitness & Runs", icon: "🏃", search: "Fitness" },
+          ].map((vibe) => (
+            <Link
+              key={vibe.label}
+              href={`/explore?search=${encodeURIComponent(vibe.search)}`}
+              className="group flex flex-col items-center justify-center rounded-[20px] border border-[#f0e3e7] bg-white p-4 text-center shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#7a1f39]/30 hover:shadow-md"
+            >
+              <span className="text-2xl group-hover:scale-125 transition-transform">
+                {vibe.icon}
+              </span>
+              <span className="mt-2 text-xs font-bold text-[#4d2a35] group-hover:text-[#7a1f39] transition-colors">
+                {vibe.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Trust, Safety & Community Standards ─── */}
+      <section className="mt-10 mb-4 rounded-[28px] border border-[#f0e3e7] bg-gradient-to-br from-[#fdfbfb] via-[#fffbfb] to-[#fbf2f4] p-6 sm:p-8 shadow-sm">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#7a1f39]">
+              <Shield className="size-3.5" />
+              Safety First
+            </div>
+            <h2 className="mt-1 font-serif text-2xl sm:text-3xl font-bold text-[#411522]">
+              Our Trust &amp; Safety Standards
+            </h2>
+          </div>
+          <Link
+            href="/verify-account"
+            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#7a1f39] hover:underline"
+          >
+            Verify your account
+            <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-2xl border border-[#eadfe3] bg-white/80 p-4 backdrop-blur-sm">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-berry/10 text-berry">
+              <ShieldCheck className="size-5" />
+            </div>
+            <h3 className="mt-3 text-sm font-bold text-[#411522]">
+              100% Verified Profiles
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-[#6a4953]">
+              Every member verifies their phone number, email and selfie identity before unlocking full features.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[#eadfe3] bg-white/80 p-4 backdrop-blur-sm">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-berry/10 text-berry">
+              <MapPin className="size-5" />
+            </div>
+            <h3 className="mt-3 text-sm font-bold text-[#411522]">
+              Public Venues Only
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-[#6a4953]">
+              All meetups are strictly hosted in verified public locations like cafes, bistros, parks, and cultural spaces.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[#eadfe3] bg-white/80 p-4 backdrop-blur-sm">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-berry/10 text-berry">
+              <Wallet className="size-5" />
+            </div>
+            <h3 className="mt-3 text-sm font-bold text-[#411522]">
+              Secure Escrow Wallet
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-[#6a4953]">
+              Zero cash surprises. Booking payments are securely held in platform escrow until the meeting starts.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[#eadfe3] bg-white/80 p-4 backdrop-blur-sm">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-berry/10 text-berry">
+              <HeartHandshake className="size-5" />
+            </div>
+            <h3 className="mt-3 text-sm font-bold text-[#411522]">
+              24/7 Community Care
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-[#6a4953]">
+              Our support and safety team is active around the clock with instant reporting and fast resolution.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Full-Screen Carousel Modal */}
       <ImageCarouselModal
