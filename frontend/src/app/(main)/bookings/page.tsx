@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBookings, useBookingActions, type Booking } from "@/hooks/use-bookings";
 import { useAuth } from "@/hooks/use-auth";
+import { SubmitReviewModal } from "@/components/reviews/submit-review-modal";
 
 /* ─── Status Config ─── */
 
@@ -128,6 +129,8 @@ function BookingCard({
 }) {
   const { acceptBooking, rejectBooking, cancelBooking, endMeeting, isSubmitting } = useBookingActions();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
 
   const isClient = booking.clientId === currentUserId;
   const isCompanion = booking.companionProfile.userId === currentUserId;
@@ -136,6 +139,9 @@ function BookingCard({
   const otherPerson = isClient
     ? booking.companionProfile.user
     : booking.client;
+
+  const userReview = booking.reviews?.find((r) => r.reviewerId === currentUserId);
+  const isReviewed = Boolean(userReview) || hasReviewed;
 
   const scheduledDate = new Date(booking.scheduledDate);
   const dateStr = scheduledDate.toLocaleDateString("en-IN", {
@@ -266,9 +272,35 @@ function BookingCard({
 
       {/* ─── Completed ─── */}
       {booking.status === "COMPLETED" && (
-        <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-          <CheckCircle2 className="size-4 text-emerald-600" />
-          <p className="text-xs font-semibold text-emerald-700">Meeting completed. Payment settled.</p>
+        <div className="mt-4 space-y-3">
+          <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+            <CheckCircle2 className="size-4 text-emerald-600" />
+            <p className="text-xs font-semibold text-emerald-700">Meeting completed. Payment settled.</p>
+          </div>
+          {/* Review button — only if not already reviewed */}
+          {!isReviewed ? (
+            <button
+              type="button"
+              onClick={() => setReviewModalOpen(true)}
+              className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 w-full text-left hover:bg-amber-100/70 transition-colors group cursor-pointer"
+            >
+              <div className="flex size-9 items-center justify-center rounded-full bg-amber-100 group-hover:bg-amber-200 transition-colors shrink-0">
+                <Star className="size-4 text-amber-600 fill-amber-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-amber-900">Rate & Review Experience</p>
+                <p className="text-xs text-amber-700">Share your feedback about {otherPerson.fullName}</p>
+              </div>
+              <ArrowRight className="size-4 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 rounded-xl border border-[#f0dfe3] bg-[#fdfafb] px-4 py-2.5">
+              <CheckCircle2 className="size-4 text-emerald-500" />
+              <p className="text-xs font-semibold text-[#2d111b]">
+                Review submitted ✓ {userReview ? `(${userReview.rating} ★)` : ""}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -332,6 +364,19 @@ function BookingCard({
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      <SubmitReviewModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        bookingId={booking.id}
+        partnerName={otherPerson.fullName}
+        partnerAvatar={otherPerson.avatar}
+        onSuccess={() => {
+          setHasReviewed(true);
+          onRefresh();
+        }}
+      />
     </div>
   );
 }

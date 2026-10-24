@@ -40,6 +40,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { apiFetch } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { ImageCarouselModal } from "@/components/shared/image-carousel-modal";
+import { useReviews, useReviewStats } from "@/hooks/use-reviews";
+import { ReviewCard } from "@/components/reviews/review-card";
+import { StarRatingDisplay } from "@/components/reviews/star-rating-input";
 
 // Utility for mapping interest names to icons
 const getInterestIcon = (interest: string) => {
@@ -60,6 +63,7 @@ const PROFILE_TABS = [
   { id: "about", label: "About" },
   { id: "interests", label: "Interests" },
   { id: "photos", label: "Photos" },
+  { id: "reviews", label: "Reviews" },
   { id: "badges", label: "Badges & Trust" },
 ];
 
@@ -144,6 +148,9 @@ export default function CompanionProfilePage({
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("about");
+  const [reviewPage, setReviewPage] = useState(1);
+  const { reviews, pagination: reviewPagination, isLoading: reviewsLoading } = useReviews(companion?.userId, reviewPage, 5);
+  const { stats: reviewStats } = useReviewStats(companion?.userId);
   // const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   // Scroll to top immediately when route ID changes
@@ -559,6 +566,91 @@ export default function CompanionProfilePage({
                   </div>
                 );
               })()}
+            </div>
+
+            {/* Reviews Section */}
+            <div id="reviews" className="scroll-mt-24 rounded-2xl border border-[#f0dfe3] bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-lg font-bold text-[#2d111b]">
+                  <Star className="size-5 text-[#7a1f39]" />
+                  Reviews
+                </h3>
+                {reviewStats && reviewStats.totalCount > 0 && (
+                  <div className="flex items-center gap-2">
+                    <StarRatingDisplay rating={reviewStats.averageRating} />
+                    <span className="text-sm font-bold text-[#2d111b]">{reviewStats.averageRating}</span>
+                    <span className="text-xs text-[#6a4953]">({reviewStats.totalCount})</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Rating Breakdown */}
+              {reviewStats && reviewStats.totalCount > 0 && (
+                <div className="mt-4 space-y-1.5">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = reviewStats.breakdown[star] || 0;
+                    const pct = reviewStats.totalCount > 0 ? (count / reviewStats.totalCount) * 100 : 0;
+                    return (
+                      <div key={star} className="flex items-center gap-2">
+                        <span className="w-3 text-xs font-semibold text-[#6a4953]">{star}</span>
+                        <Star className="size-3 text-amber-400 fill-amber-400" />
+                        <div className="flex-1 h-2 rounded-full bg-[#f0dfe3] overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-amber-400 transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="w-6 text-right text-[10px] font-medium text-[#6a4953]">{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Review List */}
+              <div className="mt-5 space-y-3">
+                {reviewsLoading ? (
+                  <div className="flex justify-center py-6">
+                    <div className="size-6 animate-spin rounded-full border-2 border-[#f0dfe3] border-t-[#7a1f39]" />
+                  </div>
+                ) : reviews.length === 0 ? (
+                  <div className="py-6 text-center">
+                    <Star className="mx-auto size-8 text-[#7a1f39]/20" />
+                    <p className="mt-2 text-sm font-semibold text-[#2d111b]">No reviews yet</p>
+                    <p className="text-xs text-[#6a4953]">Be the first to leave a review after a meeting!</p>
+                  </div>
+                ) : (
+                  <>
+                    {reviews.map((review) => (
+                      <ReviewCard key={review.id} review={review} />
+                    ))}
+                    {/* Pagination */}
+                    {reviewPagination && reviewPagination.totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 pt-3">
+                        <button
+                          type="button"
+                          onClick={() => setReviewPage((p) => Math.max(1, p - 1))}
+                          disabled={reviewPage <= 1}
+                          className="rounded-lg border border-[#f0dfe3] px-3 py-1.5 text-xs font-semibold text-[#6a4953] hover:bg-[#fdfafb] disabled:opacity-40 cursor-pointer"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-xs text-[#6a4953]">
+                          {reviewPage} / {reviewPagination.totalPages}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setReviewPage((p) => Math.min(reviewPagination.totalPages, p + 1))}
+                          disabled={reviewPage >= reviewPagination.totalPages}
+                          className="rounded-lg border border-[#f0dfe3] px-3 py-1.5 text-xs font-semibold text-[#6a4953] hover:bg-[#fdfafb] disabled:opacity-40 cursor-pointer"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

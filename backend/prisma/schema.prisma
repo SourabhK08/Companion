@@ -53,6 +53,9 @@ model User {
   profilePhotos       ProfilePhoto[]
   phoneOtps           PhoneOtp[]
   emailOtps           EmailOtp[]
+  reviewsGiven        Review[]     @relation("ReviewsGiven")
+  reviewsReceived     Review[]     @relation("ReviewsReceived")
+  appReview           AppReview?   @relation("AppReviewsGiven")
 
   @@map("users")
 }
@@ -246,6 +249,8 @@ model Booking {
   companionRespondedAt DateTime?
   rejectionReason     String?
 
+  reviews             Review[]
+
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -348,4 +353,49 @@ model EmailOtp {
 
   @@index([userId, createdAt])
   @@map("email_otps")
+}
+
+/// Bidirectional review after a completed booking.
+/// Both client and companion can review each other (one review per booking per reviewer).
+model Review {
+  id          String   @id @default(cuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  reviewerId  String   /// The user who wrote the review
+  reviewer    User     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  revieweeId  String   /// The user who is being reviewed
+  reviewee    User     @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+
+  rating      Int      /// 1-5 star rating
+  comment     String?  /// Optional written review text (max 500 chars)
+
+  /// Context: which role did the reviewer have in this booking?
+  reviewerRole String  /// "CLIENT" | "COMPANION"
+
+  createdAt   DateTime @default(now())
+
+  @@unique([bookingId, reviewerId])  /// One review per booking per reviewer
+  @@index([revieweeId, createdAt])   /// Fast lookup: "all reviews for this person"
+  @@index([bookingId])
+  @@map("reviews")
+}
+
+/// Platform-level testimonials/app reviews (shown in sidebar/landing page).
+/// Completely separate from booking reviews.
+model AppReview {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation("AppReviewsGiven", fields: [userId], references: [id], onDelete: Cascade)
+
+  rating    Int      /// 1-5 star rating
+  comment   String   /// Required review text
+
+  isApproved Boolean @default(false) /// Admin moderation flag (only approved ones show publicly)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("app_reviews")
 }

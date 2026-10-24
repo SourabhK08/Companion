@@ -30,6 +30,16 @@ export interface BookingClient {
   city: string | null;
 }
 
+export interface BookingReview {
+  id: string;
+  reviewerId: string;
+  revieweeId: string;
+  rating: number;
+  comment: string | null;
+  reviewerRole: "CLIENT" | "COMPANION";
+  createdAt: string;
+}
+
 export interface Booking {
   id: string;
   clientId: string;
@@ -55,6 +65,7 @@ export interface Booking {
   updatedAt: string;
   client: BookingClient;
   companionProfile: BookingCompanionProfile;
+  reviews?: BookingReview[];
 }
 
 type BookingStatus = "all" | "PENDING_ACCEPTANCE" | "CONFIRMED" | "REJECTED" | "CANCELLED_BY_CLIENT" | "IN_PROGRESS" | "COMPLETED" | "EXPIRED";

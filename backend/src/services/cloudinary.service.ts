@@ -256,6 +256,14 @@ export function resolveAvatars<T>(data: T, variant: "thumbnail" | "card" | "prof
       obj.companionProfile = resolveAvatars(obj.companionProfile, variant);
     }
 
+    // Resolve reviewer and reviewee in reviews
+    if ("reviewer" in obj && obj.reviewer && typeof obj.reviewer === "object") {
+      obj.reviewer = resolveAvatars(obj.reviewer, variant);
+    }
+    if ("reviewee" in obj && obj.reviewee && typeof obj.reviewee === "object") {
+      obj.reviewee = resolveAvatars(obj.reviewee, variant);
+    }
+
     // Resolve profilePhotos array (e.g. on user or companion profile)
     if ("profilePhotos" in obj && Array.isArray(obj.profilePhotos)) {
       obj.profilePhotos = obj.profilePhotos.map((p) => {

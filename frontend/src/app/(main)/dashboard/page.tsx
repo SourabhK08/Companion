@@ -213,7 +213,7 @@ export default function DashboardPage() {
 
         {/* Saved Companions Card */}
         <Link
-          href="/explore"
+          href="/saved"
           className="group relative overflow-hidden rounded-2xl border border-[#ebdbe0] bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_rgba(122,31,57,0.03)] hover:shadow-[0_6px_20px_rgba(122,31,57,0.08)] transition-all hover:border-[#7a1f39]/30"
         >
           <div className="flex items-center justify-between">

@@ -39,6 +39,17 @@ const bookingSelect = {
   meetingEndedAt: true,
   companionRespondedAt: true,
   rejectionReason: true,
+  reviews: {
+    select: {
+      id: true,
+      reviewerId: true,
+      revieweeId: true,
+      rating: true,
+      comment: true,
+      reviewerRole: true,
+      createdAt: true,
+    },
+  },
   createdAt: true,
   updatedAt: true,
   client: {
@@ -369,6 +380,33 @@ export async function endMeeting(bookingId: string, companionUserId: string) {
     },
     select: bookingSelect,
   });
+
+  // ─── Prompt both parties to leave a review ──────────────
+  try {
+    await Promise.all([
+      prisma.notification.create({
+        data: {
+          userId: booking.clientId,
+          type: "REVIEW_PROMPT",
+          title: "How was your experience?",
+          body: "Your meeting has ended. Rate and review your companion!",
+          linkUrl: `/bookings?highlight=${bookingId}`,
+        },
+      }),
+      prisma.notification.create({
+        data: {
+          userId: booking.companionProfile.userId,
+          type: "REVIEW_PROMPT",
+          title: "How was your experience?",
+          body: "Your meeting has ended. Rate and review your client!",
+          linkUrl: `/bookings?highlight=${bookingId}`,
+        },
+      }),
+    ]);
+  } catch (err) {
+    // Non-critical — don't fail the meeting end if notifications fail
+    console.error("Failed to create review prompt notifications:", err);
+  }
 
   return resolveAvatars(updated);
 }
