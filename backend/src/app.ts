@@ -47,6 +47,7 @@ import { chatSubscriptionRoutes } from "./routes/chat-subscription.routes.js";
 import { profilePhotoRoutes } from "./routes/profile-photo.routes.js";
 import { verificationRoutes } from "./routes/verification.routes.js";
 import { reviewRoutes } from "./routes/review.routes.js";
+import { adminRoutes } from "./routes/admin.routes.js";
 
 // ─── Routes ───────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
@@ -61,6 +62,7 @@ app.use("/api/chat-subscriptions", chatSubscriptionRoutes);
 app.use("/api/profile/photos", profilePhotoRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/admin", adminRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────
 app.use((_req, res) => {

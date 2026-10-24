@@ -64,3 +64,53 @@ export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunctio
   }
   next();
 }
+
+/**
+ * Extended Express Request with Admin flag.
+ */
+export interface AdminRequest extends Request {
+  isAdmin?: boolean;
+  adminUsername?: string;
+}
+
+/**
+ * Admin authentication middleware.
+ * Verifies that the bearer token was issued with admin role.
+ */
+export function authenticateAdmin(
+  req: AdminRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    res.status(401).json({
+      success: false,
+      message: "Admin authentication required",
+    });
+    return;
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const payload = jwt.verify(token, env.JWT_SECRET) as { role?: string; isAdmin?: boolean; username?: string };
+    if (!payload.isAdmin && payload.role !== "admin") {
+      res.status(403).json({
+        success: false,
+        message: "Forbidden: Admin privileges required",
+      });
+      return;
+    }
+    req.isAdmin = true;
+    req.adminUsername = payload.username || "admin";
+    next();
+  } catch {
+    res.status(401).json({
+      success: false,
+      message: "Invalid or expired admin session. Please log in again.",
+    });
+  }
+}
+

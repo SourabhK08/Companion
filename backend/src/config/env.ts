@@ -23,6 +23,10 @@ const envSchema = z.object({
   SMTP_USER: z.string().min(1).optional(),
   SMTP_PASS: z.string().min(1).optional(),
   EMAIL_FROM: z.string().min(1).optional(), // e.g. "Modhuralap <no-reply@yourdomain.com>"
+
+  // Admin Credentials
+  ADMIN_USERNAME: z.string().default("admin"),
+  ADMIN_PASSWORD: z.string().default("Jaisiyaram"),
 });
 
 const parsed = envSchema.safeParse(process.env);
