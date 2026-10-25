@@ -27,6 +27,11 @@ const envSchema = z.object({
   // Admin Credentials
   ADMIN_USERNAME: z.string().default("admin"),
   ADMIN_PASSWORD: z.string().default("Jaisiyaram"),
+
+  // Razorpay Payment Gateway
+  RAZORPAY_KEY_ID: z.string().min(1).optional(),
+  RAZORPAY_KEY_SECRET: z.string().min(1).optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().min(1).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

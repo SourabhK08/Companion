@@ -56,6 +56,7 @@ model User {
   reviewsGiven        Review[]     @relation("ReviewsGiven")
   reviewsReceived     Review[]     @relation("ReviewsReceived")
   appReview           AppReview?   @relation("AppReviewsGiven")
+  paymentOrders       PaymentOrder[]
 
   @@map("users")
 }
@@ -398,4 +399,26 @@ model AppReview {
   updatedAt DateTime @updatedAt
 
   @@map("app_reviews")
+}
+
+/// Razorpay payment order — tracks each "Add Money" payment attempt.
+/// Links to Razorpay's order/payment IDs for full audit trail.
+model PaymentOrder {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  razorpayOrderId    String   @unique  /// Razorpay order_xxx ID
+  razorpayPaymentId  String?           /// Razorpay pay_xxx ID (filled after payment)
+  amount             Int               /// Amount in paisa
+  currency           String   @default("INR")
+  status             String   @default("CREATED") /// "CREATED" | "PAID" | "FAILED"
+  receipt            String   @unique  /// Human-readable receipt ID
+  walletCredited     Boolean  @default(false) /// Idempotency flag — prevents double-crediting
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@map("payment_orders")
 }

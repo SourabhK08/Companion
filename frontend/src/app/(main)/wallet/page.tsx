@@ -7,19 +7,22 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   RotateCcw,
-  ChevronRight,
-  ArrowRight,
   CreditCard,
-  Headphones,
   Lock,
   Eye,
   EyeOff,
+  Shield,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { cn } from "cn";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWallet, useWalletTransactions } from "@/hooks/use-wallet";
+import { useRazorpay } from "@/hooks/use-razorpay";
+import { useAuth } from "@/hooks/use-auth";
+import { apiFetch } from "@/lib/api/client";
 
 /* ─── Transaction Type Config ─── */
 
@@ -35,15 +38,47 @@ const txnTypeConfig: Record<
   REFUND: { label: "Refund", color: "text-amber-600", bg: "bg-amber-100", icon: RotateCcw, sign: "+" },
 };
 
+/* ─── Types ─── */
+
+interface CreateOrderResponse {
+  success: boolean;
+  data: {
+    orderId: string;
+    amount: number;
+    currency: string;
+    keyId: string;
+  };
+}
+
+interface VerifyPaymentResponse {
+  success: boolean;
+  data: {
+    wallet: {
+      balance: number;
+      heldAmount: number;
+      availableBalance: number;
+    };
+  };
+  message: string;
+}
+
 export default function WalletPage() {
-  const { wallet, isLoading, balanceInRupees, heldInRupees, availableInRupees, addMoney } = useWallet();
+  const { wallet, isLoading, balanceInRupees, heldInRupees, availableInRupees, refetch } = useWallet();
   const [txnPage, setTxnPage] = useState(1);
   const { transactions, pagination: txnPagination, isLoading: txnLoading, refetch: refetchTxns } = useWalletTransactions(txnPage);
+  const { user } = useAuth();
+
+  const { openCheckout } = useRazorpay({
+    userName: user?.fullName,
+    userEmail: user?.email,
+    userPhone: user?.phone,
+  });
 
   const [showBalance, setShowBalance] = useState(true);
   const [addAmount, setAddAmount] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const handleAddMoney = async () => {
     const amount = parseFloat(addAmount);
@@ -51,12 +86,51 @@ export default function WalletPage() {
 
     setIsAdding(true);
     setAddError(null);
+    setPaymentSuccess(false);
+
     try {
-      await addMoney(amount);
-      setAddAmount("");
-      refetchTxns();
+      // Step 1: Create order on backend
+      const orderRes = await apiFetch<CreateOrderResponse>("/api/payments/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+
+      if (!orderRes.success) {
+        throw new Error("Failed to create payment order");
+      }
+
+      const { orderId, amount: amountInPaisa, keyId } = orderRes.data;
+
+      // Step 2: Open Razorpay Checkout popup
+      const paymentResponse = await openCheckout(orderId, amountInPaisa, keyId);
+
+      // Step 3: Verify payment on backend
+      const verifyRes = await apiFetch<VerifyPaymentResponse>("/api/payments/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razorpay_order_id: paymentResponse.razorpay_order_id,
+          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+          razorpay_signature: paymentResponse.razorpay_signature,
+        }),
+      });
+
+      if (verifyRes.success) {
+        setPaymentSuccess(true);
+        setAddAmount("");
+        // Refresh wallet and transactions
+        refetch();
+        refetchTxns();
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => setPaymentSuccess(false), 5000);
+      }
     } catch (err) {
-      setAddError(err instanceof Error ? err.message : "Failed to add money");
+      const msg = err instanceof Error ? err.message : "Payment failed";
+      // Don't show error for user cancellation
+      if (msg !== "Payment cancelled by user") {
+        setAddError(msg);
+      }
     } finally {
       setIsAdding(false);
     }
@@ -125,9 +199,20 @@ export default function WalletPage() {
               <PlusCircle className="size-5 text-berry" />
               Add Money
             </h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Mock payment — instantly add funds to your wallet for testing.
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Shield className="size-3 text-emerald-600" />
+              Secure payment via Razorpay — Cards, UPI, Net Banking
             </p>
+
+            {/* Success banner */}
+            {paymentSuccess && (
+              <div className="mt-3 flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
+                <CheckCircle2 className="size-5 text-emerald-600 shrink-0" />
+                <p className="text-sm font-semibold text-emerald-700">
+                  Payment successful! Your wallet has been credited.
+                </p>
+              </div>
+            )}
 
             {/* Quick amounts */}
             <div className="mt-4 flex flex-wrap gap-2">
@@ -135,11 +220,13 @@ export default function WalletPage() {
                 <button
                   key={amt}
                   onClick={() => setAddAmount(String(amt))}
+                  disabled={isAdding}
                   className={cn(
                     "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
                     addAmount === String(amt)
                       ? "border-berry bg-berry/10 text-berry"
-                      : "border-soft-border text-muted-foreground hover:border-berry/30"
+                      : "border-soft-border text-muted-foreground hover:border-berry/30",
+                    isAdding && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   ₹{amt.toLocaleString("en-IN")}
@@ -151,17 +238,26 @@ export default function WalletPage() {
               <Input
                 type="number"
                 min={1}
+                max={50000}
                 placeholder="Enter amount (₹)"
                 value={addAmount}
                 onChange={(e) => setAddAmount(e.target.value)}
+                disabled={isAdding}
                 className="h-10 flex-1 rounded-xl border-soft-border"
               />
               <Button
                 onClick={handleAddMoney}
                 disabled={!addAmount || parseFloat(addAmount) <= 0 || isAdding}
-                className="h-10 rounded-xl bg-berry hover:bg-berry-dark text-white px-6 font-semibold"
+                className="h-10 rounded-xl bg-berry hover:bg-berry-dark text-white px-6 font-semibold min-w-[120px]"
               >
-                {isAdding ? "Adding..." : "Add Money"}
+                {isAdding ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    Processing
+                  </span>
+                ) : (
+                  "Add Money"
+                )}
               </Button>
             </div>
 

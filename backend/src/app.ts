@@ -21,6 +21,12 @@ app.use(
   })
 );
 
+// ─── Razorpay Webhook (raw body — MUST be before express.json) ─
+// Razorpay webhook signature verification requires the raw, unparsed body.
+// If express.json() parses it first, the signature won't match.
+import { paymentRoutes } from "./routes/payment.routes.js";
+app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
+
 // ─── Body Parsing ─────────────────────────────────────────
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -63,6 +69,7 @@ app.use("/api/profile/photos", profilePhotoRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────
 app.use((_req, res) => {
